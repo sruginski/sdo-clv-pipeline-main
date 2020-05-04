@@ -1,0 +1,6 @@
+font.size                : 13
+lines.linewidth          : 2
+lines.linestyle          : -
+axes.grid                : False
+grid.linestyle           : :
+text.usetex              : True
