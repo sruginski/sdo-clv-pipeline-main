@@ -46,6 +46,8 @@ def main():
     # cb = fig.colorbar(im)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_visible(False)
+    ax1.set_title(r"${\rm HMI Continuum Intensity}$")
+    ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
     ax1.grid(False)
     fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
     plt.clf(); plt.close()
