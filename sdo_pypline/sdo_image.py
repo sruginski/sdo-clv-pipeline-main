@@ -1,5 +1,7 @@
 import numpy as np
 from .sdo_io import *
+from .limbdark import *
+from scipy.optimize import least_squares
 
 class HMI_Image:
     def __init__(self, file):
@@ -133,12 +135,42 @@ class HMI_Image:
         assert self.is_dopplergram()
 
         # compute the velocities
-        obs_vel = self.calc_observer_vel()
-        sun_vel = self.calc_differential_rot()
+        # TOOD: check on the rotation???
+        # obs_vel = self.calc_observer_vel()
+        # sun_vel = self.calc_differential_rot()
+        obs_vel = np.rot90(np.flip(self.calc_observer_vel(), axis=1), 2)
+        sun_vel = np.rot90(np.flip(self.calc_differential_rot(), axis=1), 2)
 
         # update image data
         self.image = self.image - obs_vel - sun_vel
         return self.image
+
+    def correct_limb_darkening(self):
+        # only do the correction if its a dopplergram
+        assert self.is_continuum()
+
+        # get average intensity in evenly spaced rings
+        mu_step = np.linspace(1.0, 0.1, num=50)
+        avg_int = np.zeros(len(mu_step)-1)
+        for i in range(len(avg_int)-1):
+            # find indices in ring that aren't nan
+            inds = (self.mu > mu_step[i+1]) & (self.mu <= mu_step[i]) & (~np.isnan(self.image))
+
+            # mask section that are big outliers
+            ints = self.image[inds]
+            ints[np.abs(ints - np.mean(ints)) >= (3 * np.std(ints))] = np.nan
+            avg_int[i] = np.mean(ints[~np.isnan(ints)])
+
+
+
+        return avg_int
+
+
+
+
+
+
+
 
 class AIA_Image:
     def __init__(self, file):

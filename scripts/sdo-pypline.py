@@ -35,32 +35,37 @@ def main():
     dop_img1 = HMI_Image(dop_files[0])
 
     # mask low mus
-    con_img1.mask_low_mu(0.2)
-    mag_img1.mask_low_mu(0.2)
-    dop_img1.mask_low_mu(0.2)
+    con_img1.mask_low_mu(0.15)
+    mag_img1.mask_low_mu(0.15)
+    dop_img1.mask_low_mu(0.15)
 
     # correct dopplergram for differential rotation & observer velocity
-    dop_img1.correct_dopplergram()
+    # dop_img1.correct_dopplergram()
 
-    # get cmap
-    cmap = plt.get_cmap("seismic").copy()
-    cmap.set_bad(color="black")
-
-    # plot the sun
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    im = ax1.imshow(dop_img1.image, origin="lower", cmap=cmap, vmin=-4500, vmax=4500)
-    cb = fig.colorbar(im)
-    ax1.xaxis.set_visible(False)
-    ax1.yaxis.set_visible(False)
-    ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
-    ax1.text(2700, 50, dop_img1.date_obs, fontsize=8)
-    ax1.grid(False)
+    # correct limb darkening in continuum map
+    derp = con_img1.correct_limb_darkening()
+    plt.plot(derp)
     plt.show()
-    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
 
     pdb.set_trace()
+
+    # # get cmap
+    # cmap = plt.get_cmap("seismic").copy()
+    # cmap.set_bad(color="black")
+
+    # # plot the sun
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # im = ax1.imshow(dop_img1.image, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
+    # cb = fig.colorbar(im)
+    # ax1.xaxis.set_visible(False)
+    # ax1.yaxis.set_visible(False)
+    # ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
+    # ax1.text(2700, 50, dop_img1.date_obs, fontsize=8)
+    # ax1.grid(False)
+    # plt.show()
+    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
+    # plt.clf(); plt.close()
 
     # # get cmap
     # cmap = plt.get_cmap("RdYlBu").copy()
