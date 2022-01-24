@@ -28,6 +28,8 @@ class HMI_Image:
         self.obs_vw = head["OBS_VW"]
         self.obs_vn = head["OBS_VN"]
         self.rsun_obs = head["RSUN_OBS"]
+        self.date_obs = head["DATE-OBS"]
+        self.content = head["CONTENT"]
 
         # get mesh of distances and pixels
         self.dist_sun = self.dsun_obs/self.rsun_ref
@@ -53,6 +55,18 @@ class HMI_Image:
 
         # read in the data
         self.image = read_data(file)
+
+    def is_magnetogram(self):
+        return self.content == "MAGNETOGRAM"
+
+    def is_dopplergram(self):
+        return self.content == "DOPPLERGRAM"
+
+    def is_continuum(self):
+        return self.content == "CONTINUUM INTENSITY"
+
+    def mask_low_mu(self, mu_thresh):
+        self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
 
     def calc_differential_rot(self):
         # geometric quantities
@@ -114,9 +128,17 @@ class HMI_Image:
         den = np.sqrt(rw_obs**2 + rn_obs**2 + (rr_obs - self.dist_sun)**2)
         return num/den
 
-    def mask_low_mu(self, mu_thresh):
-        self.image[self.mu < mu_thresh] = np.nan
+    def correct_dopplergram(self):
+        # only do the correction if its a dopplergram
+        assert self.is_dopplergram()
 
+        # compute the velocities
+        obs_vel = self.calc_observer_vel()
+        sun_vel = self.calc_differential_rot()
+
+        # update image data
+        self.image = self.image - obs_vel - sun_vel
+        return self.image
 
 class AIA_Image:
     def __init__(self, file):

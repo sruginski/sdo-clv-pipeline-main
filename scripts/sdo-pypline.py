@@ -35,17 +35,12 @@ def main():
     dop_img1 = HMI_Image(dop_files[0])
 
     # mask low mus
-    con_img1.mask_low_mu(0.15)
-    mag_img1.mask_low_mu(0.15)
-    dop_img1.mask_low_mu(0.15)
+    con_img1.mask_low_mu(0.2)
+    mag_img1.mask_low_mu(0.2)
+    dop_img1.mask_low_mu(0.2)
 
     # correct dopplergram for differential rotation & observer velocity
-    derp0 = dop_img1.image
-    derp1 = dop_img1.image - dop_img1.calc_differential_rot()
-    derp2 = dop_img1.image - dop_img1.calc_observer_vel()
-    derp3 = dop_img1.image - dop_img1.calc_differential_rot() - dop_img1.calc_observer_vel()
-
-    # pdb.set_trace()
+    dop_img1.correct_dopplergram()
 
     # get cmap
     cmap = plt.get_cmap("seismic").copy()
@@ -54,19 +49,21 @@ def main():
     # plot the sun
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    im = ax1.imshow(derp1, cmap=cmap, origin="lower")#, vmin=-4200, vmax=4200)
+    im = ax1.imshow(dop_img1.image, origin="lower", cmap=cmap, vmin=-4500, vmax=4500)
     cb = fig.colorbar(im)
     ax1.xaxis.set_visible(False)
     ax1.yaxis.set_visible(False)
     ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
-    # ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
+    ax1.text(2700, 50, dop_img1.date_obs, fontsize=8)
     ax1.grid(False)
     plt.show()
     # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
     # plt.clf(); plt.close()
 
+    pdb.set_trace()
+
     # # get cmap
-    # cmap = plt.get_cmap("RdYlBu")
+    # cmap = plt.get_cmap("RdYlBu").copy()
     # cmap.set_bad(color="white")
 
     # # plot the sun
@@ -83,7 +80,7 @@ def main():
     # plt.clf(); plt.close()
 
     # # get cmap
-    # cmap = plt.get_cmap("afmhot")
+    # cmap = plt.get_cmap("afmhot").copy()
     # cmap.set_bad(color="white")
 
     # # plot the sun
