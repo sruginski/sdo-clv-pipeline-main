@@ -1,7 +1,7 @@
 import numpy as np
 from .sdo_io import *
 from .limbdark import *
-from scipy.optimize import least_squares
+from scipy.optimize import curve_fit
 
 class HMI_Image:
     def __init__(self, file):
@@ -150,26 +150,22 @@ class HMI_Image:
         assert self.is_continuum()
 
         # get average intensity in evenly spaced rings
-        mu_step = np.linspace(1.0, 0.1, num=50)
-        avg_int = np.zeros(len(mu_step)-1)
-        for i in range(len(avg_int)-1):
+        mu_edge = np.linspace(1.0, 0.15, num=50)
+        avg_int = np.zeros(len(mu_edge)-1)
+        for i in range(len(avg_int)):
             # find indices in ring that aren't nan
-            inds = (self.mu > mu_step[i+1]) & (self.mu <= mu_step[i]) & (~np.isnan(self.image))
+            inds = (self.mu > mu_edge[i+1]) & (self.mu <= mu_edge[i]) & (~np.isnan(self.image))
 
             # mask section that are big outliers
             ints = self.image[inds]
             ints[np.abs(ints - np.mean(ints)) >= (3 * np.std(ints))] = np.nan
             avg_int[i] = np.mean(ints[~np.isnan(ints)])
 
-
-
-        return avg_int
-
-
-
-
-
-
+        # fit the data
+        mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
+        p0  = [55925.8, 0.88, -0.23]
+        popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
+        self.image /= quad_darkening(self.mu, *popt)
 
 
 class AIA_Image:
