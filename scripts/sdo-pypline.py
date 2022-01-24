@@ -29,26 +29,58 @@ def main():
     mag_files = glob.glob("/Users/michael/Desktop/sdo_data/*mag*.fits")
     dop_files = glob.glob("/Users/michael/Desktop/sdo_data/*Dop*.fits")
 
-    # make SDOImage instance
+    # make HDO_Image instances
     con_img1 = HMI_Image(con_files[0])
     mag_img1 = HMI_Image(mag_files[0])
     dop_img1 = HMI_Image(dop_files[0])
 
-    dop_img1.calc_mu_grid()
+    # mask low mus
+    con_img1.mask_low_mu(0.15)
+    mag_img1.mask_low_mu(0.15)
+    dop_img1.mask_low_mu(0.15)
 
-    # img = read_data(dat[0])
-    # hdr = read_header(dat[0])
+    # correct dopplergram for differential rotation & observer velocity
+    derp0 = dop_img1.image
+    derp1 = dop_img1.image - dop_img1.calc_differential_rot()
+    derp2 = dop_img1.image - dop_img1.calc_observer_vel()
+    derp3 = dop_img1.image - dop_img1.calc_differential_rot() - dop_img1.calc_observer_vel()
 
+    # pdb.set_trace()
 
+    # get cmap
+    cmap = plt.get_cmap("seismic").copy()
+    cmap.set_bad(color="black")
 
-    pdb.set_trace()
+    # plot the sun
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    im = ax1.imshow(derp1, cmap=cmap, origin="lower")#, vmin=-4200, vmax=4200)
+    cb = fig.colorbar(im)
+    ax1.xaxis.set_visible(False)
+    ax1.yaxis.set_visible(False)
+    ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
+    # ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
+    ax1.grid(False)
+    plt.show()
+    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
+    # plt.clf(); plt.close()
 
-    # # get grid of mus
-    # int_dict = get_geom_params(hdr)
-    # int_mu = get_mu_grid(int_dict)
+    # # get cmap
+    # cmap = plt.get_cmap("RdYlBu")
+    # cmap.set_bad(color="white")
 
-    # # mask low mus
-    # img[~(int_mu > 0.15)] = np.nan
+    # # plot the sun
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # im = ax1.imshow(img, cmap=cmap, origin="lower", vmin=-4200, vmax=4200)
+    # # cb = fig.colorbar(im)
+    # ax1.xaxis.set_visible(False)
+    # ax1.yaxis.set_visible(False)
+    # ax1.set_title(r"${\rm HMI\ LOS\ Magnetic\ Field\ Strength}$")
+    # ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
+    # ax1.grid(False)
+    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
+    # plt.clf(); plt.close()
 
     # # get cmap
     # cmap = plt.get_cmap("afmhot")
@@ -67,35 +99,6 @@ def main():
     # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
     # plt.clf(); plt.close()
 
-
-    # # read in the data
-    # dat = glob.glob("/Users/michael/Desktop/*mag*.fits")
-    # img = read_data(dat[1])
-    # hdr = read_header(dat[1])
-
-    # # get grid of mus
-    # int_dict = get_geom_params(hdr)
-    # int_mu = get_mu_grid(int_dict)
-
-    # # mask low mus
-    # img[~(int_mu > 0.15)] = np.nan
-
-    # # get cmap
-    # cmap = plt.get_cmap("RdYlBu")
-    # cmap.set_bad(color="white")
-
-    # # plot the sun
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # im = ax1.imshow(img, cmap=cmap, origin="lower", vmin=-4200, vmax=4200)
-    # # cb = fig.colorbar(im)
-    # ax1.xaxis.set_visible(False)
-    # ax1.yaxis.set_visible(False)
-    # ax1.set_title(r"${\rm HMI\ LOS\ Magnetic\ Field\ Strength}$")
-    # ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
-    # ax1.grid(False)
-    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
 
 
 

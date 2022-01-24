@@ -54,7 +54,7 @@ class HMI_Image:
         # read in the data
         self.image = read_data(file)
 
-    def calc_differential_rotation(self):
+    def calc_differential_rot(self):
         # geometric quantities
         coscrlt  = np.cos(self.crlt_obs)
         sincrlt  = np.sin(self.crlt_obs)
@@ -97,10 +97,10 @@ class HMI_Image:
         den = np.sqrt(rw_obs**2 + rn_obs**2 + (rr_obs - self.dist_sun)**2)
         return num/den
 
-    def calc_observer_velocity(self):
+    def calc_observer_vel(self):
         # transforms
-        sincrota = np.sin(crota2)
-        coscrota = np.cos(crota2)
+        sincrota = np.sin(self.crota2)
+        coscrota = np.cos(self.crota2)
 
         # do some math
         dw = self.py * sincrota + self.px * coscrota
@@ -110,9 +110,12 @@ class HMI_Image:
         rr_obs = np.sqrt(1.0 - self.rr**2)
 
         # get observer velocity
-        num = -(rw_obs * obs_vw + rn_obs * obs_vn + (rr_obs - self.dist_sun) * obs_vr)
+        num = -(rw_obs * self.obs_vw + rn_obs * self.obs_vn + (rr_obs - self.dist_sun) * self.obs_vr)
         den = np.sqrt(rw_obs**2 + rn_obs**2 + (rr_obs - self.dist_sun)**2)
         return num/den
+
+    def mask_low_mu(self, mu_thresh):
+        self.image[self.mu < mu_thresh] = np.nan
 
 
 class AIA_Image:
