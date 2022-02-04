@@ -15,32 +15,8 @@ class HMI_Image:
         self.file = file
         head = Header(read_header(file))
 
-        # parse out the header
-        self.naxis1 = head["NAXIS1"]
-        self.naxis2 = head["NAXIS2"]
-        self.wavelength = head["WAVELNTH"]
-        self.crpix1 = head["CRPIX1"]
-        self.crpix2 = head["CRPIX2"]
-        self.crval1 = head["CRVAL1"]
-        self.crval2 = head["CRVAL2"]
-        self.cdelt1 = head["CDELT1"]
-        self.cdelt2 = head["CDELT2"]
-        self.crota2 = head["CROTA2"] * np.pi/180.0
-        self.dsun_obs = head["DSUN_OBS"]
-        self.dsun_ref = head["DSUN_REF"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
-        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
-        self.car_rot = head["CAR_ROT"]
-        self.obs_vr = head["OBS_VR"]
-        self.obs_vw = head["OBS_VW"]
-        self.obs_vn = head["OBS_VN"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.date_obs = head["DATE-OBS"]
-        self.content = head["CONTENT"]
-
-        # now set head attribute
+        # now set header attribute
+        parse_header_attributes(self, head)
         self.head = head
 
         # get mesh of distances and pixels
@@ -67,6 +43,31 @@ class HMI_Image:
 
         # read in the data
         self.image = read_data(file)
+
+    def parse_header_attributes(self, head):
+        self.naxis1 = head["NAXIS1"]
+        self.naxis2 = head["NAXIS2"]
+        self.wavelength = head["WAVELNTH"]
+        self.crpix1 = head["CRPIX1"]
+        self.crpix2 = head["CRPIX2"]
+        self.crval1 = head["CRVAL1"]
+        self.crval2 = head["CRVAL2"]
+        self.cdelt1 = head["CDELT1"]
+        self.cdelt2 = head["CDELT2"]
+        self.crota2 = head["CROTA2"] * np.pi/180.0
+        self.dsun_obs = head["DSUN_OBS"]
+        self.dsun_ref = head["DSUN_REF"]
+        self.rsun_obs = head["RSUN_OBS"]
+        self.rsun_ref = head["RSUN_REF"]
+        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
+        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
+        self.car_rot = head["CAR_ROT"]
+        self.obs_vr = head["OBS_VR"]
+        self.obs_vw = head["OBS_VW"]
+        self.obs_vn = head["OBS_VN"]
+        self.rsun_obs = head["RSUN_OBS"]
+        self.date_obs = head["DATE-OBS"]
+        self.content = head["CONTENT"]
 
     def is_magnetogram(self):
         return self.content == "MAGNETOGRAM"
@@ -188,32 +189,8 @@ class AIA_Image:
         self.file = file
         head = Header(read_header(file))
 
-        # parse out the header
-        self.naxis1 = head["NAXIS1"]
-        self.naxis2 = head["NAXIS2"]
-        self.wavelength = head["WAVELNTH"]
-        self.crpix1 = head["CRPIX1"]
-        self.crpix2 = head["CRPIX2"]
-        self.crval1 = head["CRVAL1"]
-        self.crval2 = head["CRVAL2"]
-        self.cdelt1 = head["CDELT1"]
-        self.cdelt2 = head["CDELT2"]
-        self.crota2 = head["CROTA2"] * np.pi/180.0
-        self.dsun_obs = head["DSUN_OBS"]
-        self.dsun_ref = head["DSUN_REF"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
-        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
-        self.car_rot = head["CAR_ROT"]
-        self.obs_vr = head["OBS_VR"]
-        self.obs_vw = head["OBS_VW"]
-        self.obs_vn = head["OBS_VN"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.date_obs = head["DATE-OBS"]
-        self.content = "FILTERGRAM"
-
-        # now set head attribute
+        # now set header attribute
+        parse_header_attributes(self, head)
         self.head = head
 
         # get mesh of distances and pixels
@@ -241,6 +218,32 @@ class AIA_Image:
         # read in the data
         self.image = read_data(file).astype(float)
 
+    def parse_header_attributes(self, head):
+        self.naxis1 = head["NAXIS1"]
+        self.naxis2 = head["NAXIS2"]
+        self.wavelength = head["WAVELNTH"]
+        self.crpix1 = head["CRPIX1"]
+        self.crpix2 = head["CRPIX2"]
+        self.crval1 = head["CRVAL1"]
+        self.crval2 = head["CRVAL2"]
+        self.cdelt1 = head["CDELT1"]
+        self.cdelt2 = head["CDELT2"]
+        self.crota2 = head["CROTA2"] * np.pi/180.0
+        self.dsun_obs = head["DSUN_OBS"]
+        self.dsun_ref = head["DSUN_REF"]
+        self.rsun_obs = head["RSUN_OBS"]
+        self.rsun_ref = head["RSUN_REF"]
+        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
+        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
+        self.car_rot = head["CAR_ROT"]
+        self.obs_vr = head["OBS_VR"]
+        self.obs_vw = head["OBS_VW"]
+        self.obs_vn = head["OBS_VN"]
+        self.rsun_obs = head["RSUN_OBS"]
+        self.date_obs = head["DATE-OBS"]
+        self.content = "FILTERGRAM"
+
+
     def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
         # get average intensity in evenly spaced rings
         mu_edge = np.linspace(1.0, mu_lim, num=num_mu)
@@ -261,4 +264,6 @@ class AIA_Image:
         self.image /= quad_darkening(self.mu, *popt)
 
     def rescale_to_hmi(self, hmi_image):
+        # rescale the image
         self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
+        self.mu = hmi_image.mu
