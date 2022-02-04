@@ -1,8 +1,3 @@
-#==============================================================================
-# Author: Michael Palumbo
-# Date: May 2020
-# Purpose:
-#==============================================================================
 import numpy as np
 import sunpy as sp
 from sunpy.net import Fido, attrs as a
@@ -28,22 +23,34 @@ def main():
     con_files = glob.glob("/Users/michael/Desktop/sdo_data/*con*.fits")
     mag_files = glob.glob("/Users/michael/Desktop/sdo_data/*mag*.fits")
     dop_files = glob.glob("/Users/michael/Desktop/sdo_data/*Dop*.fits")
+    aia_files = glob.glob("/Users/michael/Desktop/sdo_data/*aia*.fits")
 
     # make HDO_Image instances
     con_img1 = HMI_Image(con_files[0])
     mag_img1 = HMI_Image(mag_files[0])
     dop_img1 = HMI_Image(dop_files[0])
+    aia_img1 = AIA_Image(aia_files[0])
 
     # mask low mus
-    con_img1.mask_low_mu(0.15)
-    mag_img1.mask_low_mu(0.15)
-    dop_img1.mask_low_mu(0.15)
+    # con_img1.mask_low_mu(0.15)
+    # mag_img1.mask_low_mu(0.15)
+    # dop_img1.mask_low_mu(0.15)
+
+    # correct magnetogram for foreshortening
+    mag_img1.correct_magnetogram()
 
     # correct dopplergram for differential rotation & observer velocity
-    # dop_img1.correct_dopplergram()
+    dop_img1.correct_dopplergram()
 
-    # correct limb darkening in continuum map
+    # correct limb darkening in continuum map and filtergram
     con_img1.correct_limb_darkening()
+    aia_img1.correct_limb_darkening()
+
+    # interpolate aia image onto hmi image scale
+    aia_img1.rescale_to_hmi(con_img1)
+
+    pdb.set_trace()
+
 
     # # get cmap
     # cmap = plt.get_cmap("seismic").copy()
@@ -80,25 +87,44 @@ def main():
     # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
     # plt.clf(); plt.close()
 
-    # get cmap
-    cmap = plt.get_cmap("afmhot").copy()
-    cmap.set_bad(color="white")
+    # # get cmap
+    # cmap = plt.get_cmap("afmhot").copy()
+    # cmap.set_bad(color="white")
 
-    # plot the sun
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    im = ax1.imshow(con_img1.image, cmap=cmap, origin="lower")#, vmin=20000)
-    cb = fig.colorbar(im)
-    ax1.xaxis.set_visible(False)
-    ax1.yaxis.set_visible(False)
-    ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
-    ax1.text(2750, 50, con_img1.date_obs, fontsize=8)
-    ax1.grid(False)
-    plt.show()
+    # # plot the sun
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # im = ax1.imshow(con_img1.image, cmap=cmap, origin="lower")#, vmin=20000)
+    # cb = fig.colorbar(im)
+    # ax1.xaxis.set_visible(False)
+    # ax1.yaxis.set_visible(False)
+    # ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
+    # ax1.text(2750, 50, con_img1.date_obs, fontsize=8)
+    # ax1.grid(False)
+    # plt.show()
+    # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
+    # plt.clf(); plt.close()
+
+    # # get cmap
+    # cmap = plt.get_cmap("Purples").copy()
+    # cmap.set_bad(color="white")
+
+    # # plot the sun
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # im = ax1.imshow(aia_img1.image, cmap=cmap, origin="lower")#, vmin=20000)
+    # cb = fig.colorbar(im)
+    # ax1.xaxis.set_visible(False)
+    # ax1.yaxis.set_visible(False)
+    # ax1.set_title(r"${\rm AIA\ Filtergram}$")
+    # ax1.text(2750, 50, aia_img1.date_obs, fontsize=8)
+    # ax1.grid(False)
+    # plt.show()
     # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
     # plt.clf(); plt.close()
 
 
+    pdb.set_trace()
 
 
 if __name__ == "__main__":
