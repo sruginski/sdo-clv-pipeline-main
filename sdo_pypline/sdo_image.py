@@ -6,8 +6,8 @@ import pdb
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from reproject import reproject_interp
-from astropy.io.fits import Header, FITSFixedWarning
-warnings.filterwarnings("ignore", category=FITSFixedWarning)
+from astropy.io.fits import Header#, FITSFixedWarning
+# warnings.filterwarnings("ignore", category=FITSFixedWarning)
 
 class HMI_Image:
     def __init__(self, file):
@@ -16,7 +16,7 @@ class HMI_Image:
         head = Header(read_header(file))
 
         # now set header attribute
-        parse_header_attributes(self, head)
+        self.parse_header_attributes(head)
         self.head = head
 
         # get mesh of distances and pixels
@@ -182,6 +182,66 @@ class HMI_Image:
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
         self.image /= quad_darkening(self.mu, *popt)
 
+    def plot_image(self):
+        if self.is_magnetogram():
+            # get cmap
+            cmap = plt.get_cmap("RdYlBu").copy()
+            cmap.set_bad(color="black")
+
+            # plot the sun
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            im = ax1.imshow(self.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200)
+            cb = fig.colorbar(im)
+            ax1.xaxis.set_visible(False)
+            ax1.yaxis.set_visible(False)
+            ax1.set_title(r"${\rm HMI\ LOS\ Magnetic\ Field\ Strength}$")
+            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.grid(False)
+            fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+
+
+        elif self.is_dopplergram():
+            # get cmap
+            cmap = plt.get_cmap("seismic").copy()
+            cmap.set_bad(color="black")
+
+            # plot the sun
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            im = ax1.imshow(self.image, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
+            cb = fig.colorbar(im)
+            ax1.xaxis.set_visible(False)
+            ax1.yaxis.set_visible(False)
+            ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
+            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.grid(False)
+            fig.savefig("/Users/michael/Desktop/dop.pdf", bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+            return None
+
+        elif self.is_continuum():
+            # get cmap
+            cmap = plt.get_cmap("afmhot").copy()
+            cmap.set_bad(color="white")
+
+            # plot the sun
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+            cb = fig.colorbar(im)
+            ax1.xaxis.set_visible(False)
+            ax1.yaxis.set_visible(False)
+            ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
+            ax1.text(2700, 50, self.date_obs, fontsize=8)
+            ax1.grid(False)
+            fig.savefig("/Users/michael/Desktop/con.pdf", bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+
+        else:
+            return None
+
 
 class AIA_Image:
     def __init__(self, file):
@@ -190,7 +250,7 @@ class AIA_Image:
         head = Header(read_header(file))
 
         # now set header attribute
-        parse_header_attributes(self, head)
+        self.parse_header_attributes(head)
         self.head = head
 
         # get mesh of distances and pixels
@@ -267,3 +327,22 @@ class AIA_Image:
         # rescale the image
         self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
         self.mu = hmi_image.mu
+
+    def plot_image(self):
+        # get cmap
+        cmap = plt.get_cmap("Purples").copy()
+        cmap.set_bad(color="black")
+
+        # plot the sun
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+        cb = fig.colorbar(im)
+        ax1.xaxis.set_visible(False)
+        ax1.yaxis.set_visible(False)
+        ax1.set_title(r"${\rm AIA\ Filtergram}$")
+        ax1.text(2750, 50, self.date_obs, fontsize=8, c="white")
+        ax1.grid(False)
+        fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
+        plt.clf(); plt.close()
+        return None

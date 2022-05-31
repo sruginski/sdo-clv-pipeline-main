@@ -20,9 +20,9 @@ from sdo_pypline.sdo_image import *
 # actually do things
 def main():
     # find the data
-    con_files = glob.glob("/Users/michael/Desktop/sdo_data/*con*.fits")
-    mag_files = glob.glob("/Users/michael/Desktop/sdo_data/*mag*.fits")
-    dop_files = glob.glob("/Users/michael/Desktop/sdo_data/*Dop*.fits")
+    con_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.ic*.fits")
+    mag_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.m*.fits")
+    dop_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.v*.fits")
     aia_files = glob.glob("/Users/michael/Desktop/sdo_data/*aia*.fits")
 
     # make HDO_Image instances
@@ -49,61 +49,11 @@ def main():
     # interpolate aia image onto hmi image scale
     aia_img1.rescale_to_hmi(con_img1)
 
-    pdb.set_trace()
+    mag_img1.plot_image()
+    dop_img1.plot_image()
+    con_img1.plot_image()
 
-
-    # # get cmap
-    # cmap = plt.get_cmap("seismic").copy()
-    # cmap.set_bad(color="black")
-
-    # # plot the sun
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # im = ax1.imshow(dop_img1.image, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
-    # cb = fig.colorbar(im)
-    # ax1.xaxis.set_visible(False)
-    # ax1.yaxis.set_visible(False)
-    # ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
-    # ax1.text(2700, 50, dop_img1.date_obs, fontsize=8)
-    # ax1.grid(False)
-    # plt.show()
-    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
-
-    # # get cmap
-    # cmap = plt.get_cmap("RdYlBu").copy()
-    # cmap.set_bad(color="white")
-
-    # # plot the sun
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # im = ax1.imshow(img, cmap=cmap, origin="lower", vmin=-4200, vmax=4200)
-    # # cb = fig.colorbar(im)
-    # ax1.xaxis.set_visible(False)
-    # ax1.yaxis.set_visible(False)
-    # ax1.set_title(r"${\rm HMI\ LOS\ Magnetic\ Field\ Strength}$")
-    # ax1.text(2750, 50, hdr["DATE-OBS"], fontsize=8)
-    # ax1.grid(False)
-    # fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
-
-    # # get cmap
-    # cmap = plt.get_cmap("afmhot").copy()
-    # cmap.set_bad(color="white")
-
-    # # plot the sun
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # im = ax1.imshow(con_img1.image, cmap=cmap, origin="lower")#, vmin=20000)
-    # cb = fig.colorbar(im)
-    # ax1.xaxis.set_visible(False)
-    # ax1.yaxis.set_visible(False)
-    # ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
-    # ax1.text(2750, 50, con_img1.date_obs, fontsize=8)
-    # ax1.grid(False)
-    # plt.show()
-    # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
+    # pdb.set_trace()
 
     # # get cmap
     # cmap = plt.get_cmap("Purples").copy()
@@ -123,8 +73,6 @@ def main():
     # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
     # plt.clf(); plt.close()
 
-
-    pdb.set_trace()
 
 
 if __name__ == "__main__":
