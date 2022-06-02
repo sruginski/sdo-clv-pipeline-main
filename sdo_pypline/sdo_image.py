@@ -9,42 +9,42 @@ from reproject import reproject_interp
 from astropy.io.fits import Header#, FITSFixedWarning
 # warnings.filterwarnings("ignore", category=FITSFixedWarning)
 
+
 class HMI_Image:
     def __init__(self, file):
-        # read the image file
-        self.file = file
-        head = Header(read_header(file))
-
-        # now set header attribute
-        self.parse_header_attributes(head)
-        self.head = head
-
-        # get mesh of distances and pixels
-        self.dist_sun = self.dsun_obs/self.rsun_ref
-        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
-        self.p_sun = self.focal_len * np.sqrt(1. - 1./self.dist_sun**2.0)/ \
-                     (self.dist_sun - 1./self.dist_sun)
-
-        # make a mesh of distances
-        paxis1 = np.arange(self.naxis1) - self.crpix1
-        paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2)
-        self.dp = np.sqrt(self.px**2.0 + self.py**2.0)
-        self.rr = (self.dist_sun * self.focal_len * self.dp - \
-                   np.sqrt(self.focal_len**2 * self.dp**2 + self.dp**4 - self.dist_sun**2 * self.dp**4))/ \
-                   (self.focal_len**2 + self.dp**2)
-
-        # calculate grid of mus
-        cos_alpha = np.sqrt(1.0 - self.rr**2)
-        sin_alpha = self.rr
-        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
-        sin_theta = np.sqrt(1.0 - cos_theta**2)
-        self.mu = cos_alpha * cos_theta - sin_alpha * sin_theta
+        # set attributes from the heaader
+        self.parse_header(file)
 
         # read in the data
         self.image = read_data(file)
 
-    def parse_header_attributes(self, head):
+        # get distance to sun in solar radii and focal length
+        self.dist_sun = self.dsun_obs/self.rsun_ref
+        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
+
+        # mesh of pixels and distances to pixels in pixel units
+        paxis1 = np.arange(self.naxis1) - self.crpix1
+        paxis2 = np.arange(self.naxis2) - self.crpix2
+        self.px, self.py = np.meshgrid(paxis1, paxis2)#, sparse=True)
+        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
+
+        #  distances in solar radii
+        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
+        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
+        self.rr_obs = np.sqrt(1.0 - self.rr**2)
+
+        # calculate grid of mus
+        cos_alpha = self.rr_obs
+        sin_alpha = self.rr
+        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
+        sin_theta = np.sqrt(1.0 - cos_theta**2)
+        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+
+    def parse_header(self, file):
+        # read the header
+        head = Header(read_header(file))
+
+        # parse it
         self.naxis1 = head["NAXIS1"]
         self.naxis2 = head["NAXIS2"]
         self.wavelength = head["WAVELNTH"]
@@ -54,13 +54,13 @@ class HMI_Image:
         self.crval2 = head["CRVAL2"]
         self.cdelt1 = head["CDELT1"]
         self.cdelt2 = head["CDELT2"]
-        self.crota2 = head["CROTA2"] * np.pi/180.0
+        self.crota2 = np.deg2rad(head["CROTA2"])
         self.dsun_obs = head["DSUN_OBS"]
         self.dsun_ref = head["DSUN_REF"]
         self.rsun_obs = head["RSUN_OBS"]
         self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
-        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
+        self.crln_obs = np.deg2rad(head["CRLN_OBS"])
+        self.crlt_obs = np.deg2rad(head["CRLT_OBS"])
         self.car_rot = head["CAR_ROT"]
         self.obs_vr = head["OBS_VR"]
         self.obs_vw = head["OBS_VW"]
@@ -80,87 +80,69 @@ class HMI_Image:
 
     def mask_low_mu(self, mu_thresh):
         self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
-
-    def calc_differential_rot(self):
-        assert self.is_dopplergram()
-
-        # geometric quantities
-        coscrlt  = np.cos(self.crlt_obs)
-        sincrlt  = np.sin(self.crlt_obs)
-        coscrln  = np.cos(self.crln_obs)
-        sincrln  = np.sin(self.crln_obs)
-        sincrota = np.sin(self.crota2)
-        coscrota = np.cos(self.crota2)
-
-        # do the trig
-        dw = self.py * sincrota + self.px * coscrota
-        dn = self.py * coscrota - self.px * sincrota
-        rw_obs = self.rr * dw/self.dp
-        rn_obs = self.rr * dn/self.dp
-        rr_obs = np.sqrt(1.0 - self.rr**2)
-
-        # geometry
-        x1 = rw_obs
-        y1 = rn_obs * coscrlt + rr_obs * sincrlt
-        z1 = -rn_obs * sincrlt + rr_obs * coscrlt
-        hx = x1 * coscrln + z1 * sincrln
-        hy = y1
-        hz = -x1 * sincrln + z1 * coscrln
-
-        # differential rotation
-        omega  = (1./86400.) * (np.pi/180.) * (14.713 - 2.396 * hy**2 - 1.787 * hy**4)
-
-        # projection
-        vx_rot = omega * hz * self.rsun_ref
-        vy_rot = 0
-        vz_rot = -omega * hx * self.rsun_ref
-        v1 = coscrln * vx_rot - sincrln * vz_rot
-        v2 = vy_rot
-        v3 = sincrln * vx_rot + coscrln * vz_rot
-        rot_vw = v1
-        rot_vn = v2 * coscrlt - v3 * sincrlt
-        rot_vr = v2 * sincrlt + v3 * coscrlt
-
-        # calculate grid
-        num = rw_obs * rot_vw + rn_obs * rot_vn + (rr_obs - self.dist_sun) * rot_vr
-        den = np.sqrt(rw_obs**2 + rn_obs**2 + (rr_obs - self.dist_sun)**2)
-        return num/den
-
-    def calc_observer_vel(self):
-        # transforms
-        sincrota = np.sin(self.crota2)
-        coscrota = np.cos(self.crota2)
-
-        # do some math
-        dw = self.py * sincrota + self.px * coscrota
-        dn = self.py * coscrota - self.px * sincrota
-        rw_obs = self.rr * dw/self.dp
-        rn_obs = self.rr * dn/self.dp
-        rr_obs = np.sqrt(1.0 - self.rr**2)
-
-        # get observer velocity
-        num = -(rw_obs * self.obs_vw + rn_obs * self.obs_vn + (rr_obs - self.dist_sun) * self.obs_vr)
-        den = np.sqrt(rw_obs**2 + rn_obs**2 + (rr_obs - self.dist_sun)**2)
-        return num/den
+        return None
 
     def correct_magnetogram(self):
         assert self.is_magnetogram()
         self.image /= self.mu
+        return None
 
     def correct_dopplergram(self):
         # only do the correction if its a dopplergram
         assert self.is_dopplergram()
 
-        # compute the velocities
-        # TOOD: check on the rotation???
-        # obs_vel = self.calc_observer_vel()
-        # sun_vel = self.calc_differential_rot()
-        obs_vel = np.rot90(np.flip(self.calc_observer_vel(), axis=1), 2)
-        sun_vel = np.rot90(np.flip(self.calc_differential_rot(), axis=1), 2)
+        # pre-compute geometric quantities
+        coscrlt  = np.cos(self.crlt_obs)
+        sincrlt  = np.sin(self.crlt_obs)
+        coscrln  = np.cos(self.crln_obs)
+        sincrln  = np.sin(self.crln_obs)
+        coscrota = np.cos(self.crota2)
+        sincrota = np.sin(self.crota2)
 
-        # update image data
-        self.image = self.image - obs_vel - sun_vel
-        return self.image
+        # heliographic coordinates
+        dw = self.py * sincrota + self.px * coscrota
+        dn = self.py * coscrota - self.px * sincrota
+
+        # cartesian coordinates
+        rw_obs = self.rr * dw/self.pr
+        rn_obs = self.rr * dn/self.pr
+        dvel = np.sqrt(rw_obs**2 + rn_obs**2 + (self.rr_obs - self.dist_sun)**2)
+
+        # compute spacecraft velocity relative to each pixel
+        v_obs = - (rw_obs * self.obs_vw + rn_obs * self.obs_vn + (self.rr_obs - self.dist_sun) * self.obs_vr) / dvel
+
+        # cartesian coordinates
+        x1 = rw_obs
+        y1 = rn_obs * coscrlt + self.rr_obs * sincrlt
+        z1 = -rn_obs * sincrlt + self.rr_obs * coscrlt
+
+        hx = x1 * coscrln + z1 * sincrln
+        hy = y1
+        hz = -x1 * sincrln + z1 * coscrln
+
+        # differential rotation
+        omega = (np.pi/180.) * (1./86400.) * (14.713 - 2.396 * hy**2 - 1.787 * hy**4)
+
+        # projection into rotating frame
+        vx_rot = omega * hz * self.rsun_ref
+        vy_rot = 0.0
+        vz_rot = -omega * hx * self.rsun_ref
+
+        v1 = coscrln * vx_rot - sincrln * vz_rot
+        v2 = vy_rot
+        v3 = sincrln * vx_rot + coscrln * vz_rot
+
+        rot_vw = v1
+        rot_vn = v2 * coscrlt - v3 * sincrlt
+        rot_vr = v2 * sincrlt + v3 * coscrlt
+
+        # compute differential rotation
+        # TODO minus sign???? ask solaster people
+        v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + (self.rr_obs - self.dist_sun) * rot_vr) / dvel
+
+        # correct the dopplergram by subtracting off velocities
+        self.image = self.image - v_rot - v_obs
+        return None
 
     def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
         # only do the correction if its a dopplergram
@@ -183,6 +165,7 @@ class HMI_Image:
         p0  = [55925.8, 0.88, -0.23]
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
         self.image /= quad_darkening(self.mu, *popt)
+        return None
 
     def plot_image(self):
         if self.is_magnetogram():
@@ -202,7 +185,7 @@ class HMI_Image:
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
-
+            return None
 
         elif self.is_dopplergram():
             # get cmap
@@ -240,6 +223,7 @@ class HMI_Image:
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/con.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
+            return None
 
         else:
             return None
@@ -247,40 +231,39 @@ class HMI_Image:
 
 class AIA_Image:
     def __init__(self, file):
-        # read the image file
-        self.file = file
-        head = Header(read_header(file))
+        # set attributes from the heaader
+        self.parse_header(file)
 
-        # now set header attribute
-        self.parse_header_attributes(head)
-        self.head = head
+        # read in the data
+        self.image = read_data(file)
 
-        # get mesh of distances and pixels
+        # get distance to sun in solar radii and focal length
         self.dist_sun = self.dsun_obs/self.rsun_ref
         self.focal_len = 180. * 3600. / np.pi / self.cdelt1
-        self.p_sun = self.focal_len * np.sqrt(1. - 1./self.dist_sun**2.0)/ \
-                     (self.dist_sun - 1./self.dist_sun)
 
-        # make a mesh of distances
+        # mesh of pixels and distances to pixels in pixel units
         paxis1 = np.arange(self.naxis1) - self.crpix1
         paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2)
-        self.dp = np.sqrt(self.px**2.0 + self.py**2.0)
-        self.rr = (self.dist_sun * self.focal_len * self.dp - \
-                   np.sqrt(self.focal_len**2 * self.dp**2 + self.dp**4 - self.dist_sun**2 * self.dp**4))/ \
-                   (self.focal_len**2 + self.dp**2)
+        self.px, self.py = np.meshgrid(paxis1, paxis2)#, sparse=True)
+        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
+
+        #  distances in solar radii
+        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
+        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
+        self.rr_obs = np.sqrt(1.0 - self.rr**2)
 
         # calculate grid of mus
-        cos_alpha = np.sqrt(1.0 - self.rr**2)
+        cos_alpha = self.rr_obs
         sin_alpha = self.rr
         cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
         sin_theta = np.sqrt(1.0 - cos_theta**2)
-        self.mu = cos_alpha * cos_theta - sin_alpha * sin_theta
+        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
 
-        # read in the data
-        self.image = read_data(file).astype(float)
+    def parse_header(self, file):
+        # read the header
+        head = Header(read_header(file))
 
-    def parse_header_attributes(self, head):
+        # parse it
         self.naxis1 = head["NAXIS1"]
         self.naxis2 = head["NAXIS2"]
         self.wavelength = head["WAVELNTH"]
@@ -290,13 +273,13 @@ class AIA_Image:
         self.crval2 = head["CRVAL2"]
         self.cdelt1 = head["CDELT1"]
         self.cdelt2 = head["CDELT2"]
-        self.crota2 = head["CROTA2"] * np.pi/180.0
+        self.crota2 = np.deg2rad(head["CROTA2"])
         self.dsun_obs = head["DSUN_OBS"]
         self.dsun_ref = head["DSUN_REF"]
         self.rsun_obs = head["RSUN_OBS"]
         self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = head["CRLN_OBS"] * np.pi/180.0
-        self.crlt_obs = head["CRLT_OBS"] * np.pi/180.0
+        self.crln_obs = np.deg2rad(head["CRLN_OBS"])
+        self.crlt_obs = np.deg2rad(head["CRLT_OBS"])
         self.car_rot = head["CAR_ROT"]
         self.obs_vr = head["OBS_VR"]
         self.obs_vw = head["OBS_VW"]
@@ -332,7 +315,7 @@ class AIA_Image:
 
     def plot_image(self):
         # get cmap
-        cmap = plt.get_cmap("Purples").copy()
+        cmap = plt.get_cmap("Purples_r").copy()
         cmap.set_bad(color="black")
 
         # plot the sun
