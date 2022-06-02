@@ -82,6 +82,8 @@ class HMI_Image:
         self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
 
     def calc_differential_rot(self):
+        assert self.is_dopplergram()
+
         # geometric quantities
         coscrlt  = np.cos(self.crlt_obs)
         sincrlt  = np.sin(self.crlt_obs)

@@ -52,28 +52,7 @@ def main():
     mag_img1.plot_image()
     dop_img1.plot_image()
     con_img1.plot_image()
-
-    # pdb.set_trace()
-
-    # # get cmap
-    # cmap = plt.get_cmap("Purples").copy()
-    # cmap.set_bad(color="white")
-
-    # # plot the sun
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # im = ax1.imshow(aia_img1.image, cmap=cmap, origin="lower")#, vmin=20000)
-    # cb = fig.colorbar(im)
-    # ax1.xaxis.set_visible(False)
-    # ax1.yaxis.set_visible(False)
-    # ax1.set_title(r"${\rm AIA\ Filtergram}$")
-    # ax1.text(2750, 50, aia_img1.date_obs, fontsize=8)
-    # ax1.grid(False)
-    # plt.show()
-    # fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
-
-
+    aia_img1.plot_image()
 
 if __name__ == "__main__":
     main()
