@@ -43,6 +43,7 @@ class HMI_Image:
     def parse_header(self, file):
         # read the header
         head = Header(read_header(file))
+        self.head = head
 
         # parse it
         self.naxis1 = head["NAXIS1"]
@@ -262,6 +263,7 @@ class AIA_Image:
     def parse_header(self, file):
         # read the header
         head = Header(read_header(file))
+        self.head = head
 
         # parse it
         self.naxis1 = head["NAXIS1"]
@@ -326,8 +328,8 @@ class AIA_Image:
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
         ax1.set_title(r"${\rm AIA\ Filtergram}$")
-        ax1.text(2750, 50, self.date_obs, fontsize=8, c="white")
+        ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
         ax1.grid(False)
-        fig.savefig("/Users/michael/Desktop/test.pdf", bbox_inches="tight", dpi=500)
+        fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
