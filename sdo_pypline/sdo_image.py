@@ -25,7 +25,7 @@ class HMI_Image:
         # mesh of pixels and distances to pixels in pixel units
         paxis1 = np.arange(self.naxis1) - self.crpix1
         paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2)#, sparse=True)
+        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
         self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
 
         #  distances in solar radii
@@ -245,7 +245,7 @@ class AIA_Image:
         # mesh of pixels and distances to pixels in pixel units
         paxis1 = np.arange(self.naxis1) - self.crpix1
         paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2)#, sparse=True)
+        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
         self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
 
         #  distances in solar radii

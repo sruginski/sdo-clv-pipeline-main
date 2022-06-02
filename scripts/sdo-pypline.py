@@ -44,6 +44,8 @@ def main():
 
     # correct limb darkening in continuum map and filtergram
     con_img1.correct_limb_darkening()
+
+    # TODO: fix AIA ld correct
     # aia_img1.correct_limb_darkening()
 
     # interpolate aia image onto hmi image scale
