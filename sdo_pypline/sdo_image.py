@@ -9,8 +9,7 @@ from reproject import reproject_interp
 from astropy.io.fits import Header#, FITSFixedWarning
 # warnings.filterwarnings("ignore", category=FITSFixedWarning)
 
-
-class HMI_Image:
+class SDOImage:
     def __init__(self, file):
         # set attributes from the heaader
         self.parse_header(file)
@@ -68,7 +67,11 @@ class HMI_Image:
         self.obs_vn = head["OBS_VN"]
         self.rsun_obs = head["RSUN_OBS"]
         self.date_obs = head["DATE-OBS"]
-        self.content = head["CONTENT"]
+        if "CONTENT" in head.keys():
+            self.content = head["CONTENT"]
+        else:
+            self.content = "FILTERGRAM"
+        return None
 
     def is_magnetogram(self):
         return self.content == "MAGNETOGRAM"
@@ -78,6 +81,9 @@ class HMI_Image:
 
     def is_continuum(self):
         return self.content == "CONTINUUM INTENSITY"
+
+    def is_filtergram(self):
+        return self.content == "FILTERGRAM"
 
     def mask_low_mu(self, mu_thresh):
         self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
@@ -89,7 +95,6 @@ class HMI_Image:
         return None
 
     def correct_dopplergram(self):
-        # only do the correction if its a dopplergram
         assert self.is_dopplergram()
 
         # pre-compute geometric quantities
@@ -146,8 +151,7 @@ class HMI_Image:
         return None
 
     def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
-        # only do the correction if its a dopplergram
-        assert self.is_continuum()
+        assert (self.is_continuum() | self.is_filtergram())
 
         # get average intensity in evenly spaced rings
         mu_edge = np.linspace(1.0, mu_lim, num=num_mu)
@@ -161,12 +165,28 @@ class HMI_Image:
             ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
             avg_int[i] = np.mean(ints[~np.isnan(ints)])
 
-        # fit the data
+        # take averages in mu annuli to fit to
         mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
-        p0  = [55925.8, 0.88, -0.23]
+
+        # set the initial guess parameters for optimization
+        if self.is_continuum():
+            p0 = [55925.8, 0.88, -0.23]
+        elif self.is_filtergram():
+            p0 = [1000, 0.081, 0.4998]
+        else:
+            return None
+
+        # do the fit and divide out the LD profile
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
         self.image /= quad_darkening(self.mu, *popt)
         return None
+
+    def rescale_to_hmi(self, hmi_image):
+        assert self.is_filtergram()
+
+        # rescale the image
+        self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
+        self.mu = hmi_image.mu
 
     def plot_image(self):
         if self.is_magnetogram():
@@ -226,110 +246,130 @@ class HMI_Image:
             plt.clf(); plt.close()
             return None
 
+        elif self.is_filtergram():
+            # get cmap
+            cmap = plt.get_cmap("Purples_r").copy()
+            cmap.set_bad(color="black")
+
+            # plot the sun
+            fig = plt.figure()
+            ax1 = fig.add_subplot(111)
+            im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+            cb = fig.colorbar(im)
+            ax1.xaxis.set_visible(False)
+            ax1.yaxis.set_visible(False)
+            ax1.set_title(r"${\rm AIA\ Filtergram}$")
+            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.grid(False)
+            fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+            return None
+
         else:
             return None
 
 
-class AIA_Image:
-    def __init__(self, file):
-        # set attributes from the heaader
-        self.parse_header(file)
+# class AIA_Image:
+#     def __init__(self, file):
+#         # set attributes from the heaader
+#         self.parse_header(file)
 
-        # read in the data
-        self.image = read_data(file)
+#         # read in the data
+#         self.image = read_data(file)
 
-        # get distance to sun in solar radii and focal length
-        self.dist_sun = self.dsun_obs/self.rsun_ref
-        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
+#         # get distance to sun in solar radii and focal length
+#         self.dist_sun = self.dsun_obs/self.rsun_ref
+#         self.focal_len = 180. * 3600. / np.pi / self.cdelt1
 
-        # mesh of pixels and distances to pixels in pixel units
-        paxis1 = np.arange(self.naxis1) - self.crpix1
-        paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
-        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
+#         # mesh of pixels and distances to pixels in pixel units
+#         paxis1 = np.arange(self.naxis1) - self.crpix1
+#         paxis2 = np.arange(self.naxis2) - self.crpix2
+#         self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
+#         self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
 
-        #  distances in solar radii
-        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
-        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
-        self.rr_obs = np.sqrt(1.0 - self.rr**2)
+#         #  distances in solar radii
+#         rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
+#         self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
+#         self.rr_obs = np.sqrt(1.0 - self.rr**2)
 
-        # calculate grid of mus
-        cos_alpha = self.rr_obs
-        sin_alpha = self.rr
-        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
-        sin_theta = np.sqrt(1.0 - cos_theta**2)
-        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+#         # calculate grid of mus
+#         cos_alpha = self.rr_obs
+#         sin_alpha = self.rr
+#         cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
+#         sin_theta = np.sqrt(1.0 - cos_theta**2)
+#         self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
 
-    def parse_header(self, file):
-        # read the header
-        head = Header(read_header(file))
-        self.head = head
+#     def parse_header(self, file):
+#         # read the header
+#         head = Header(read_header(file))
+#         self.head = head
 
-        # parse it
-        self.naxis1 = head["NAXIS1"]
-        self.naxis2 = head["NAXIS2"]
-        self.wavelength = head["WAVELNTH"]
-        self.crpix1 = head["CRPIX1"]
-        self.crpix2 = head["CRPIX2"]
-        self.crval1 = head["CRVAL1"]
-        self.crval2 = head["CRVAL2"]
-        self.cdelt1 = head["CDELT1"]
-        self.cdelt2 = head["CDELT2"]
-        self.crota2 = np.deg2rad(head["CROTA2"])
-        self.dsun_obs = head["DSUN_OBS"]
-        self.dsun_ref = head["DSUN_REF"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = np.deg2rad(head["CRLN_OBS"])
-        self.crlt_obs = np.deg2rad(head["CRLT_OBS"])
-        self.car_rot = head["CAR_ROT"]
-        self.obs_vr = head["OBS_VR"]
-        self.obs_vw = head["OBS_VW"]
-        self.obs_vn = head["OBS_VN"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.date_obs = head["DATE-OBS"]
-        self.content = "FILTERGRAM"
+#         # parse it
+#         self.naxis1 = head["NAXIS1"]
+#         self.naxis2 = head["NAXIS2"]
+#         self.wavelength = head["WAVELNTH"]
+#         self.crpix1 = head["CRPIX1"]
+#         self.crpix2 = head["CRPIX2"]
+#         self.crval1 = head["CRVAL1"]
+#         self.crval2 = head["CRVAL2"]
+#         self.cdelt1 = head["CDELT1"]
+#         self.cdelt2 = head["CDELT2"]
+#         self.crota2 = np.deg2rad(head["CROTA2"])
+#         self.dsun_obs = head["DSUN_OBS"]
+#         self.dsun_ref = head["DSUN_REF"]
+#         self.rsun_obs = head["RSUN_OBS"]
+#         self.rsun_ref = head["RSUN_REF"]
+#         self.crln_obs = np.deg2rad(head["CRLN_OBS"])
+#         self.crlt_obs = np.deg2rad(head["CRLT_OBS"])
+#         self.car_rot = head["CAR_ROT"]
+#         self.obs_vr = head["OBS_VR"]
+#         self.obs_vw = head["OBS_VW"]
+#         self.obs_vn = head["OBS_VN"]
+#         self.rsun_obs = head["RSUN_OBS"]
+#         self.date_obs = head["DATE-OBS"]
+#         pdb.set_trace()
+#         self.content = "FILTERGRAM"
 
 
-    def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
-        # get average intensity in evenly spaced rings
-        mu_edge = np.linspace(1.0, mu_lim, num=num_mu)
-        avg_int = np.zeros(len(mu_edge)-1)
-        for i in range(len(avg_int)):
-            # find indices in ring that aren't nan
-            inds = (self.mu > mu_edge[i+1]) & (self.mu <= mu_edge[i]) & (~np.isnan(self.image))
+#     def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
+#         # get average intensity in evenly spaced rings
+#         mu_edge = np.linspace(1.0, mu_lim, num=num_mu)
+#         avg_int = np.zeros(len(mu_edge)-1)
+#         for i in range(len(avg_int)):
+#             # find indices in ring that aren't nan
+#             inds = (self.mu > mu_edge[i+1]) & (self.mu <= mu_edge[i]) & (~np.isnan(self.image))
 
-            # mask section that are big outliers
-            ints = self.image[inds]
-            ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
-            avg_int[i] = np.mean(ints[~np.isnan(ints)])
+#             # mask section that are big outliers
+#             ints = self.image[inds]
+#             ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
+#             avg_int[i] = np.mean(ints[~np.isnan(ints)])
 
-        # fit the data
-        mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
-        p0  = [1000, 0.081, 0.4998]
-        popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
-        self.image /= quad_darkening(self.mu, *popt)
+#         # fit the data
+#         mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
+#         p0  = [1000, 0.081, 0.4998]
+#         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
+#         self.image /= quad_darkening(self.mu, *popt)
 
-    def rescale_to_hmi(self, hmi_image):
-        # rescale the image
-        self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
-        self.mu = hmi_image.mu
+#     def rescale_to_hmi(self, hmi_image):
+#         # rescale the image
+#         self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
+#         self.mu = hmi_image.mu
 
-    def plot_image(self):
-        # get cmap
-        cmap = plt.get_cmap("Purples_r").copy()
-        cmap.set_bad(color="black")
+#     def plot_image(self):
+#         # get cmap
+#         cmap = plt.get_cmap("Purples_r").copy()
+#         cmap.set_bad(color="black")
 
-        # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
-        cb = fig.colorbar(im)
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm AIA\ Filtergram}$")
-        ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
-        return None
+#         # plot the sun
+#         fig = plt.figure()
+#         ax1 = fig.add_subplot(111)
+#         im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+#         cb = fig.colorbar(im)
+#         ax1.xaxis.set_visible(False)
+#         ax1.yaxis.set_visible(False)
+#         ax1.set_title(r"${\rm AIA\ Filtergram}$")
+#         ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+#         ax1.grid(False)
+#         fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
+#         plt.clf(); plt.close()
+#         return None

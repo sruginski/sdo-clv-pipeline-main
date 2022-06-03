@@ -7,5 +7,5 @@ def read_header(file):
     return fits.getheader(file, 1)
 
 def read_data(file):
-    return fits.getdata(file, 1)
+    return fits.getdata(file, 1).astype(float)
 
