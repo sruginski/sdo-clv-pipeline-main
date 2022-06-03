@@ -17,43 +17,56 @@ from sdo_pypline.sdo_image import *
 # from .sdo_pypline.hmi_prep import *
 # from .sdo_pypline.geometry import *
 
+def find_sdo_data(indir):
+    # find the data
+    con_files = glob.glob(indir + "*hmi.ic*.fits")
+    mag_files = glob.glob(indir + "*hmi.m*.fits")
+    dop_files = glob.glob(indir + "*hmi.v*.fits")
+    aia_files = glob.glob(indir + "*aia*.fits")
+    return con_files, mag_files, dop_files, aia_files
+
 # actually do things
 def main():
     # find the data
-    con_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.ic*.fits")
-    # mag_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.m*.fits")
-    # dop_files = glob.glob("/Users/michael/Desktop/sdo_data/*hmi.v*.fits")
-    aia_files = glob.glob("/Users/michael/Desktop/sdo_data/*aia*.fits")
+    indir = "/Users/michael/Desktop/sdo_data/"
+    con_files, mag_files, dop_files, aia_files = find_sdo_data(indir)
 
-    # make HDO_Image instances
-    con_img1 = SDOImage(con_files[0])
-    # mag_img1 = SDOImage(mag_files[0])
-    # dop_img1 = SDOImage(dop_files[0])
-    aia_img1 = SDOImage(aia_files[0])
+    # check the lengths
+    assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
 
-    # mask low mus
-    # con_img1.mask_low_mu(0.15)
-    # mag_img1.mask_low_mu(0.15)
-    # dop_img1.mask_low_mu(0.15)
+    # TODO sort the files by date
 
-    # correct magnetogram for foreshortening
-    # mag_img1.correct_magnetogram()
+    # loop over files
+    for i in range(len(con_files)):
+        # make SDOImage instances
+        con_img1 = SDOImage(con_files[i])
+        # mag_img1 = SDOImage(mag_files[i])
+        # dop_img1 = SDOImage(dop_files[i])
+        aia_img1 = SDOImage(aia_files[i])
 
-    # correct dopplergram for differential rotation & observer velocity
-    # dop_img1.correct_dopplergram()
+        # mask low mus
+        # con_img1.mask_low_mu(0.15)
+        # mag_img1.mask_low_mu(0.15)
+        # dop_img1.mask_low_mu(0.15)
 
-    # correct limb darkening/brightening in continuum map and filtergram
-    con_img1.correct_limb_darkening()
-    aia_img1.correct_limb_darkening()
+        # correct magnetogram for foreshortening
+        # mag_img1.correct_magnetogram()
 
-    # interpolate aia image onto hmi image scale
-    aia_img1.rescale_to_hmi(con_img1)
+        # correct dopplergram for differential rotation & observer velocity
+        # dop_img1.correct_dopplergram()
 
-    # plot the data
-    # mag_img1.plot_image()
-    # dop_img1.plot_image()
-    # con_img1.plot_image()
-    aia_img1.plot_image()
+        # correct limb darkening/brightening in continuum map and filtergram
+        con_img1.correct_limb_darkening()
+        aia_img1.correct_limb_darkening()
+
+        # interpolate aia image onto hmi image scale
+        aia_img1.rescale_to_hmi(con_img1)
+
+        # plot the data
+        # mag_img1.plot_image()
+        # dop_img1.plot_image()
+        # con_img1.plot_image()
+        aia_img1.plot_image()
 
 if __name__ == "__main__":
     main()
