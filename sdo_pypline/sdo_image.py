@@ -94,7 +94,7 @@ class SDOImage:
         self.image /= self.mu
         return None
 
-    def correct_dopplergram(self):
+    def calc_vrot_vobs(self):
         assert self.is_dopplergram()
 
         # pre-compute geometric quantities
@@ -115,7 +115,7 @@ class SDOImage:
         dvel = np.sqrt(rw_obs**2 + rn_obs**2 + (self.rr_obs - self.dist_sun)**2)
 
         # compute spacecraft velocity relative to each pixel
-        v_obs = - (rw_obs * self.obs_vw + rn_obs * self.obs_vn + (self.rr_obs - self.dist_sun) * self.obs_vr) / dvel
+        self.v_obs = - (rw_obs * self.obs_vw + rn_obs * self.obs_vn + (self.rr_obs - self.dist_sun) * self.obs_vr) / dvel
 
         # cartesian coordinates
         x1 = rw_obs
@@ -144,13 +144,13 @@ class SDOImage:
 
         # compute differential rotation
         # TODO minus sign???? ask solaster people
-        v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + (self.rr_obs - self.dist_sun) * rot_vr) / dvel
+        self.v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + (self.rr_obs - self.dist_sun) * rot_vr) / dvel
 
         # correct the dopplergram by subtracting off velocities
-        self.image = self.image - v_rot - v_obs
+        # self.image = self.image - v_rot - v_obs
         return None
 
-    def correct_limb_darkening(self, mu_lim=0.1, num_mu=50):
+    def calc_limb_darkening(self, mu_lim=0.1, num_mu=50):
         assert (self.is_continuum() | self.is_filtergram())
 
         # get average intensity in evenly spaced rings
@@ -178,7 +178,8 @@ class SDOImage:
 
         # do the fit and divide out the LD profile
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
-        self.image /= quad_darkening(self.mu, *popt)
+        self.ldark = quad_darkening(self.mu, *popt)
+        self.iflat = self.image/self.ldark
         return None
 
     def rescale_to_hmi(self, hmi_image):

@@ -14,9 +14,9 @@ plt.style.use("my.mplstyle"); plt.ioff()
 # bring functions into scope
 from sdo_pypline.sdo_io import *
 from sdo_pypline.sdo_image import *
-# from .sdo_pypline.hmi_prep import *
-# from .sdo_pypline.geometry import *
+from sdo_pypline.sun_mask import *
 
+# function to glob the input data
 def find_sdo_data(indir):
     # find the data
     con_files = glob.glob(indir + "*hmi.ic*.fits")
@@ -36,37 +36,39 @@ def main():
 
     # TODO sort the files by date
 
+    # set mu threshold
+    mu_thresh = 0.1
+
     # loop over files
     for i in range(len(con_files)):
         # make SDOImage instances
-        con_img1 = SDOImage(con_files[i])
-        # mag_img1 = SDOImage(mag_files[i])
-        # dop_img1 = SDOImage(dop_files[i])
-        aia_img1 = SDOImage(aia_files[i])
-
-        # mask low mus
-        # con_img1.mask_low_mu(0.15)
-        # mag_img1.mask_low_mu(0.15)
-        # dop_img1.mask_low_mu(0.15)
-
-        # correct magnetogram for foreshortening
-        # mag_img1.correct_magnetogram()
-
-        # correct dopplergram for differential rotation & observer velocity
-        # dop_img1.correct_dopplergram()
-
-        # correct limb darkening/brightening in continuum map and filtergram
-        con_img1.correct_limb_darkening()
-        aia_img1.correct_limb_darkening()
+        con = SDOImage(con_files[i])
+        mag = SDOImage(mag_files[i])
+        dop = SDOImage(dop_files[i])
+        aia = SDOImage(aia_files[i])
 
         # interpolate aia image onto hmi image scale
-        aia_img1.rescale_to_hmi(con_img1)
+        aia.rescale_to_hmi(con)
+
+        # correct magnetogram for foreshortening
+        mag.correct_magnetogram()
+
+        # calculate differential rotation & observer velocity
+        dop.calc_vrot_vobs()
+
+        # calculate limb darkening/brightening in continuum map and filtergram
+        con.calc_limb_darkening()
+        aia.calc_limb_darkening()
+
+        # compute velocities
+        vels = create_sun_mask(con, mag, dop, aia, mu_thresh=mu_thresh)
+        v_hat, v_phot, v_quiet, v_conv = vels
 
         # plot the data
-        # mag_img1.plot_image()
-        # dop_img1.plot_image()
-        # con_img1.plot_image()
-        aia_img1.plot_image()
+        # mag.plot_image()
+        # dop.plot_image()
+        # con.plot_image()
+        # aia.plot_image()
 
 if __name__ == "__main__":
     main()
