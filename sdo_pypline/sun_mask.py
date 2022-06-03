@@ -1,20 +1,27 @@
 import pdb
 import numpy as np
+from scipy import ndimage
 
-def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
+def calculate_weights(mag, mu_thresh=0.1):
     # set magnetic threshold
     mag_thresh = 24.0/mag.mu
 
     # make flag array for magnetically active areas
-    w_active = np.zeros(np.shape(mag.image))
-    w_active[np.abs(mag.image) > mag_thresh] = 1.0
-    w_active[mag.mu <= mu_thresh] = 0.0
+    w_active = (np.abs(mag.image) > mag_thresh).astype(float)
+
+    # convolve with boxcar filter to remove isolated pixels
+    w_conv = ndimage.convolve(w_active, np.ones((3,3)), mode="constant")
+    w_active = np.logical_and(w_conv >= 2., w_active == 1.)
+    w_active[np.logical_or(mag.mu <= mu_thresh, np.isnan(mag.mu))] = False
 
     # make weights array for magnetically quiet areas
-    w_quiet = np.copy(w_active)
-    w_quiet[w_active == 1.0] = 0.0
-    w_quiet[w_active == 0.0] = 1.0
-    w_quiet[mag.mu <= mu_thresh] = 0.0
+    w_quiet = ~w_active
+    w_quiet[np.logical_or(mag.mu <= mu_thresh, np.isnan(mag.mu))] = False
+    return w_active, w_quiet
+
+def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
+    # calculate weights
+    w_active, w_quiet = calculate_weights(mag, mu_thresh=mu_thresh)
 
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
@@ -34,17 +41,17 @@ def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
     v_quiet = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * w_quiet) / np.nansum(con.image * w_quiet)
     v_conv = v_hat - v_quiet - v_phot
 
-    # allocate memory for mask array
-    mask = np.zeros(np.shape(con.image))
-
     # calculate intensity thresholds for HMI and AIA
     con_thresh = 0.89 * np.nansum(con.iflat * w_quiet)/np.nansum(w_quiet)
     aia_thresh = np.nansum(aia.iflat * w_quiet)/np.nansum(w_quiet)
 
+    # allocate memory for mask array
+    mask = np.zeros(np.shape(con.image))
+
     # get thresholds for penumbrae, umbrae, and quiet sun
-    ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.6 * con_thresh)))
-    ind2 = (con.iflat <= (0.6 * con_thresh))
-    ind3 = ((con.iflat > con_thresh) & (aia.iflat < (1.3 * aia_thresh)))
+    ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.25 * con_thresh)))
+    ind2 = (con.iflat <= (0.25 * con_thresh))
+    ind3 = ((con.iflat > con_thresh))# & (aia.iflat < (1.3 * aia_thresh)))
 
     # set mask indices
     mask[ind1] = 1 # penumbrae
@@ -52,8 +59,8 @@ def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
     mask[ind3] = 3 # quiet sun
 
     # bright region selection
-    ind4 = ((aia.iflat > (1.3 * aia_thresh)) & (mask != 1) & (mask != 2))
-    mask[ind4] = 4
+    # ind4 = ((aia.iflat > (1.3 * aia_thresh)) & (mask != 1) & (mask != 2))
+    # mask[ind4] = 4
 
     # make remaining regions quiet sun
     ind_rem = ((con.mu > 0.0) & (mask == 0))
