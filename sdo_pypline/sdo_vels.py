@@ -14,10 +14,10 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
 
     # get masks for mu annuli
     if ((hi_mu is None) | (lo_mu is None)):
-        mu_mask = True
+        region_mask *= True
     else:
         assert lo_mu < hi_mu
-        mu_mask = ((con.mu > lo_mu) & (con.mu <= hi_mu))
+        region_mask *= ((con.mu > lo_mu) & (con.mu <= hi_mu))
 
 
     # calculate scaling factor for continuum and filtergrams
