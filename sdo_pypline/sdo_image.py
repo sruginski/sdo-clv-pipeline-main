@@ -33,7 +33,7 @@ class SDOImage:
         #  distances in solar radii
         rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
         self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
-        self.rr_obs = np.sqrt(1.0 - self.rr**2)
+        self.rr_obs = np.real(np.sqrt(1.0 - self.rr**2 + 0j))
 
         # calculate grid of mus
         cos_alpha = self.rr_obs
