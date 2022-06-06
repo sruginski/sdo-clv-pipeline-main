@@ -20,7 +20,7 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
         region_mask *= ((con.mu > lo_mu) & (con.mu <= hi_mu))
 
     # don't bother doing math if there is nothing in the mask
-    if not any(region_mask):
+    if (type(region_mask) is np.ndarray) & (not any(region_mask)):
         return 0.0, 0.0, 0.0, 0.0
 
     # calculate scaling factor for continuum and filtergrams
