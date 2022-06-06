@@ -20,7 +20,6 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
         region_mask *= ((con.mu > lo_mu) & (con.mu <= hi_mu))
 
     # don't bother doing math if there is nothing in the mask
-    pdb.set_trace()
     if (type(region_mask) is np.ndarray) and (not any(region_mask)):
         return 0.0, 0.0, 0.0, 0.0
 
