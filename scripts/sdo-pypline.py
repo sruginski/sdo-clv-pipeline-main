@@ -1,20 +1,16 @@
 import numpy as np
-import sunpy as sp
-from sunpy.net import Fido, attrs as a
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pdb
 import glob
 import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning)
+# warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 # use style
 plt.style.use("my.mplstyle"); plt.ioff()
 
 # bring functions into scope
-from sdo_pypline.sdo_io import *
 from sdo_pypline.sdo_image import *
-from sdo_pypline.sun_mask import *
+from sdo_pypline.sdo_vels import *
 
 # function to glob the input data
 def find_sdo_data(indir):
@@ -60,9 +56,29 @@ def main():
         con.calc_limb_darkening()
         aia.calc_limb_darkening()
 
+        # set values to nan for mu less than mu_thresh
+        con.mask_low_mu(mu_thresh)
+        dop.mask_low_mu(mu_thresh)
+        mag.mask_low_mu(mu_thresh)
+        aia.mask_low_mu(mu_thresh)
+
+        # identify regions for thresholding
+        mask = SunMask(con, mag, dop, aia)
+
         # compute velocities
-        vels = create_sun_mask(con, mag, dop, aia, mu_thresh=mu_thresh)
-        v_hat, v_phot, v_quiet, v_conv = vels
+        vels = calc_velocities(con, mag, dop, aia, mask)
+
+        # compute velocities by region
+        vels1 = calc_velocities(con, mag, dop, aia, mask, region=1)
+        vels2 = calc_velocities(con, mag, dop, aia, mask, region=2)
+        vels3 = calc_velocities(con, mag, dop, aia, mask, region=3)
+
+
+        pdb.set_trace()
+
+        # # compute velocities
+        # vels = create_sun_mask(con, mag, dop, aia, mu_thresh=mu_thresh)
+        # v_hat, v_phot, v_quiet, v_conv = vels
 
         # plot the data
         # mag.plot_image()

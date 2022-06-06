@@ -1,23 +1,6 @@
 import pdb
 import numpy as np
-from scipy import ndimage
 
-def calculate_weights(mag, mu_thresh=0.1):
-    # set magnetic threshold
-    mag_thresh = 24.0/mag.mu
-
-    # make flag array for magnetically active areas
-    w_active = (np.abs(mag.image) > mag_thresh).astype(float)
-
-    # convolve with boxcar filter to remove isolated pixels
-    w_conv = ndimage.convolve(w_active, np.ones((3,3)), mode="constant")
-    w_active = np.logical_and(w_conv >= 2., w_active == 1.)
-    w_active[np.logical_or(mag.mu <= mu_thresh, np.isnan(mag.mu))] = False
-
-    # make weights array for magnetically quiet areas
-    w_quiet = ~w_active
-    w_quiet[np.logical_or(mag.mu <= mu_thresh, np.isnan(mag.mu))] = False
-    return w_active, w_quiet
 
 def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
     # calculate weights
@@ -66,6 +49,6 @@ def create_sun_mask(con, mag, dop, aia, mu_thresh=0.1):
     ind_rem = ((con.mu > 0.0) & (mask == 0))
     mask[ind_rem] = 3
 
-    pdb.set_trace()
+
 
     return v_hat, v_phot, v_quiet, v_conv

@@ -4,10 +4,10 @@ from .limbdark import *
 
 import pdb
 import matplotlib.pyplot as plt
+
+from scipy import ndimage
 from scipy.optimize import curve_fit
 from reproject import reproject_interp
-from astropy.io.fits import Header#, FITSFixedWarning
-# warnings.filterwarnings("ignore", category=FITSFixedWarning)
 
 class SDOImage:
     def __init__(self, file):
@@ -16,6 +16,9 @@ class SDOImage:
 
         # read in the data
         self.image = read_data(file)
+
+        # initialize mu_thresh
+        self.mu_thresh = 0.0
 
         # get distance to sun in solar radii and focal length
         self.dist_sun = self.dsun_obs/self.rsun_ref
@@ -38,10 +41,11 @@ class SDOImage:
         cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
         sin_theta = np.sqrt(1.0 - cos_theta**2)
         self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+        return None
 
     def parse_header(self, file):
         # read the header
-        head = Header(read_header(file))
+        head = read_header(file)
         self.head = head
 
         # parse it
@@ -86,6 +90,7 @@ class SDOImage:
         return self.content == "FILTERGRAM"
 
     def mask_low_mu(self, mu_thresh):
+        self.mu_thresh = mu_thresh
         self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
         return None
 
@@ -270,3 +275,78 @@ class SDOImage:
 
         else:
             return None
+
+# for creating pixel mask with thresholded regions
+def calculate_weights(mag):
+    # set magnetic threshold
+    mag_thresh = 24.0/mag.mu
+
+    # make flag array for magnetically active areas
+    w_active = (np.abs(mag.image) > mag_thresh).astype(float)
+
+    # convolve with boxcar filter to remove isolated pixels
+    w_conv = ndimage.convolve(w_active, np.ones([3,3]), mode="constant")
+    w_active = np.logical_and(w_conv >= 2., w_active == 1.)
+    w_active[np.logical_or(mag.mu <= mag.mu_thresh, np.isnan(mag.mu))] = False
+
+    # make weights array for magnetically quiet areas
+    w_quiet = ~w_active
+    w_quiet[np.logical_or(mag.mu <= mag.mu_thresh, np.isnan(mag.mu))] = False
+    return w_active, w_quiet
+
+class SunMask:
+    def __init__(self, con, mag, dop, aia):
+        # check argument order/names are correct
+        assert con.is_continuum()
+        assert mag.is_magnetogram()
+        assert dop.is_dopplergram()
+        assert aia.is_filtergram()
+
+        # calculate weights
+        self.w_active, self.w_quiet = calculate_weights(mag)
+
+        # identify regions
+        self.identify_regions(con, mag, dop, aia)
+
+        return None
+
+    def identify_regions(self, con, mag, dop, aia):
+        # calculate intensity thresholds for HMI and AIA
+        con_thresh = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+        aia_thresh = np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+
+        # allocate memory for mask array
+        self.regions = np.zeros(np.shape(con.image))
+
+        # get thresholds for penumbrae, umbrae, and quiet sun
+        ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.25 * con_thresh)))
+        ind2 = (con.iflat <= (0.25 * con_thresh))
+        ind3 = ((con.iflat > con_thresh))# & (aia.iflat < (1.3 * aia_thresh)))
+
+        # set mask indices
+        self.regions[ind1] = 1 # penumbrae
+        self.regions[ind2] = 2 # umbrae
+        self.regions[ind3] = 3 # quiet sun
+
+        # bright region selection
+        # ind4 = ((aia.iflat > (1.3 * aia_thresh)) & (mask != 1) & (mask != 2))
+        # regions[ind4] = 4
+
+        # make remaining regions quiet sun
+        ind_rem = ((con.mu > 0.0) & (self.regions == 0))
+        self.regions[ind_rem] = 3
+
+        # set values beyond mu_thresh to nan
+        self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
+
+
+        return None
+
+    def is_penumbra(self):
+        return self.regions == 1
+
+    def is_umbra(self):
+        return self.regions == 2
+
+    def is_quiet(self):
+        return self.regions == 3
