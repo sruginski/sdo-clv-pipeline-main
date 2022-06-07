@@ -4,6 +4,7 @@ from .limbdark import *
 
 import pdb
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 
 from scipy import ndimage
 from scipy.optimize import curve_fit
@@ -224,12 +225,12 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
+            im = ax1.imshow(self.image - self.v_rot - self.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
             cb = fig.colorbar(im)
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
             ax1.set_title(r"${\rm HMI\ LOS\ Doppler\ Velocity}$")
-            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/dop.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
@@ -243,12 +244,12 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower")#, vmin=20000)
             cb = fig.colorbar(im)
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
             ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
-            ax1.text(2700, 50, self.date_obs, fontsize=8)
+            ax1.text(2650, 50, self.date_obs, fontsize=8)
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/con.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
@@ -267,7 +268,7 @@ class SDOImage:
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
             ax1.set_title(r"${\rm AIA\ Filtergram}$")
-            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
@@ -339,7 +340,6 @@ class SunMask:
         # set values beyond mu_thresh to nan
         self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
 
-
         return None
 
     def is_penumbra(self):
@@ -350,3 +350,23 @@ class SunMask:
 
     def is_quiet(self):
         return self.regions == 3
+
+    def plot_image(self, date_obs):
+        # get cmap
+        cmap = colors.ListedColormap(["chocolate", "saddlebrown", "orange"])
+        cmap.set_bad(color="black")
+        norm = mpl.colors.BoundaryNorm(np.arange(0.5,3.5), cmap.N)
+
+        # plot the sun
+        fig = plt.figure()
+        ax1 = fig.add_subplot(111)
+        im = ax1.imshow(self.regions, cmap=cmap, norm=norm, origin="lower")
+        cb = fig.colorbar(im)
+        ax1.xaxis.set_visible(False)
+        ax1.yaxis.set_visible(False)
+        ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
+        ax1.text(2650, 50, date_obs, fontsize=8, c="white")
+        ax1.grid(False)
+        fig.savefig("/Users/michael/Desktop/mask.pdf", bbox_inches="tight", dpi=500)
+        plt.clf(); plt.close()
+        return None

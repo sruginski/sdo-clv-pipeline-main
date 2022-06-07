@@ -108,15 +108,18 @@ def main():
         # identify regions for thresholding
         mask = SunMask(con, mag, dop, aia)
 
+        # plot the data
+        mag.plot_image()
+        dop.plot_image()
+        con.plot_image()
+        aia.plot_image()
+        mask.plot_image(con.date_obs)
+
+        pdb.set_trace()
+
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
         write_vels(outdir + "rv_full_disk.csv", mjd, vels)
-
-        # plot the data
-        # mag.plot_image()
-        # dop.plot_image()
-        # con.plot_image()
-        # aia.plot_image()
 
         # loop over mu annuli
         for i in range(n_rings-1):
