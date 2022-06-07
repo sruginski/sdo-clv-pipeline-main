@@ -55,6 +55,10 @@ def main():
     # find the data
     indir = "/Users/michael/Desktop/sdo_data/"
     outdir = "/Users/michael/Desktop/"
+    if not isdir(indir):
+        indir = "/storage/home/mlp95/scratch/sdo_data/"
+        outdir = "/storage/home/mlp95/work/sdo_output/"
+
     con_files, mag_files, dop_files, aia_files = find_sdo_data(indir)
 
     # check the lengths
@@ -105,7 +109,7 @@ def main():
 
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(outdir + "derp.csv", mjd, vels)
+        write_vels(outdir + "rv_full_disk.csv", mjd, vels)
 
         # plot the data
         # mag.plot_image()
@@ -125,7 +129,7 @@ def main():
                 vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j, lo_mu=lo_mu, hi_mu=hi_mu)
 
                 # write to disk
-                write_vels_by_region(outdir + "derp2.csv", mjd, j, lo_mu, hi_mu, vels_reg)
+                write_vels_by_region(outdir + "rv_regions.csv", mjd, j, lo_mu, hi_mu, vels_reg)
 
 if __name__ == "__main__":
     main()
