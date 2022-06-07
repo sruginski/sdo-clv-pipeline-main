@@ -93,6 +93,10 @@ class SDOImage:
     def mask_low_mu(self, mu_thresh):
         self.mu_thresh = mu_thresh
         self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
+
+        if self.is_continuum() | self.is_filtergram():
+            self.ldark[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
+            self.iflat[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
         return None
 
     def correct_magnetogram(self):
@@ -211,7 +215,7 @@ class SDOImage:
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
             ax1.set_title(r"${\rm HMI\ LOS\ Magnetic\ Field\ Strength}$")
-            ax1.text(2700, 50, self.date_obs, fontsize=8, c="white")
+            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
@@ -239,7 +243,7 @@ class SDOImage:
         elif self.is_continuum():
             # get cmap
             cmap = plt.get_cmap("afmhot").copy()
-            cmap.set_bad(color="white")
+            cmap.set_bad(color="black")
 
             # plot the sun
             fig = plt.figure()
@@ -249,7 +253,7 @@ class SDOImage:
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
             ax1.set_title(r"${\rm HMI\ Continuum\ Intensity}$")
-            ax1.text(2650, 50, self.date_obs, fontsize=8)
+            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
             fig.savefig("/Users/michael/Desktop/con.pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
@@ -353,16 +357,16 @@ class SunMask:
 
     def plot_image(self, date_obs):
         # get cmap
-        cmap = colors.ListedColormap(["chocolate", "saddlebrown", "orange"])
+        cmap = colors.ListedColormap(["saddlebrown", "black", "orange"])
         cmap.set_bad(color="black")
-        norm = colors.BoundaryNorm(np.arange(0.5,3.5), cmap.N)
+        norm = colors.BoundaryNorm([0, 1, 2, 3], ncolors=cmap.N, clip=True)
 
         # plot the sun
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        im = ax1.imshow(self.regions, cmap=cmap, norm=norm, origin="lower")
-        cb = fig.colorbar(im)
-        cbar.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
+        im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower")
+        cb = fig.colorbar(im, ticks=[0.5,1.5,2.5])
+        cb.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
         ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
