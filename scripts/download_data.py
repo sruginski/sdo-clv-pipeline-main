@@ -5,7 +5,6 @@
 #==============================================================================
 import numpy as np
 import pandas as pd
-import pdb
 import datetime as dt
 import astropy.units as u
 import os, sys, pdb, time
@@ -35,29 +34,34 @@ def main():
 
     # get start time
     start += 'T00:00:00'
-    delta = dt.datetime.strptime(start, '%Y/%m/%dT%H:%M:%S') + dt.timedelta(hours=nstep * 4)
+    delta = dt.datetime.strptime(start, '%Y/%m/%dT%H:%M:%S')# + dt.timedelta(hours=nstep * 4)
 
-    # set search range for time
-    range1 = TimeRange(delta, 120 * u.second)
-    range2 = TimeRange(delta, 20 * u.second)
+    for i in range(nstep):
+      # iterate the time
+      if i > 0:
+        delta += dt.timedelta(hours=4)
 
-    pdb.set_trace()
+      # set search range for time
+      range1 = TimeRange(delta, 120 * u.second)
+      range2 = TimeRange(delta, 20 * u.second)
 
-    # create queries for data (HMI then AIA)
-    qr1 = Fido.search(a.Time(range1.start, range1.end),
-                      a.jsoc.Notify('mlp95@psu.edu'),
-                      a.jsoc.Series('hmi.M_720s') |
-                      a.jsoc.Series('hmi.V_720s') |
-                      a.jsoc.Series('hmi.Ic_720s'))
-    qr2 = Fido.search(a.Time(range2.start, range2.end),
-                      a.jsoc.Series('aia.lev1_uv_24s'),
-                      a.jsoc.Wavelength(1700 * u.AA),
-                      a.jsoc.Notify('mlp95@psu.edu'))
+      pdb.set_trace()
 
-    # download the data from the queries
-    req1 = Fido.fetch(qr1, path=outdir, overwrite=True, progress=True)
-    req2 = Fido.fetch(qr2, path=outdir, overwrite=True, progress=True)
-    time.sleep(6)
+      # create queries for data (HMI then AIA)
+      qr1 = Fido.search(a.Time(range1.start, range1.end),
+                        a.jsoc.Notify('mlp95@psu.edu'),
+                        a.jsoc.Series('hmi.M_720s') |
+                        a.jsoc.Series('hmi.V_720s') |
+                        a.jsoc.Series('hmi.Ic_720s'))
+      qr2 = Fido.search(a.Time(range2.start, range2.end),
+                        a.jsoc.Series('aia.lev1_uv_24s'),
+                        a.jsoc.Wavelength(1700 * u.AA),
+                        a.jsoc.Notify('mlp95@psu.edu'))
+
+      # download the data from the queries
+      req1 = Fido.fetch(qr1, path=outdir, overwrite=True, progress=True)
+      req2 = Fido.fetch(qr2, path=outdir, overwrite=True, progress=True)
+      time.sleep(6)
 
 if __name__ == '__main__':
     main()
