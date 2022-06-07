@@ -1,9 +1,9 @@
 #!/bin/bash
-#PBS -A ebf11_c_g_vc_default
-#PBS -q hprc
+#PBS -A dfc13_mri
+#PBS -l qos=mgc_open
 #PBS -l nodes=1:ppn=1
 #PBS -l feature=rhel7
-#PBS -l walltime=12:00:00
+#PBS -l walltime=48:00:00
 #PBS -l pmem=2gb
 #PBS -j oe
 #PBS -N sdo_data
