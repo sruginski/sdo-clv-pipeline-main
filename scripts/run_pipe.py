@@ -127,9 +127,15 @@ def main():
             lo_mu=mu_grid[i]
             hi_mu=mu_grid[i+1]
 
+            # compute velocity in mu annulus
+            vels_reg = calc_velocities(con, mag, dop, aia, mask, lo_mu=lo_mu, hi_mu=hi_mu)
+
+            # write to disk
+            write_vels_by_region(outdir + "rv_mu.csv", mjd, 0, lo_mu, hi_mu, vels_reg)
+
             # loop over unique region identifiers
             for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
-                # compute velocity components in each mu annulus
+                # compute velocity components in each mu annulus by region
                 vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j, lo_mu=lo_mu, hi_mu=hi_mu)
 
                 # write to disk

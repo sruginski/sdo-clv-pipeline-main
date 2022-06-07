@@ -210,7 +210,7 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200)
+            im = ax1.imshow(self.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200, interpolation=None)
             cb = fig.colorbar(im)
             cb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
             ax1.xaxis.set_visible(False)
@@ -230,7 +230,7 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image - self.v_rot - self.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000)
+            im = ax1.imshow(self.image - self.v_rot - self.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
             cb = fig.colorbar(im)
             cb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
             ax1.xaxis.set_visible(False)
@@ -250,7 +250,7 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower")#, vmin=20000)
+            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
             cb = fig.colorbar(im)
             cb.set_label(r"${\rm Relative\ Intensity}$")
             ax1.xaxis.set_visible(False)
@@ -270,7 +270,7 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower")#, vmin=20000)
+            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
             cb = fig.colorbar(im)
             cb.set_label(r"${\rm Relative\ Intensity}$")
             ax1.xaxis.set_visible(False)
@@ -368,7 +368,7 @@ class SunMask:
         # plot the sun
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower")
+        im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
         cb = fig.colorbar(im, ticks=[0.5,1.5,2.5])
         cb.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
         ax1.xaxis.set_visible(False)
