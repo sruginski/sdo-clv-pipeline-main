@@ -355,13 +355,14 @@ class SunMask:
         # get cmap
         cmap = colors.ListedColormap(["chocolate", "saddlebrown", "orange"])
         cmap.set_bad(color="black")
-        norm = mpl.colors.BoundaryNorm(np.arange(0.5,3.5), cmap.N)
+        norm = colors.BoundaryNorm(np.arange(0.5,3.5), cmap.N)
 
         # plot the sun
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         im = ax1.imshow(self.regions, cmap=cmap, norm=norm, origin="lower")
         cb = fig.colorbar(im)
+        cbar.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
         ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
