@@ -52,13 +52,14 @@ def write_vels_by_region(fname, mjd, region, lo_mu, hi_mu, vels):
 
 # actually do things
 def main():
-    # find the data
+    # sort out directories
     indir = "/Users/michael/Desktop/sdo_data/"
     outdir = "/Users/michael/Desktop/"
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
         outdir = "/storage/home/mlp95/work/sdo_output/"
 
+    # find the input data
     con_files, mag_files, dop_files, aia_files = find_sdo_data(indir)
 
     # check the lengths
