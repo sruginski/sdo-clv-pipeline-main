@@ -34,7 +34,7 @@ def main():
 
     # get start time
     start += 'T00:00:00'
-    delta = dt.datetime.strptime(start, '%Y/%m/%dT%H:%M:%S')# + dt.timedelta(hours=nstep * 4)
+    delta = dt.datetime.strptime(start, '%Y/%m/%dT%H:%M:%S')
 
     for i in range(nstep):
         # iterate the time

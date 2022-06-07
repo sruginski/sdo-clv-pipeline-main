@@ -80,5 +80,5 @@ plt.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean
 plt.gca().invert_xaxis()
 plt.xlabel(r"$\mu$")
 plt.ylabel("Velocity (m/s)")
-plt.legend()
+plt.legend(loc="upper left")
 plt.savefig("/Users/michael/Desktop/mu_dist_regions.pdf")
