@@ -270,7 +270,7 @@ class SDOImage:
             # plot the sun
             fig = plt.figure()
             ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image, cmap=cmap, origin="lower")#, vmin=20000)
+            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower")#, vmin=20000)
             cb = fig.colorbar(im)
             cb.set_label(r"${\rm Relative\ Intensity}$")
             ax1.xaxis.set_visible(False)
