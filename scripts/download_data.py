@@ -5,6 +5,7 @@
 #==============================================================================
 import numpy as np
 import pandas as pd
+import pdb
 import datetime as dt
 import astropy.units as u
 import os, sys, pdb, time
@@ -39,6 +40,8 @@ def main():
     # set search range for time
     range1 = TimeRange(delta, 120 * u.second)
     range2 = TimeRange(delta, 20 * u.second)
+
+    pdb.set_trace()
 
     # create queries for data (HMI then AIA)
     qr1 = Fido.search(a.Time(range1.start, range1.end),
