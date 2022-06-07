@@ -46,16 +46,39 @@ umbrae = df_regs[df_regs.region == 2.0]
 quiet_sun_rv_mean = np.zeros(len(lo_mus))
 quiet_sun_rv_std = np.zeros(len(lo_mus))
 quiet_sun_rv_err = np.zeros(len(lo_mus))
-for i in lo_mus:
+penumbrae_rv_mean = np.zeros(len(lo_mus))
+penumbrae_rv_std = np.zeros(len(lo_mus))
+penumbrae_rv_err = np.zeros(len(lo_mus))
+umbrae_rv_mean = np.zeros(len(lo_mus))
+umbrae_rv_std = np.zeros(len(lo_mus))
+umbrae_rv_err = np.zeros(len(lo_mus))
+for i in range(len(lo_mus)):
     idx = quiet_sun.lo_mu == lo_mus[i]
-    quiet_sun_rv_mean = np.mean(quiet_sun.v_hat[idx])
-    quiet_sun_rv_std = np.std(quiet_sun.v_hat[idx])
-    quiet_sun_rv_err = quiet_sun_rv_std/len(quiet_sun.v_hat[idx])
+    quiet_sun_rv_mean[i] = np.mean(quiet_sun.v_hat[idx])
+    quiet_sun_rv_std[i] = np.std(quiet_sun.v_hat[idx])
+    quiet_sun_rv_err[i] = quiet_sun_rv_std[i]/np.sqrt(len(quiet_sun.v_hat[idx]))
 
-plt.errorbars(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err)
-plt.xlabel("mu")
-plt.ylabel("velocity (m/s)")
-plt.savefig("/Users/michael/Desktop/quiet_sun_mu.pdf")
+    idx = penumbrae.lo_mu == lo_mus[i]
+    penumbrae_rv_mean[i] = np.mean(penumbrae.v_hat[idx])
+    penumbrae_rv_std[i] = np.std(penumbrae.v_hat[idx])
+    penumbrae_rv_err[i] = penumbrae_rv_std[i]/np.sqrt(len(penumbrae.v_hat[idx]))
 
+    idx = umbrae.lo_mu == lo_mus[i]
+    umbrae_rv_mean[i] = np.mean(umbrae.v_hat[idx])
+    umbrae_rv_std[i] = np.std(umbrae.v_hat[idx])
+    umbrae_rv_err[i] = umbrae_rv_std[i]/np.sqrt(len(umbrae.v_hat[idx]))
 
-pdb.set_trace()
+plt.errorbar(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err, fmt=".", color="tab:blue", label="Quiet Sun")
+plt.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean + quiet_sun_rv_std, color="tab:blue", alpha=0.5)
+
+# plt.errorbar(mu_bin, penumbrae_rv_mean, yerr=penumbrae_rv_err, fmt=".", color="tab:orange", label="Penumbrae")
+# plt.fill_between(mu_bin, penumbrae_rv_mean - penumbrae_rv_std, penumbrae_rv_mean + penumbrae_rv_std, color="tab:orange", alpha=0.5)
+
+# plt.errorbar(mu_bin, umbrae_rv_mean, yerr=umbrae_rv_err, fmt=".", color="tab:green", label="Umbrae")
+# plt.fill_between(mu_bin, umbrae_rv_mean - umbrae_rv_std, umbrae_rv_mean + umbrae_rv_std, color="tab:green", alpha=0.5)
+
+plt.gca().invert_xaxis()
+plt.xlabel(r"$\mu$")
+plt.ylabel("Velocity (m/s)")
+plt.legend()
+plt.savefig("/Users/michael/Desktop/mu_dist_regions.pdf")
