@@ -45,8 +45,6 @@ def main():
       range1 = TimeRange(delta, 120 * u.second)
       range2 = TimeRange(delta, 20 * u.second)
 
-      pdb.set_trace()
-
       # create queries for data (HMI then AIA)
       qr1 = Fido.search(a.Time(range1.start, range1.end),
                         a.jsoc.Notify('mlp95@psu.edu'),
