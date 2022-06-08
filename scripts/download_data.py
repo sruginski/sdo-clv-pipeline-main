@@ -24,42 +24,39 @@ def main():
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('outdir', type=str, help='full directory path for file writeout')
     parser.add_argument('start', type=str, help='starting date formatted as YYYY/MM/DD')
-    parser.add_argument('nstep', type=int, help='number of four hour steps from start time')
+    parser.add_argument('end', type=str, help='ending date formatted as YYYY/MM/DD')
+    parser.add_argument('sample', type=int, help='cadence of sampling in hours')
 
     # parse the command line arguments
     args = parser.parse_args()
     outdir = args.outdir
     start = args.start
-    nstep = args.nstep
+    end = args.end
+    sample = args.sample
 
-    # get start time
+    # set time attributes for search
     start += 'T00:00:00'
-    delta = dt.datetime.strptime(start, '%Y/%m/%dT%H:%M:%S')
+    end += 'T24:00:00'
+    trange = a.Time(start, end)
+    sample = a.Sample(sample * u.hour)
+    provider = a.Provider("JSOC")
 
-    for i in range(nstep):
-        # iterate the time
-        if i > 0:
-            delta += dt.timedelta(hours=4)
+    # set attributes for HMI query
+    instr1 = a.Instrument.hmi
+    physobs = (a.Physobs.los_velocity | a.Physobs.los_magnetic_field | a.Physobs.intensity)
 
-        # set search range for time
-        range1 = TimeRange(delta, 120 * u.second)
-        range2 = TimeRange(delta, 20 * u.second)
+    # set attributes for AIA query
+    level = a.Level(1)
+    instr2 = a.Instrument.aia
+    wavelength = a.Wavelength(1700. * u.AA)
 
-        # create queries for data (HMI then AIA)
-        qr1 = Fido.search(a.Time(range1.start, range1.end),
-                          a.jsoc.Notify('mlp95@psu.edu'),
-                          a.jsoc.Series('hmi.M_720s') |
-                          a.jsoc.Series('hmi.V_720s') |
-                          a.jsoc.Series('hmi.Ic_720s'))
-        qr2 = Fido.search(a.Time(range2.start, range2.end),
-                          a.jsoc.Series('aia.lev1_uv_24s'),
-                          a.jsoc.Wavelength(1700 * u.AA),
-                          a.jsoc.Notify('mlp95@psu.edu'))
+    # get query for HMI and download data
+    qr1 = Fido.search(trange, instr1, physobs, provider, sample)
+    hmi_files = Fido.fetch(qr1, path=outdir, overwrite=True, progress=False)
 
-        # download the data from the queries
-        req1 = Fido.fetch(qr1, path=outdir, overwrite=True, progress=True)
-        req2 = Fido.fetch(qr2, path=outdir, overwrite=True, progress=True)
-        time.sleep(6)
+    # get query for AIA and download data
+    qr2 = Fido.search(trange, instr2, wavelength, level, provider, sample)
+    aia_files = Fido.fetch(qr2, path=outdir, overwrite=True, progress=False)
 
 if __name__ == '__main__':
     main()
