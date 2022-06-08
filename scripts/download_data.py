@@ -52,11 +52,11 @@ def main():
 
     # get query for HMI and download data
     qr1 = Fido.search(trange, instr1, physobs, provider, sample)
-    hmi_files = Fido.fetch(qr1, path=outdir, overwrite=True, progress=True)
+    hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=True)
 
     # get query for AIA and download data
     qr2 = Fido.search(trange, instr2, wavelength, level, provider, sample)
-    aia_files = Fido.fetch(qr2, path=outdir, overwrite=True, progress=True)
+    aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=True)
 
 if __name__ == '__main__':
     main()
