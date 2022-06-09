@@ -40,6 +40,9 @@ def main():
     # TODO, evenly spaced in mu or theta?
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
 
+    # decide whether to plot
+    plot = False
+
     # loop over files
     for i in range(len(con_files)):
         # make SDOImage instances
@@ -76,11 +79,12 @@ def main():
         mask = SunMask(con, mag, dop, aia)
 
         # plot the data
-        mag.plot_image(outdir=outdir)
-        dop.plot_image(outdir=outdir)
-        con.plot_image(outdir=outdir)
-        aia.plot_image(outdir=outdir)
-        mask.plot_image(outdir=outdir)
+        if plot:
+            mag.plot_image(outdir=outdir)
+            dop.plot_image(outdir=outdir)
+            con.plot_image(outdir=outdir)
+            aia.plot_image(outdir=outdir)
+            mask.plot_image(outdir=outdir)
 
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
