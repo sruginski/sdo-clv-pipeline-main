@@ -4,14 +4,14 @@ import sunpy as sp
 import datetime as dt
 import re, pdb, csv, glob
 from astropy.io import fits
-from os.path import exists, split, isdir
+from os.path import exists, split, isdir, getsize
 
 # read headers and data
 def read_header(file):
-    return fits.getheader(file, 1)
+    return fits.getheader(file, 1, output_verify="silentfix")
 
 def read_data(file):
-    return fits.getdata(file, 1).astype(float)
+    return fits.getdata(file, 1, output_verify="silentfix").astype(float)
 
 # function to glob the input data
 def find_data(indir):
@@ -45,17 +45,25 @@ def sort_data(f_list):
     inds = np.argsort(dates)
     return [f_list[i] for i in inds]
 
-def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
+def truncate_file(fname):
     # truncate the file if it does exist
     if exists(fname):
         with open(fname, "w") as f:
             f.truncate()
-    # create the file if it doesn't exist
-    elif (~exists(fname) & isdir(split(fname)[0])):
-        with open(fname, "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(["mjd", "ffactor", "pen_frac", "umb_frac", "quiet_frac",
-                            "plage_frac", "v_hat", "v_phot", "v_quiet", "v_conv"])
+    return fname
+
+def create_file(fname, header):
+    with open(fname, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+    return None
+
+def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
+    # create the file if it doesn't exist or if it's empty
+    if ((not exists(fname) | getsize(fname) == 0) & isdir(split(fname)[0])):
+        create_file(fname, ["mjd", "ffactor", "pen_frac", "umb_frac", \
+                            "quiet_frac", "plage_frac", "v_hat", \
+                            "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
@@ -65,15 +73,10 @@ def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, 
     return None
 
 def write_vels_by_region(fname, mjd, region, lo_mu, hi_mu, vels):
-    # truncate the file if it does exist
-    if exists(fname):
-        with open(fname, "w") as f:
-            f.truncate()
-    # create the file if it doesn't exist
-    if (~exists(fname) & isdir(split(fname)[0])):
-        with open(fname, "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"])
+    # create the file if it doesn't exist or if it's empty
+    if ((not exists(fname) | getsize(fname) == 0) & isdir(split(fname)[0])):
+         create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
+                             "v_hat", "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:

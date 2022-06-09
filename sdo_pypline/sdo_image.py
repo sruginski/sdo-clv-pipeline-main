@@ -2,13 +2,18 @@ import numpy as np
 from .sdo_io import *
 from .limbdark import *
 
-import pdb
+import pdb, warnings
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 from scipy import ndimage
 from scipy.optimize import curve_fit
 from reproject import reproject_interp
+from astropy.wcs import FITSFixedWarning
+from astropy.io.fits.verify import VerifyWarning
+
+warnings.simplefilter("ignore", category=VerifyWarning)
+warnings.simplefilter("ignore", category=FITSFixedWarning)
 
 class SDOImage:
     def __init__(self, file):
@@ -196,12 +201,13 @@ class SDOImage:
         assert self.is_filtergram()
 
         # rescale the image
-        self.image, foot = reproject_interp((self.image, self.head), hmi_image.head)
+        self.image = reproject_interp((self.image, self.head), hmi_image.head, return_footprint=False)
 
         # TODO recalculate the mu???
         self.mu = hmi_image.mu
 
-    def plot_image(self):
+    def plot_image(self, outdir=None):
+        assert outdir is not None
         if self.is_magnetogram():
             # get cmap
             cmap = plt.get_cmap("RdYlBu").copy()
@@ -218,7 +224,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Corrected HMI\ LOS\ Magnetic\ Field}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig("/Users/michael/Desktop/mag.pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "mag_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -238,7 +244,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Dopplergram}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig("/Users/michael/Desktop/dop.pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "dop_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -258,7 +264,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Flattened\ HMI\ Continuum}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig("/Users/michael/Desktop/con.pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "con_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -278,7 +284,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Flattened\ AIA\ 1700\AA\ Filtergram}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig("/Users/michael/Desktop/aia.pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "aia_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -310,6 +316,9 @@ class SunMask:
         assert mag.is_magnetogram()
         assert dop.is_dopplergram()
         assert aia.is_filtergram()
+
+        # steal some stuff
+        self.date_obs = con.date_obs
 
         # calculate weights
         self.w_active, self.w_quiet = calculate_weights(mag)
@@ -370,23 +379,25 @@ class SunMask:
     def is_plage(self):
         return self.regions == 4
 
-    def plot_image(self, date_obs):
+    def plot_image(self, outdir=None):
+        assert outdir is not None
+
         # get cmap
-        cmap = colors.ListedColormap(["saddlebrown", "black", "orange"])
+        cmap = colors.ListedColormap(["saddlebrown", "black", "orange", "yellow"])
         cmap.set_bad(color="black")
-        norm = colors.BoundaryNorm([0, 1, 2, 3], ncolors=cmap.N, clip=True)
+        norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
 
         # plot the sun
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-        cb = fig.colorbar(im, ticks=[0.5,1.5,2.5])
+        cb = fig.colorbar(im, ticks=[0.5,1.5,2.5, 3.5])
         cb.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
         ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
-        ax1.text(2650, 50, date_obs, fontsize=8, c="white")
+        ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
         ax1.grid(False)
-        fig.savefig("/Users/michael/Desktop/mask.pdf", bbox_inches="tight", dpi=500)
+        fig.savefig(outdir + "mask_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None

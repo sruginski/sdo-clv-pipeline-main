@@ -21,6 +21,11 @@ def main():
         indir = "/storage/home/mlp95/scratch/sdo_data/"
         outdir = "/storage/home/mlp95/work/sdo_output/"
 
+    # set file names and truncate them if they exist
+    fname1 = truncate_file(outdir + "rv_full_disk.csv")
+    fname2 = truncate_file(outdir + "rv_mu.csv")
+    fname3 = truncate_file(outdir + "rv_regions.csv")
+
     # find the input data
     con_files, mag_files, dop_files, aia_files = find_data(indir)
 
@@ -43,8 +48,10 @@ def main():
         dop = SDOImage(dop_files[i])
         aia = SDOImage(aia_files[i])
 
-        # get MJD for observations
+        # get MJD for observations and report status
+        iso = Time(con.date_obs).iso
         mjd = Time(con.date_obs).mjd
+        print("\t >>> Running epoch " + iso)
 
         # interpolate aia image onto hmi image scale
         aia.rescale_to_hmi(con)
@@ -69,16 +76,17 @@ def main():
         mask = SunMask(con, mag, dop, aia)
 
         # plot the data
-        # mag.plot_image()
-        # dop.plot_image()
-        # con.plot_image()
-        # aia.plot_image()
-        # mask.plot_image(con.date_obs)
+        mag.plot_image(outdir=outdir)
+        dop.plot_image(outdir=outdir)
+        con.plot_image(outdir=outdir)
+        aia.plot_image(outdir=outdir)
+        mask.plot_image(outdir=outdir)
 
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(outdir + "rv_full_disk.csv", mjd, mask.ff, mask.pen_frac,
-                   mask.umb_frac, mask.quiet_frac, mask.plage_frac, vels)
+        write_vels(fname1, mjd, mask.ff, mask.pen_frac,
+                   mask.umb_frac, mask.quiet_frac,
+                   mask.plage_frac, vels)
 
         # loop over mu annuli
         for i in range(n_rings-1):
@@ -90,7 +98,7 @@ def main():
             vels_reg = calc_velocities(con, mag, dop, aia, mask, lo_mu=lo_mu, hi_mu=hi_mu)
 
             # write to disk
-            write_vels_by_region(outdir + "rv_mu.csv", mjd, 0, lo_mu, hi_mu, vels_reg)
+            write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
 
             # loop over unique region identifiers
             for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
@@ -98,7 +106,7 @@ def main():
                 vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j, lo_mu=lo_mu, hi_mu=hi_mu)
 
                 # write to disk
-                write_vels_by_region(outdir + "rv_regions.csv", mjd, j, lo_mu, hi_mu, vels_reg)
+                write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
 
 if __name__ == "__main__":
     main()
