@@ -314,35 +314,43 @@ class SunMask:
         # calculate weights
         self.w_active, self.w_quiet = calculate_weights(mag)
 
+        # calculate magnetic filling factor
+        npix = np.nansum(con.mu > con.mu_thresh)
+        self.ff = np.nansum(self.w_active[con.mu > con.mu_thresh]) / npix
+
         # identify regions
         self.identify_regions(con, mag, dop, aia)
+
+        # get region fracs
+        self.pen_frac = np.nansum(self.is_penumbra()) / npix
+        self.umb_frac = np.nansum(self.is_umbra()) / npix
+        self.quiet_frac = np.nansum(self.is_quiet()) / npix
+        self.plage_frac = np.nansum(self.is_plage()) / npix
 
         return None
 
     def identify_regions(self, con, mag, dop, aia):
         # calculate intensity thresholds for HMI and AIA
         con_thresh = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
-        aia_thresh = np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+        aia_thresh = 0.89 * np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
 
         # allocate memory for mask array
         self.regions = np.zeros(np.shape(con.image))
 
-        # get thresholds for penumbrae, umbrae, and quiet sun
-        ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.25 * con_thresh)))
-        ind2 = (con.iflat <= (0.25 * con_thresh))
-        ind3 = ((con.iflat > con_thresh))# & (aia.iflat < (1.3 * aia_thresh)))
+        # get thresholds for penumbrae, umbrae, quiet sun, and plage
+        ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.6 * con_thresh)))
+        ind2 = (con.iflat <= (0.6 * con_thresh))
+        ind3 = ((con.iflat > con_thresh) & self.w_quiet)# & (aia.iflat < (1.3 * aia_thresh)))
+        ind4 = ((aia.iflat > aia_thresh) & self.w_active & (~ind1) & (~ind2))
 
         # set mask indices
         self.regions[ind1] = 1 # penumbrae
         self.regions[ind2] = 2 # umbrae
         self.regions[ind3] = 3 # quiet sun
-
-        # bright region selection
-        # ind4 = ((aia.iflat > (1.3 * aia_thresh)) & (mask != 1) & (mask != 2))
-        # regions[ind4] = 4
+        self.regions[ind4] = 4 # plage + network
 
         # make remaining regions quiet sun
-        ind_rem = ((con.mu > 0.0) & (self.regions == 0))
+        ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
         self.regions[ind_rem] = 3
 
         # set values beyond mu_thresh to nan
@@ -358,6 +366,9 @@ class SunMask:
 
     def is_quiet(self):
         return self.regions == 3
+
+    def is_plage(self):
+        return self.regions == 4
 
     def plot_image(self, date_obs):
         # get cmap

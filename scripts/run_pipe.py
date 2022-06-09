@@ -77,7 +77,8 @@ def main():
 
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(outdir + "rv_full_disk.csv", mjd, vels)
+        write_vels(outdir + "rv_full_disk.csv", mjd, mask.ff, mask.pen_frac,
+                   mask.umb_frac, mask.quiet_frac, mask.plage_frac, vels)
 
         # loop over mu annuli
         for i in range(n_rings-1):

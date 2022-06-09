@@ -39,24 +39,13 @@ def get_dates(files):
 
     return date
 
-def sort_data(*f_lists):
-    # get f_lists as list
-    f_lists = list(f_lists)
+def sort_data(f_list):
+    # get the dates and indices to sort
+    dates = get_dates(f_list)
+    inds = np.argsort(dates)
+    return [f_list[i] for i in inds]
 
-    # loop over lists of files, sorting
-    for idx, files in enumerate(f_lists):
-        # get the dates
-        dates = get_dates(files)
-
-        # sort them in place
-        inds = np.argsort(dates)
-        files = [files[i] for i in inds]
-        print(idx)
-        f_lists[idx] = files
-
-    return tuple(f_lists)
-
-def write_vels(fname, mjd, vels):
+def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
     # truncate the file if it does exist
     if exists(fname):
         with open(fname, "w") as f:
@@ -65,12 +54,13 @@ def write_vels(fname, mjd, vels):
     elif (~exists(fname) & isdir(split(fname)[0])):
         with open(fname, "w") as f:
             writer = csv.writer(f)
-            writer.writerow(["mjd", "v_hat", "v_phot", "v_quiet", "v_conv"])
+            writer.writerow(["mjd", "ffactor", "pen_frac", "umb_frac", "quiet_frac",
+                            "plage_frac", "v_hat", "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
         writer = csv.writer(f)
-        writer.writerow(np.concatenate(([mjd], [v for v in vels])))
+        writer.writerow(np.concatenate(([mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
 
     return None
 
