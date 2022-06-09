@@ -6,7 +6,7 @@
 #PBS -l walltime=24:00:00
 #PBS -l pmem=2gb
 #PBS -j oe
-#PBS -N sdo_pipe
+#PBS -N sdo_jul
 
 echo "Starting job $PBS_JOBNAME"
 date
@@ -16,6 +16,5 @@ cd $PBS_O_WORKDIR
 echo "About to start Python"
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py feb
-echo "Python exited"
+python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py jul
 date
