@@ -60,7 +60,7 @@ def create_file(fname, header):
 
 def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
     # create the file if it doesn't exist or if it's empty
-    if ((not exists(fname) | getsize(fname) == 0) & isdir(split(fname)[0])):
+    if (((not exists(fname)) | getsize(fname) == 0) & isdir(split(fname)[0])):
         create_file(fname, ["mjd", "ffactor", "pen_frac", "umb_frac", \
                             "quiet_frac", "plage_frac", "v_hat", \
                             "v_phot", "v_quiet", "v_conv"])
@@ -74,7 +74,7 @@ def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, 
 
 def write_vels_by_region(fname, mjd, region, lo_mu, hi_mu, vels):
     # create the file if it doesn't exist or if it's empty
-    if ((not exists(fname) | getsize(fname) == 0) & isdir(split(fname)[0])):
+    if (((not exists(fname)) | getsize(fname) == 0) & isdir(split(fname)[0])):
          create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
                              "v_hat", "v_phot", "v_quiet", "v_conv"])
 

@@ -347,14 +347,14 @@ class SunMask:
         self.regions = np.zeros(np.shape(con.image))
 
         # get thresholds for penumbrae, umbrae, quiet sun, and plage
-        ind1 = ((con.iflat <= con_thresh) & (con.iflat > (0.6 * con_thresh)))
-        ind2 = (con.iflat <= (0.6 * con_thresh))
+        ind1 = (con.iflat <= (0.6 * con_thresh))
+        ind2 = ((con.iflat <= con_thresh) & (con.iflat > (0.6 * con_thresh)))
         ind3 = ((con.iflat > con_thresh) & self.w_quiet)# & (aia.iflat < (1.3 * aia_thresh)))
         ind4 = ((aia.iflat > aia_thresh) & self.w_active & (~ind1) & (~ind2))
 
         # set mask indices
-        self.regions[ind1] = 1 # penumbrae
-        self.regions[ind2] = 2 # umbrae
+        self.regions[ind1] = 1 # umbrae
+        self.regions[ind2] = 2 # penumbrae
         self.regions[ind3] = 3 # quiet sun
         self.regions[ind4] = 4 # plage + network
 
@@ -367,10 +367,10 @@ class SunMask:
 
         return None
 
-    def is_penumbra(self):
+    def is_umbra(self):
         return self.regions == 1
 
-    def is_umbra(self):
+    def is_penumbra(self):
         return self.regions == 2
 
     def is_quiet(self):
@@ -383,7 +383,7 @@ class SunMask:
         assert outdir is not None
 
         # get cmap
-        cmap = colors.ListedColormap(["saddlebrown", "black", "orange", "yellow"])
+        cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow"])
         cmap.set_bad(color="black")
         norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
 
@@ -391,13 +391,14 @@ class SunMask:
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-        cb = fig.colorbar(im, ticks=[0.5,1.5,2.5, 3.5])
-        cb.ax.set_yticklabels(["Penumbrae", "Umbrae", "Quiet Sun"])
+        cb = fig.colorbar(im, ticks=[0.5, 1.5, 2.5, 3.5])
+        cb.ax.set_yticklabels(["Umbrae", "Penumbrae", "Quiet Sun", "Plage"])
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
+        ax1.set_title(r"${\rm Identified\ Regions}$")
         ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
         ax1.grid(False)
         fig.savefig(outdir + "mask_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
+
         return None
