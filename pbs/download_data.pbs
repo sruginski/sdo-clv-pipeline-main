@@ -16,6 +16,6 @@ cd $PBS_O_WORKDIR
 echo "About to start Python"
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
-python /storage/home/mlp95/work/sdo-pypline/scripts/download_data.py /storage/home/mlp95/scratch/sdo_data 2014/01/01 2014/01/31 4
+python /storage/home/mlp95/work/sdo-pypline/scripts/download_data.py /storage/home/mlp95/scratch/sdo_data/feb 2014/02/01 2014/02/28 4
 echo "Python exited"
 date
