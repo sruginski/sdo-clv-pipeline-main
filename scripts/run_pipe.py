@@ -1,7 +1,7 @@
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
-import re, pdb, csv, glob
+import re, pdb, csv, glob, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir
 
@@ -14,12 +14,19 @@ from sdo_pypline.sdo_vels import *
 
 # actually do things
 def main():
+    # sort out which data dir to do
+    parser = argparse.ArgumentParser(description='Run SDO analysis',
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('month', type=str, help='3-letter month abbreviation')
+    args = parser.parse_args()
+    month = args.month
+
     # sort out directories
-    indir = "/Users/michael/Desktop/sdo_data/"
-    outdir = "/Users/michael/Desktop/"
+    indir = "/Users/michael/Desktop/sdo_data/" + month + "/"
+    outdir = "/Users/michael/Desktop/" + month + "/"
     if not isdir(indir):
-        indir = "/storage/home/mlp95/scratch/sdo_data/"
-        outdir = "/storage/home/mlp95/work/sdo_output/"
+        indir = "/storage/home/mlp95/scratch/sdo_data/" + month + "/"
+        outdir = "/storage/home/mlp95/work/sdo_output/" + month + "/"
 
     # set file names and truncate them if they exist
     fname1 = truncate_file(outdir + "rv_full_disk.csv")

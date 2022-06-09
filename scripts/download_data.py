@@ -8,8 +8,7 @@ import pandas as pd
 import datetime as dt
 import astropy.units as u
 import os, sys, pdb, time
-import argparse
-import warnings
+import argparse, warnings
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
