@@ -224,7 +224,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Corrected HMI\ LOS\ Magnetic\ Field}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig(outdir + "mag_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "mag_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -244,7 +244,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Dopplergram}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig(outdir + "dop_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "dop_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -264,7 +264,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Flattened\ HMI\ Continuum}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig(outdir + "con_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "con_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -284,7 +284,7 @@ class SDOImage:
             ax1.set_title(r"${\rm Flattened\ AIA\ 1700\AA\ Filtergram}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
-            fig.savefig(outdir + "aia_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
+            fig.savefig(outdir + "aia_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
             plt.clf(); plt.close()
             return None
 
@@ -398,6 +398,6 @@ class SunMask:
         ax1.set_title(r"${\rm SDO\ Identified\ Regions}$")
         ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
         ax1.grid(False)
-        fig.savefig(outdir + "mask_" + date_obs + ".pdf", bbox_inches="tight", dpi=500)
+        fig.savefig(outdir + "mask_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
