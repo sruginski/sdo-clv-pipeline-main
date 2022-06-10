@@ -221,7 +221,7 @@ class SDOImage:
             cb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
             ax1.xaxis.set_visible(False)
             ax1.yaxis.set_visible(False)
-            ax1.set_title(r"${\rm Corrected HMI\ LOS\ Magnetic\ Field}$")
+            ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Magnetic\ Field}$")
             ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
             ax1.grid(False)
             fig.savefig(outdir + "mag_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)

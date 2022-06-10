@@ -56,7 +56,22 @@ ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
 ax1.set_title("Velocity in Spots")
 ax1.legend()
-fig.savefig("/Users/michael/Desktop/region_series.pdf")
+fig.savefig("/Users/michael/Desktop/spot_series.pdf")
+plt.clf(); plt.close()
+
+# make time series
+fig = plt.figure()
+ax1 = fig.add_subplot()
+idx = (df_regs.region == 4) & (df_regs.v_hat != 0.0)
+# ax1.scatter(df_regs.mjd[idx], df_regs.v_hat[idx], s=2, label="v_hat")
+ax1.scatter(df_regs.mjd[idx], df_regs.v_phot[idx], s=2, label="v_phot")
+ax1.scatter(df_regs.mjd[idx], df_regs.v_conv[idx], s=2, label="v_conv")
+# ax1.scatter(df_regs.mjd[idx], df_regs.v_quiet[idx], s=2, label="v_quiet")
+ax1.set_xlabel(r"${\rm MJD}$")
+ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
+ax1.set_title("Velocity in Plage")
+ax1.legend()
+fig.savefig("/Users/michael/Desktop/plage_series.pdf")
 plt.clf(); plt.close()
 
 # time series of other stuff

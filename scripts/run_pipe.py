@@ -53,10 +53,14 @@ def main():
     # loop over files
     for i in range(len(con_files)):
         # make SDOImage instances
-        con = SDOImage(con_files[i])
-        mag = SDOImage(mag_files[i])
-        dop = SDOImage(dop_files[i])
-        aia = SDOImage(aia_files[i])
+        try:
+            con = SDOImage(con_files[i])
+            mag = SDOImage(mag_files[i])
+            dop = SDOImage(dop_files[i])
+            aia = SDOImage(aia_files[i])
+        except OSError:
+            print("\t >>> Invalid file, skipping " + get_date(con_files[i]).isoformat())
+            continue
 
         # get MJD for observations and report status
         iso = Time(con.date_obs).iso

@@ -22,20 +22,21 @@ def find_data(indir):
     aia_files = sort_data(glob.glob(indir + "*aia*.fits"))
     return con_files, mag_files, dop_files, aia_files
 
+def get_date(f):
+    s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
+    if s is None:
+        s = re.search(r'\d{4}_\d{2}_\d{2}t\d{2}_\d{2}_\d{2}', f)
+
+    # replace any t's with underscore
+    s = s.group()
+    s = s.replace("t", "_")
+    return dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S")
+
 def get_dates(files):
     date = []
     for f in files:
-        # get date string from regex
-        s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
-        if s is None:
-            s = re.search(r'\d{4}_\d{2}_\d{2}t\d{2}_\d{2}_\d{2}', f)
-
-        # replace any t's with underscore
-        s = s.group()
-        s = s.replace("t", "_")
-
         # make it a datetime
-        date.append(dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
+        date.append(get_date(f))
 
     return date
 
