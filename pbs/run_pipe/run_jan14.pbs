@@ -4,7 +4,7 @@
 #PBS -l nodes=1:ppn=1
 #PBS -l feature=rhel7
 #PBS -l walltime=24:00:00
-#PBS -l pmem=2gb
+#PBS -l pmem=4gb
 #PBS -j oe
 #PBS -N sdo_jan
 
