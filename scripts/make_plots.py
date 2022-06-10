@@ -9,15 +9,22 @@ import pandas as pd
 # use style
 plt.style.use("my.mplstyle"); plt.ioff()
 
-# data files
-file_fulldisk = "/Users/michael/Desktop/sdo_output/rv_full_disk.csv"
-file_regions = "/Users/michael/Desktop/sdo_output/rv_regions.csv"
-file_mu = "/Users/michael/Desktop/sdo_output/rv_mu.csv"
+# create dataframe objects to append to
+df_full = pd.DataFrame()
+df_regs = pd.DataFrame()
+df_mu = pd.DataFrame()
 
-# read in
-df_full = pd.read_csv(file_fulldisk)
-df_regs = pd.read_csv(file_regions)
-df_mu = pd.read_csv(file_mu)
+# data files
+datdir = "/Users/michael/Desktop/sdo_output/"
+for subdir, dirs, files in os.walk(datdir):
+    for d in dirs:
+        file_fulldisk = datdir + d + "/" + "rv_full_disk.csv"
+        file_regions = datdir + d + "/" + "rv_regions.csv"
+        file_mu = datdir + d + "/" + "rv_mu.csv"
+
+        df_full = pd.concat((df_full, pd.read_csv(file_fulldisk)), ignore_index=True)
+        df_regs = pd.concat((df_regs, pd.read_csv(file_regions)), ignore_index=True)
+        df_mu = pd.concat((df_mu, pd.read_csv(file_mu)), ignore_index=True)
 
 # sort by date
 df_full.sort_values("mjd", inplace=True)
@@ -27,15 +34,44 @@ df_mu.sort_values("mjd", inplace=True)
 # make time series
 fig = plt.figure()
 ax1 = fig.add_subplot()
-ax1.scatter(df_full.mjd, df_full.v_hat, label="v_hat")
-ax1.scatter(df_full.mjd, df_full.v_phot, label="v_phot")
-ax1.scatter(df_full.mjd, df_full.v_conv, label="v_conv")
-ax1.scatter(df_full.mjd, df_full.v_quiet, label="v_quiet")
+ax1.scatter(df_full.mjd, df_full.v_hat, s=2, label="v_hat")
+ax1.scatter(df_full.mjd, df_full.v_phot, s=2, label="v_phot")
+ax1.scatter(df_full.mjd, df_full.v_conv, s=2, label="v_conv")
+ax1.scatter(df_full.mjd, df_full.v_quiet, s=2, label="v_quiet")
 ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
 ax1.legend()
 fig.savefig("/Users/michael/Desktop/full_disk_series.pdf")
 plt.clf(); plt.close()
+
+# make time series
+fig = plt.figure()
+ax1 = fig.add_subplot()
+idx = (df_regs.region == 1) & (df_regs.v_hat != 0.0)
+# ax1.scatter(df_regs.mjd[idx], df_regs.v_hat[idx], s=2, label="v_hat")
+ax1.scatter(df_regs.mjd[idx], df_regs.v_phot[idx], s=2, label="v_phot")
+ax1.scatter(df_regs.mjd[idx], df_regs.v_conv[idx], s=2, label="v_conv")
+# ax1.scatter(df_regs.mjd[idx], df_regs.v_quiet[idx], s=2, label="v_quiet")
+ax1.set_xlabel(r"${\rm MJD}$")
+ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
+ax1.set_title("Velocity in Spots")
+ax1.legend()
+fig.savefig("/Users/michael/Desktop/region_series.pdf")
+plt.clf(); plt.close()
+
+# time series of other stuff
+fig = plt.figure()
+ax1 = fig.add_subplot()
+ax1.scatter(df_full.mjd, df_full.ffactor, s=2, label="Mag. Filling Factor")
+ax1.scatter(df_full.mjd, df_full.plage_frac, s=2, label="Plage Frac.")
+ax1.scatter(df_full.mjd, df_full.umb_frac + df_full.pen_frac, s=2, label="Spot Frac.")
+ax1.set_xlabel(r"${\rm MJD}$")
+ax1.set_ylabel(r"${\rm Fraction}$")
+ax1.set_ylim(-0.025, 0.12)
+ax1.legend()
+fig.savefig("/Users/michael/Desktop/frac.pdf")
+plt.clf(); plt.close()
+
 
 # get centers of mu bins
 lo_mus = np.unique(df_regs.lo_mu)
