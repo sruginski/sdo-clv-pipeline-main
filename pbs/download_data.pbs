@@ -22,7 +22,7 @@ cd $PBS_O_WORKDIR
 ## echo "Python exited"
 
 echo "About to start IDL"
-ssw_execute @download_data_batch.pro
+ssw_execute @/storage/home/mlp95/work/sdo-pypline/pbs/download_data_batch.pro
 echo "IDL exited"
 
 date
