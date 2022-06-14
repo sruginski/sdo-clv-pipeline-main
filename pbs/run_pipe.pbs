@@ -6,7 +6,7 @@
 #PBS -l walltime=24:00:00
 #PBS -l pmem=4gb
 #PBS -j oe
-#PBS -N sdo_jan
+#PBS -N sdo_pipe
 
 echo "Starting job $PBS_JOBNAME"
 date
