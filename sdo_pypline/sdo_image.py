@@ -47,6 +47,7 @@ class SDOImage:
         cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
         sin_theta = np.sqrt(1.0 - cos_theta**2)
         self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+
         return None
 
     def parse_header(self, file):
