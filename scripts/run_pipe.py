@@ -65,7 +65,6 @@ def main():
         # get MJD for observations and report status
         iso = Time(con.date_obs).iso
         mjd = Time(con.date_obs).mjd
-        print("\t >>> Running epoch " + iso)
 
         # interpolate aia image onto hmi image scale
         aia.rescale_to_hmi(con)
@@ -77,8 +76,11 @@ def main():
         dop.calc_vrot_vobs()
 
         # calculate limb darkening/brightening in continuum map and filtergram
-        con.calc_limb_darkening()
-        aia.calc_limb_darkening()
+        try:
+            con.calc_limb_darkening()
+            aia.calc_limb_darkening()
+        except RuntimeError:
+            print("\t >>> Limb darkening fit failed, skipping " + iso)
 
         # set values to nan for mu less than mu_thresh
         con.mask_low_mu(mu_thresh)
@@ -122,6 +124,9 @@ def main():
 
                 # write to disk
                 write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
+
+        # report status
+        print("\t >>> Epoch " + iso + " run successfully!")
 
 if __name__ == "__main__":
     main()
