@@ -11,6 +11,7 @@ plt.style.use("my.mplstyle"); plt.ioff()
 # bring functions into scope
 from sdo_pypline.sdo_image import *
 from sdo_pypline.sdo_vels import *
+from sdo_pypline.sdo_io import *
 
 # actually do things
 def main():
@@ -94,7 +95,7 @@ def main():
 
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(fname1, mjd, mask.ff, mask.pen_frac,
+        write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
                    mask.umb_frac, mask.quiet_frac,
                    mask.plage_frac, vels)
 

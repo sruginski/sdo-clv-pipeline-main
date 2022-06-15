@@ -328,6 +328,9 @@ class SunMask:
         npix = np.nansum(con.mu > con.mu_thresh)
         self.ff = np.nansum(self.w_active[con.mu > con.mu_thresh]) / npix
 
+        # get unsigned magnetic flux
+        self.Bobs = np.nansum(np.abs(mag.image) * con.image) / np.nansum(con.image)
+
         # identify regions
         self.identify_regions(con, mag, dop, aia)
 

@@ -38,9 +38,13 @@ def sort_data(f_list):
     return [f_list[i] for i in inds], [dates[i] for i in inds]
 
 def get_date(f):
-    s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
-    if s is None:
+    if "aia" in f:
         s = re.search(r'\d{4}_\d{2}_\d{2}t\d{2}_\d{2}_\d{2}', f)
+    else:
+        s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
+        if s is None:
+            s = re.search(r'\d{4}.\d{2}.\d{2}_\d{2}_\d{2}_\d{2}', f)
+
 
     # replace any t's with underscore
     s = s.group()
@@ -79,17 +83,17 @@ def create_file(fname, header):
         writer.writerow(header)
     return None
 
-def write_vels(fname, mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
+def write_vels(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
     # create the file if it doesn't exist or if it's empty
     if (((not exists(fname)) or getsize(fname) == 0) and isdir(split(fname)[0])):
-        create_file(fname, ["mjd", "ffactor", "pen_frac", "umb_frac", \
+        create_file(fname, ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
                             "quiet_frac", "plage_frac", "v_hat", \
                             "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
         writer = csv.writer(f)
-        writer.writerow(np.concatenate(([mjd, ffactor, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
+        writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
 
     return None
 
