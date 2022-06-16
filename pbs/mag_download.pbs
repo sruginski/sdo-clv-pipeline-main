@@ -16,6 +16,6 @@ cd $PBS_O_WORKDIR
 echo "About to start Python"
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
-python -c "import wget; wget.download('http://jsoc1.stanford.edu/SUM2/D1522168352/S00000/', out='/storage/home/mlp95/scratch/mag/')"
+python -c "import wget; wget.download('ftp://pail.stanford.edu/export/SUM39/D1522175124/S00000/', out='/storage/home/mlp95/scratch/mag/')"
 echo "Python exited"
 date
