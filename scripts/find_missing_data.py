@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import re, pdb, csv, glob, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir
+from sunpy.net import jsoc
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
@@ -13,16 +14,6 @@ from astropy.units.quantity import AstropyDeprecationWarning
 from sdo_pypline.sdo_io import *
 
 def main():
-    # data download params
-    sample1 = 6
-    sample2 = a.Sample(6 * u.hour)
-    provider = a.Provider("JSOC")
-    level = a.Level(1)
-    instr1 = a.Instrument.hmi
-    instr2 = a.Instrument.aia
-    physobs = (a.Physobs.los_velocity | a.Physobs.los_magnetic_field | a.Physobs.intensity)
-    wavelength = a.Wavelength(1700. * u.AA)
-
     # find the data
     # TODO file names
     indir = "/Users/michael/Desktop/sdo_data/"
@@ -40,11 +31,25 @@ def main():
 
     for t in dts:
         if any([(t not in con_dates), (t not in mag_dates), (t not in dop_dates), (t not in aia_dates)]):
+
             # get t_range
-            trange = a.Time(t, t + dt.timedelta(hours=1))
+            trange = a.Time(t, t + dt.timedelta(hours=0.5))
+
+
+
+            # create queries for data (HMI then AIA)
+            client1 = jsoc.JSOCClient()
+            qr1 = client1.search(jsoc.attrs.Time(t, t + dt.timedelta(hours=0.5)),
+                                 jsoc.attrs.Notify('mlp95@psu.edu'),
+                                 jsoc.attrs.Series('hmi.M_45s') |
+                                 jsoc.attrs.Series('hmi.V_45s') |
+                                 jsoc.attrs.Series('hmi.Ic_45s'),
+                                 sample2)
+
+            pdb.set_trace()
 
             # get query for HMI and download data
-            qr1 = Fido.search(trange, instr1, physobs, provider, sample2)
+            qr1 = Fido.search(trange, instr1, physobs, provider)
             hmi_files = Fido.fetch(qr1, path=indir, overwrite=False, progress=False)
 
             # get query for AIA and download data
@@ -52,8 +57,6 @@ def main():
             aia_files = Fido.fetch(qr2, path=indir, overwrite=False, progress=False)
         else:
             continue
-
-    pdb.set_trace()
 
     return None
 
