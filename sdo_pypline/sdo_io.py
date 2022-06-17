@@ -21,6 +21,8 @@ def find_data(indir):
     dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi_v*.fits"))
     aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*.fits"))
 
+    pdb.set_trace()
+
     # find datetimes that are in *all* lists
     common_dates = list(set.intersection(*map(set, [con_dates, mag_dates, dop_dates, aia_dates])))
 
