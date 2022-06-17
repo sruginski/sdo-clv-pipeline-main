@@ -30,8 +30,6 @@ def main():
     # find the input data
     con_files, mag_files, dop_files, aia_files = find_data(indir)
 
-    pdb.set_trace()
-
     # check the lengths
     assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
 
