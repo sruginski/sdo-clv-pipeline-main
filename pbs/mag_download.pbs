@@ -16,6 +16,6 @@ cd $PBS_O_WORKDIR
 echo "About to start wget"
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
-wget --no-clobber --convert-links --random-wait -r -p --level 1 -E -e robots=off -U mozilla ftp://pail.stanford.edu/export/SUM39/D1522175124/S00000/
+wget --no-clobber --convert-links --random-wait -r -p --level 1 -E -e robots=off -U mozilla -P /storage/home/mlp95/scratch/sdo2014 ftp://pail.stanford.edu/export/SUM39/D1522175124/S00000/
 echo "Done"
 date
