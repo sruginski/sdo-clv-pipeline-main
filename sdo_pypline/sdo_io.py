@@ -46,12 +46,11 @@ def get_date(f):
             s = re.search(r'\d{4}.\d{2}.\d{2}_\d{2}_\d{2}_\d{2}', f)
 
 
-    # replace any t's with underscore
+    # standardize time formats
     s = s.group()
     s = s.replace("t", "_")
     s = s.replace("T", "_")
     s = s.replace("-", "")
-    pdb.set_trace()
     return round_time(date=dt.datetime.strptime(s, "%Y%m%d_%H%M%S"))
 
 def get_dates(files):
