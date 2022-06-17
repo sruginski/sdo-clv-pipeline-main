@@ -13,9 +13,13 @@ date
 echo "Job id: $PBS_JOBID"
 echo "About to change into $PBS_O_WORKDIR"
 cd $PBS_O_WORKDIR
-echo "About to start Python"
+echo "About to start"
+
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
-python -c "import wget; wget.download(, out='/storage/home/mlp95/scratch/aia/')"
-echo "Python exited"
+wget --no-clobber --convert-links --random-wait -r -p --level 1 -E -e robots=off -U mozilla -P /storage/home/mlp95/scratch/sdo2014
+
+## /storage/home/mlp95/work/sdo-pypline/scripts/exportfile.csh 'hmi.v_45s[2014.01.01/365d@240m]' mlp95@psu.edu
+
+echo "Exited"
 date

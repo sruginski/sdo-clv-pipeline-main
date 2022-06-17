@@ -13,9 +13,13 @@ date
 echo "Job id: $PBS_JOBID"
 echo "About to change into $PBS_O_WORKDIR"
 cd $PBS_O_WORKDIR
-echo "About to start wget"
+echo "About to start"
+
 source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
 wget --no-clobber --convert-links --random-wait -r -p --level 1 -E -e robots=off -U mozilla -P /storage/home/mlp95/scratch/sdo2014 ftp://pail.stanford.edu/export/SUM39/D1522175124/S00000/
-echo "Done"
+
+## /storage/home/mlp95/work/sdo-pypline/scripts/exportfile.csh 'hmi.Ic_45s[2014.01.01/365d@240m]' mlp95@psu.edu
+
+echo "Exited"
 date
