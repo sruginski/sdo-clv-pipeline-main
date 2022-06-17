@@ -49,8 +49,10 @@ def get_date(f):
     # replace any t's with underscore
     s = s.group()
     s = s.replace("t", "_")
+    s = s.replace("T", "_")
+    s = s.replace("-", "")
     pdb.set_trace()
-    return round_time(date=dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
+    return round_time(date=dt.datetime.strptime(s, "%Y%m%d_%H%M%S"))
 
 def get_dates(files):
     date = []
