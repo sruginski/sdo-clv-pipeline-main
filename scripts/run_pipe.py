@@ -59,16 +59,15 @@ def main():
         mjd = Time(mjd_str, format="mjd")
         mjd = round_time(date=mjd.datetime)
 
-        # get dates
+        # get dates and index of occurence of mjd
         con_dates = get_dates(con_files)
-        mag_dates = get_dates(mag_files)
-        dop_dates = get_dates(dop_files)
-        aia_dates = get_dates(aia_files)
+        idx = con_dates.index(mjd)
 
-        pdb.set_trace()
-
-
-
+        # subset the lists
+        con_files = con_files[idx:]
+        mag_files = mag_files[idx:]
+        dop_files = dop_files[idx:]
+        aia_files = aia_files[idx:]
 
     # set mu threshold and number of mu_rings
     n_rings = 10
