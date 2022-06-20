@@ -15,6 +15,15 @@ from sdo_pypline.sdo_io import *
 
 # actually do things
 def main():
+    # initialize argparser
+    parser = argparse.ArgumentParser(description="Analyze SDO data")
+    # parser.add_argument('outdir', type=str, help='full directory path for file writeout')
+    parser.add_argument("--clobber", action="store_true", default=False)
+
+    # parse the command line arguments
+    args = parser.parse_args()
+    clobber = args.clobber
+
     # sort out directories
     indir = "/Users/michael/Desktop/sdo_data/"
     outdir = "/Users/michael/Desktop/"
@@ -22,16 +31,44 @@ def main():
         indir = "/storage/home/mlp95/scratch/sdo_data/"
         outdir = "/storage/home/mlp95/work/sdo_output/"
 
-    # set file names and truncate them if they exist
-    fname1 = truncate_file(outdir + "rv_full_disk.csv")
-    fname2 = truncate_file(outdir + "rv_mu.csv")
-    fname3 = truncate_file(outdir + "rv_regions.csv")
-
-    # find the input data
+    # find the input data and check the lengths
     con_files, mag_files, dop_files, aia_files = find_data(indir)
-
-    # check the lengths
     assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
+
+    # set filenames
+    fname1 = outdir + "rv_full_disk.csv"
+    fname2 = outdir + "rv_mu.csv"
+    fname3 = outdir + "rv_regions.csv"
+
+    if clobber:
+        # truncate files if they exist
+        truncate_file(fname1)
+        truncate_file(fname2)
+        truncate_file(fname3)
+    else:
+        # find out the last MJD analyzed
+        assert exists(fname1)
+        mjd_str = find_last_date(fname1)
+
+        # remove all lines with that mjd (in case regions didn't finish)
+        remove_line_by_mjd(mjd_str, fname1)
+        remove_line_by_mjd(mjd_str, fname2)
+        remove_line_by_mjd(mjd_str, fname3)
+
+        # find subset of sdo date to start with
+        mjd = Time(mjd_str, format="mjd")
+        mjd = round_time(date=mjd.datetime)
+
+        # get dates
+        con_dates = get_dates(con_files)
+        mag_dates = get_dates(mag_files)
+        dop_dates = get_dates(dop_files)
+        aia_dates = get_dates(aia_files)
+
+        pdb.set_trace()
+
+
+
 
     # set mu threshold and number of mu_rings
     n_rings = 10

@@ -4,6 +4,7 @@ import sunpy as sp
 import datetime as dt
 import re, pdb, csv, glob
 from astropy.io import fits
+from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
 # read headers and data
@@ -77,7 +78,33 @@ def truncate_file(fname):
     if exists(fname):
         with open(fname, "w") as f:
             f.truncate()
-    return fname
+    return None
+
+def find_last_date(fname):
+    with open(fname, "r") as f:
+        for line in f:
+            pass
+        mjd_str = line.split(",")[0]
+    return mjd_str
+
+def remove_line_by_mjd(mjd_str, fname):
+    # find the lines that don't include this mjd
+    lines = []
+    with open(fname, "r") as f:
+        reader = csv.reader(f)
+        for idx, row in enumerate(reader):
+            if (idx == 0) | (mjd_str not in row):
+                lines.append(row)
+
+    # wipe the file
+    truncate_file(fname)
+
+    # write good lines to file
+    with open(fname, "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(lines)
+
+    return None
 
 def create_file(fname, header):
     with open(fname, "w") as f:
