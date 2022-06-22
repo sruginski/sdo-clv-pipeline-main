@@ -109,7 +109,7 @@ def remove_line_by_mjd(mjd_str, fname):
                 lines.append(row)
 
     # wipe the file
-    truncate_file(fname)
+    truncate_output_file(fname)
 
     # write good lines to file
     with open(fname, "w") as f:
