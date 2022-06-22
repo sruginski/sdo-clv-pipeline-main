@@ -1,9 +1,9 @@
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
-import re, pdb, csv, glob, argparse
+import re, pdb, csv, glob, time, argparse
 from astropy.time import Time
-from os.path import exists, split, isdir
+from os.path import exists, split, isdir, getsize
 
 # use style
 plt.style.use("my.mplstyle"); plt.ioff()
@@ -17,7 +17,6 @@ from sdo_pypline.sdo_io import *
 def main():
     # initialize argparser
     parser = argparse.ArgumentParser(description="Analyze SDO data")
-    # parser.add_argument('outdir', type=str, help='full directory path for file writeout')
     parser.add_argument("--clobber", action="store_true", default=False)
 
     # parse the command line arguments
@@ -42,12 +41,12 @@ def main():
 
     if clobber:
         # truncate files if they exist
-        truncate_file(fname1)
-        truncate_file(fname2)
-        truncate_file(fname3)
-    else:
+        truncate_output_file(fname1)
+        truncate_output_file(fname2)
+        truncate_output_file(fname3)
+    elif all(map(exists, (fname1, fname2, fname3))) & \
+         all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
         # find out the last MJD analyzed
-        assert exists(fname1)
         mjd_str = find_last_date(fname1)
 
         # remove all lines with that mjd (in case regions didn't finish)
@@ -68,6 +67,10 @@ def main():
         mag_files = mag_files[idx:]
         dop_files = dop_files[idx:]
         aia_files = aia_files[idx:]
+    else:
+        create_output_file(fname1)
+        create_output_file(fname2)
+        create_output_file(fname3)
 
     # set mu threshold and number of mu_rings
     n_rings = 10

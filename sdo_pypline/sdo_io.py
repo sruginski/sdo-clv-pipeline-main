@@ -9,10 +9,17 @@ from os.path import exists, split, isdir, getsize
 
 # read headers and data
 def read_header(file):
-    return fits.getheader(file, 1, output_verify="silentfix")
+    # return fits.getheader(file, 1, output_verify="silentfix")
+    with fits.open(file) as hdu_list:
+        hdu_list.verify("silentfix")
+        header = hdu_list[1].header
+    return header
 
 def read_data(file):
-    return fits.getdata(file, 1, output_verify="silentfix").astype(float)
+    with fits.open(file) as hdu_list:
+        hdu_list.verify("silentfix")
+        data = hdu_list[1].data.astype(float)
+    return data
 
 # function to glob the input data
 def find_data(indir):
@@ -73,12 +80,17 @@ def round_time(date=None, round_to=3600):
    rounding = (seconds+round_to/2) // round_to * round_to
    return date + dt.timedelta(0,rounding-seconds,-date.microsecond)
 
-def truncate_file(fname):
+def truncate_output_file(fname):
     # truncate the file if it does exist
     if exists(fname):
         with open(fname, "w") as f:
             f.truncate()
     return None
+
+def create_output_file(fname):
+    if not exists(fname):
+        with open(fname, "w") as f:
+            pass
 
 def find_last_date(fname):
     with open(fname, "r") as f:

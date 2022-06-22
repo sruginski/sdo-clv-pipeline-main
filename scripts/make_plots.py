@@ -9,22 +9,11 @@ import pandas as pd
 # use style
 plt.style.use("my.mplstyle"); plt.ioff()
 
-# create dataframe objects to append to
-df_full = pd.DataFrame()
-df_regs = pd.DataFrame()
-df_mu = pd.DataFrame()
-
 # data files
 datdir = "/Users/michael/Desktop/sdo_output/"
-for subdir, dirs, files in os.walk(datdir):
-    for d in dirs:
-        file_fulldisk = datdir + d + "/" + "rv_full_disk.csv"
-        file_regions = datdir + d + "/" + "rv_regions.csv"
-        file_mu = datdir + d + "/" + "rv_mu.csv"
-
-        df_full = pd.concat((df_full, pd.read_csv(file_fulldisk)), ignore_index=True)
-        df_regs = pd.concat((df_regs, pd.read_csv(file_regions)), ignore_index=True)
-        df_mu = pd.concat((df_mu, pd.read_csv(file_mu)), ignore_index=True)
+df_full = pd.read_csv(datdir + "rv_full_disk.csv")
+df_regs = pd.read_csv(datdir + "rv_regions.csv")
+df_mu = pd.read_csv(datdir + "rv_mu.csv")
 
 # sort by date
 df_full.sort_values("mjd", inplace=True)
@@ -40,8 +29,8 @@ ax1.scatter(df_full.mjd, df_full.v_conv, s=2, label="v_conv")
 ax1.scatter(df_full.mjd, df_full.v_quiet, s=2, label="v_quiet")
 ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
-ax1.legend()
-fig.savefig("/Users/michael/Desktop/full_disk_series.pdf")
+ax1.legend(ncol=4)
+fig.savefig(datdir + "full_disk_series.pdf")
 plt.clf(); plt.close()
 
 # make time series
@@ -56,7 +45,7 @@ ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
 ax1.set_title("Velocity in Spots")
 ax1.legend()
-fig.savefig("/Users/michael/Desktop/spot_series.pdf")
+fig.savefig(datdir + "spot_series.pdf")
 plt.clf(); plt.close()
 
 # make time series
@@ -71,7 +60,7 @@ ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
 ax1.set_title("Velocity in Plage")
 ax1.legend()
-fig.savefig("/Users/michael/Desktop/plage_series.pdf")
+fig.savefig(datdir + "plage_series.pdf")
 plt.clf(); plt.close()
 
 # time series of other stuff
@@ -83,8 +72,8 @@ ax1.scatter(df_full.mjd, df_full.umb_frac + df_full.pen_frac, s=2, label="Spot F
 ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Fraction}$")
 ax1.set_ylim(-0.025, 0.12)
-ax1.legend()
-fig.savefig("/Users/michael/Desktop/frac.pdf")
+ax1.legend(ncol=3)
+fig.savefig(datdir + "frac.pdf")
 plt.clf(); plt.close()
 
 
@@ -163,6 +152,12 @@ ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_
 ax1.invert_xaxis()
 ax1.set_xlabel(r"$\mu$")
 ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
-ax1.legend(loc="upper left")
-plt.savefig("/Users/michael/Desktop/mu_dist_regions.pdf")
+ax1.legend(loc="upper left", ncol=3, fontsize=11)
+plt.savefig(datdir + "mu_dist_regions.pdf")
 plt.clf(); plt.close()
+
+
+
+# fig = plt.figure()
+# ax1 = fig.add_subplot()
+# ax1.scatter()
