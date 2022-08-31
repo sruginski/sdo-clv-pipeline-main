@@ -20,6 +20,14 @@ python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /s
 python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/02/01 2014/02/28 6
 python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/03/01 2014/03/31 6
 python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/04/01 2014/04/30 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/05/01 2014/05/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/06/01 2014/06/30 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/07/01 2014/07/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/08/01 2014/08/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/09/01 2014/09/30 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/10/01 2014/10/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/11/01 2014/11/30 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/12/01 2014/12/31 6
 echo "Python exited"
 date
 
