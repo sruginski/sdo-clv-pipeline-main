@@ -16,7 +16,10 @@ cd $SLURM_SUBMIT_DIR
 echo "About to start Python"
 source /storage/group/ebf11/default/software/anaconda3/binactivate
 conda activate solar
-python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/01/01 2014/03/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/01/01 2014/01/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/02/01 2014/02/28 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/03/01 2014/03/31 6
+python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/04/01 2014/04/30 6
 echo "Python exited"
 date
 

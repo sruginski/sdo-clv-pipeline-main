@@ -50,22 +50,18 @@ def main():
     wavelength = a.Wavelength(1700. * u.AA)
 
     # get query for HMI and download data
-    qr1 = Fido.search(trange, instr1, physobs, provider, sample)
-    files = glob.glob("*hmi*", root_dir=outdir)
-    iters = 0
-    while ((len(files) < np.sum([len(i) for i in qr1])) & (iters < 5)):
-        hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=False)
-        files = glob.glob("*hmi*", root_dir=outdir)
-        iters += 1
+    vel, mag, con = Fido.search(trange, instr1, physobs, provider, sample)
+    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=False, progress=False)
+
+    # retry failed downloads
+    while len(hmi_files.errors) > 0:
+        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=False, progress=False)
 
     # get query for AIA and download data
-    qr2 = Fido.search(trange, instr2, wavelength, level, provider, sample)
-    files = glob.glob("*aia*", root_dir=outdir)
-    iters = 0
-    while ((len(files) < np.sum([len(i) for i in qr2])) & (iters < 5)):
-        aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=False)
-        files = glob.glob("*aia*", root_dir=outdir)
-        iters += 1
+    aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
+    aia_files = Fido.fetch(aia, path=outdir, overwrite=False, progress=False)
+    while len(aia_files.errors) > 0:
+        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=False, progress=False)
 
 if __name__ == '__main__':
     main()
