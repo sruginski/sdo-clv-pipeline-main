@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import astropy.units as u
-import os, sys, pdb, time
 import argparse, warnings
+import os, sys, pdb, time, glob
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
@@ -51,11 +51,21 @@ def main():
 
     # get query for HMI and download data
     qr1 = Fido.search(trange, instr1, physobs, provider, sample)
-    hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=True)
+    files = glob.glob("*hmi*", root_dir=outdir)
+    iters = 0
+    while ((len(files) < np.sum([len(i) for i in qr1])) & (iters < 5)):
+        hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=False)
+        files = glob.glob("*hmi*", root_dir=outdir)
+        iters += 1
 
     # get query for AIA and download data
     qr2 = Fido.search(trange, instr2, wavelength, level, provider, sample)
-    aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=True)
+    files = glob.glob("*aia*", root_dir=outdir)
+    iters = 0
+    while ((len(files) < np.sum([len(i) for i in qr2])) & (iters < 5)):
+        aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=False)
+        files = glob.glob("*aia*", root_dir=outdir)
+        iters += 1
 
 if __name__ == '__main__':
     main()
