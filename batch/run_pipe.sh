@@ -14,6 +14,7 @@ echo "About to change into $SLURM_SUBMIT_DIR"
 cd $SLURM_SUBMIT_DIR
 
 echo "About to start Python"
+source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate solar
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py
 echo "Python exited"
