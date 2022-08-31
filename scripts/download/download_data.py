@@ -54,7 +54,7 @@ def main():
     files = glob.glob("*hmi*", root_dir=outdir)
     iters = 0
     while ((len(files) < np.sum([len(i) for i in qr1])) & (iters < 5)):
-        hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=True)
+        hmi_files = Fido.fetch(qr1, path=outdir, overwrite=False, progress=False)
         files = glob.glob("*hmi*", root_dir=outdir)
         iters += 1
 
@@ -63,7 +63,7 @@ def main():
     files = glob.glob("*aia*", root_dir=outdir)
     iters = 0
     while ((len(files) < np.sum([len(i) for i in qr2])) & (iters < 5)):
-        aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=True)
+        aia_files = Fido.fetch(qr2, path=outdir, overwrite=False, progress=False)
         files = glob.glob("*aia*", root_dir=outdir)
         iters += 1
 
