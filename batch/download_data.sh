@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -A ebf11_c
 #SBATCH --nodes=1
-#SBATCH --ntasks=8
+#SBATCH --ntasks=1
 #SBATCH --mem=8GB
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_data
