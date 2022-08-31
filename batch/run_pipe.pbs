@@ -1,20 +1,19 @@
 #!/bin/bash
-#PBS -A dfc13_mri
-#PBS -l qos=mgc_open
-#PBS -l nodes=1:ppn=1
-#PBS -l feature=rhel7
-#PBS -l walltime=48:00:00
-#PBS -l pmem=4gb
-#PBS -j oe
-#PBS -N sdo_pipe
+#SBATCH -A ebf11_c
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --mem=8GB
+#SBATCH --time=48:00:00
+#SBATCH --job-name=sdo_pipe
+#SBATCH --output=/storage/home/mlp95/work/logs/grass/sdo_pipe.%j.out
+#SBATCH --error=/storage/home/mlp95/work/logs/grass/sdo_pipe.%j.err
 
-echo "Starting job $PBS_JOBNAME"
 date
-echo "Job id: $PBS_JOBID"
-echo "About to change into $PBS_O_WORKDIR"
-cd $PBS_O_WORKDIR
+echo "Job id: $SLURM_JOBID"
+echo "About to change into $SLURM_SUBMIT_DIR"
+cd $SLURM_SUBMIT_DIR
+
 echo "About to start Python"
-source /storage/home/mlp95/work/sw/anaconda3/bin/activate
 conda activate solar
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py
 echo "Python exited"
