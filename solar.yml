@@ -13,6 +13,9 @@ dependencies:
     - wget
     - argparse
     - PyQt5
+    - bs4
+    - drms
+    - zeep
     - sunpy
 prefix: /usr/local/anaconda3/envs/solar
 
