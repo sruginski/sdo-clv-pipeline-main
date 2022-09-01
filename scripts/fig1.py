@@ -1,10 +1,10 @@
 import numpy as np
+import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.cm as cm
 import os, sys, pdb, csv, glob
-import pandas as pd
 
 from sdo_pypline.paths import root
 from sdo_pypline.sdo_io import *
@@ -22,4 +22,11 @@ plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 start = "2014/01/07"
 end = "2014/01/07"
 sample = 24
-download_data(outdir=datadir, start=start, end=end, sample=sample)
+files = download_data(outdir=datadir, start=start, end=end, sample=sample)
+con_file = files[0]
+mag_file = files[1]
+dop_file = files[2]
+aia_file = files[3]
+
+
+pdb.set_trace()

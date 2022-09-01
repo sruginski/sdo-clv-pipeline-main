@@ -7,7 +7,6 @@ import os, sys, pdb, time, glob
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
-import pdb
 
 def download_data(outdir=None, start=None, end=None, sample=None, overwrite=False):
     # set time attributes for search
@@ -17,11 +16,9 @@ def download_data(outdir=None, start=None, end=None, sample=None, overwrite=Fals
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
 
-    pdb.set_trace()
-
     # set attributes for HMI query
     instr1 = a.Instrument.hmi
-    physobs = (a.Physobs.los_velocity | a.Physobs.los_magnetic_field | a.Physobs.intensity)
+    physobs = (a.Physobs.intensity | a.Physobs.los_magnetic_field | a.Physobs.los_velocity)
 
     # set attributes for AIA query
     level = a.Level(1)
@@ -29,8 +26,8 @@ def download_data(outdir=None, start=None, end=None, sample=None, overwrite=Fals
     wavelength = a.Wavelength(1700. * u.AA)
 
     # get query for HMI and download data, retry failed downloads
-    vel, mag, con = Fido.search(trange, instr1, physobs, provider, sample)
-    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=overwrite, progress=False)
+    con, mag, vel = Fido.search(trange, instr1, physobs, provider, sample)
+    hmi_files = Fido.fetch(con, mag, vel, path=outdir, overwrite=overwrite, progress=False)
     while len(hmi_files.errors) > 0:
         hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=overwrite, progress=False)
 
@@ -39,8 +36,13 @@ def download_data(outdir=None, start=None, end=None, sample=None, overwrite=Fals
     aia_files = Fido.fetch(aia, path=outdir, overwrite=overwrite, progress=False)
     while len(aia_files.errors) > 0:
         aia_files = Fido.fetch(aia_files, path=outdir, overwrite=overwrite, progress=False)
-    pdb.set_trace()
-    return
+
+    # sort out filenames into categories for output
+    con_files = [s for s in hmi_files if "cont" in s]
+    mag_files = [s for s in hmi_files if "magn" in s]
+    dop_files = [s for s in hmi_files if "dopp" in s]
+    aia_files = list(map(str, aia_files))
+    return *con_files, *mag_files, *dop_files, *aia_files
 
 def main():
     # supress warnings
