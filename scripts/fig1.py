@@ -39,18 +39,18 @@ def main():
     print("\t >>> Processing and plotting data...")
     process_data_set(con, mag, dop, aia, plot=True, vels=False)
 
-    # find and move the files
+    # find and rename the files
     con_file = glob.glob(plotdir + "*con*")
     mag_file = glob.glob(plotdir + "*mag*")
     dop_file = glob.glob(plotdir + "*dop*")
     aia_file = glob.glob(plotdir + "*aia*")
     mask_file = glob.glob(plotdir + "*mask*")
 
-    os.rename(con_file, plotdir+"fig1a.pdf")
-    os.rename(mag_file, plotdir+"fig1b.pdf")
-    os.rename(dop_file, plotdir+"fig1c.pdf")
-    os.rename(aia_file, plotdir+"fig1d.pdf")
-    os.rename(mask_file, plotdir+"fig1e.pdf")
+    os.rename(con_file[0], plotdir+"fig1a.pdf")
+    os.rename(mag_file[0], plotdir+"fig1b.pdf")
+    os.rename(dop_file[0], plotdir+"fig1c.pdf")
+    os.rename(aia_file[0], plotdir+"fig1d.pdf")
+    os.rename(mask_file[0], plotdir+"fig1e.pdf")
     return None
 
 if __name__ == "__main__":
