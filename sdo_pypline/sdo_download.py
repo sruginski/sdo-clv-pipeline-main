@@ -1,8 +1,3 @@
-#==============================================================================
-# Author: Michael Palumbo
-# Date: January 2019
-# Purpose: Download SDO data from JSOC
-#==============================================================================
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -12,6 +7,35 @@ import os, sys, pdb, time, glob
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
+
+def download_data(outdir=None, start=None, end=None, sample=None)
+    # set time attributes for search
+    start += 'T00:00:00'
+    end += 'T24:00:00'
+    trange = a.Time(start, end)
+    sample = a.Sample(sample * u.hour)
+    provider = a.Provider("JSOC")
+
+    # set attributes for HMI query
+    instr1 = a.Instrument.hmi
+    physobs = (a.Physobs.los_velocity | a.Physobs.los_magnetic_field | a.Physobs.intensity)
+
+    # set attributes for AIA query
+    level = a.Level(1)
+    instr2 = a.Instrument.aia
+    wavelength = a.Wavelength(1700. * u.AA)
+
+    # get query for HMI and download data, retry failed downloads
+    vel, mag, con = Fido.search(trange, instr1, physobs, provider, sample)
+    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=False, progress=False)
+    while len(hmi_files.errors) > 0:
+        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=False, progress=False)
+
+    # get query for AIA and download data
+    aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
+    aia_files = Fido.fetch(aia, path=outdir, overwrite=False, progress=False)
+    while len(aia_files.errors) > 0:
+        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=False, progress=False)
 
 def main():
     # supress warnings
@@ -33,35 +57,9 @@ def main():
     end = args.end
     sample = args.sample
 
-    # set time attributes for search
-    start += 'T00:00:00'
-    end += 'T24:00:00'
-    trange = a.Time(start, end)
-    sample = a.Sample(sample * u.hour)
-    provider = a.Provider("JSOC")
-
-    # set attributes for HMI query
-    instr1 = a.Instrument.hmi
-    physobs = (a.Physobs.los_velocity | a.Physobs.los_magnetic_field | a.Physobs.intensity)
-
-    # set attributes for AIA query
-    level = a.Level(1)
-    instr2 = a.Instrument.aia
-    wavelength = a.Wavelength(1700. * u.AA)
-
-    # get query for HMI and download data
-    vel, mag, con = Fido.search(trange, instr1, physobs, provider, sample)
-    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=False, progress=False)
-
-    # retry failed downloads
-    while len(hmi_files.errors) > 0:
-        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=False, progress=False)
-
-    # get query for AIA and download data
-    aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
-    aia_files = Fido.fetch(aia, path=outdir, overwrite=False, progress=False)
-    while len(aia_files.errors) > 0:
-        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=False, progress=False)
+    # now download the data
+    download_data(outdir=outdir, start=start, end=end, sample=sample)
+    return None
 
 if __name__ == '__main__':
     main()

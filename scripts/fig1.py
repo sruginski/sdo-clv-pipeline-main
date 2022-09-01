@@ -7,7 +7,7 @@ import os, sys, pdb, csv, glob
 import pandas as pd
 
 # sort out paths
-from sdo_pypline.paths import user as Paths
+from .paths import root
 plotdir = str(Paths().figures) + "/"
 
 # use style
