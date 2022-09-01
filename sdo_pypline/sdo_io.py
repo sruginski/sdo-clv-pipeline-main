@@ -7,6 +7,8 @@ from astropy.io import fits
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
+from .paths import src
+
 # read headers and data
 def read_header(file):
     # return fits.getheader(file, 1, output_verify="silentfix")
@@ -24,9 +26,9 @@ def read_data(file):
 # function to glob the input data
 def find_data(indir):
     # find the data
-    con_files, con_dates = sort_data(glob.glob(indir + "*hmi.Ic*.fits"))
-    mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi.M*.fits"))
-    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi.v*.fits"))
+    con_files, con_dates = sort_data(glob.glob(indir + "*hmi*con*.fits"))
+    mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi*mag*.fits"))
+    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*dop*.fits"))
     aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*.fits"))
 
     # find datetimes that are in *all* lists
@@ -47,19 +49,14 @@ def sort_data(f_list):
 
 def get_date(f):
     if "aia" in f:
-        s = re.search(r'\d{4}-\d{2}-\d{2}T\d{2}\d{2}\d{2}', f)
+        s = re.search(r'\d{4}_\d{2}_\d{2}t\d{2}_\d{2}_\d{2}', f)
     else:
-        s = re.search(r'\d{4}\d{2}\d{2}_\d{2}\d{2}\d{2}', f)
-        if s is None:
-            s = re.search(r'\d{4}.\d{2}.\d{2}_\d{2}_\d{2}_\d{2}', f)
-
+        s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
 
     # standardize time formats
     s = s.group()
     s = s.replace("t", "_")
-    s = s.replace("T", "_")
-    s = s.replace("-", "")
-    return round_time(date=dt.datetime.strptime(s, "%Y%m%d_%H%M%S"))
+    return round_time(date=dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
 
 def get_dates(files):
     date = []
@@ -79,6 +76,57 @@ def round_time(date=None, round_to=3600):
    seconds = (date.replace(tzinfo=None) - date.min).seconds
    rounding = (seconds+round_to/2) // round_to * round_to
    return date + dt.timedelta(0,rounding-seconds,-date.microsecond)
+
+def organize_input_output(indir, datadir=None, clobber=False):
+    # find the input data and check the lengths
+    assert isdir(indir)
+    con_files, mag_files, dop_files, aia_files = find_data(indir)
+    assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
+
+    # figure out data directories
+    if datadir == None:
+        datadir = str(src / "data") + "/"
+
+    # name output files
+    fname1 = datadir + "rv_full_disk.csv"
+    fname2 = datadir + "rv_mu.csv"
+    fname3 = datadir + "rv_regions.csv"
+
+    # replace/create/modify output files
+    if clobber:
+        # truncate files if they exist
+        truncate_output_file(fname1)
+        truncate_output_file(fname2)
+        truncate_output_file(fname3)
+    elif all(map(exists, (fname1, fname2, fname3))) & \
+         all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
+        # find out the last MJD analyzed
+        mjd_str = find_last_date(fname1)
+
+        # remove all lines with that mjd (in case regions didn't finish)
+        remove_line_by_mjd(mjd_str, fname1)
+        remove_line_by_mjd(mjd_str, fname2)
+        remove_line_by_mjd(mjd_str, fname3)
+
+        # find subset of sdo date to start with
+        mjd = Time(mjd_str, format="mjd")
+        mjd = round_time(date=mjd.datetime)
+
+        # get dates and index of occurence of mjd
+        con_dates = get_dates(con_files)
+        idx = con_dates.index(mjd)
+
+        # subset the lists
+        con_files = con_files[idx:]
+        mag_files = mag_files[idx:]
+        dop_files = dop_files[idx:]
+        aia_files = aia_files[idx:]
+    else:
+        create_output_file(fname1)
+        create_output_file(fname2)
+        create_output_file(fname3)
+
+    return con_files, mag_files, dop_files, aia_files
 
 def truncate_output_file(fname):
     # truncate the file if it does exist

@@ -9,9 +9,10 @@ from os.path import exists, split, isdir, getsize
 plt.style.use("my.mplstyle"); plt.ioff()
 
 # bring functions into scope
-from sdo_pypline.sdo_image import *
-from sdo_pypline.sdo_vels import *
 from sdo_pypline.sdo_io import *
+from sdo_pypline.sdo_vels import *
+from sdo_pypline.sdo_image import *
+from sdo_pypline.sdo_process import *
 
 # actually do things
 def main():
@@ -23,143 +24,33 @@ def main():
     args = parser.parse_args()
     clobber = args.clobber
 
-    # sort out directories
+    # define sdo_data directories
     indir = "/Users/michael/Desktop/sdo_data/"
     outdir = "/Users/michael/Desktop/"
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
         outdir = "/storage/home/mlp95/work/sdo_output/"
 
-    # find the input data and check the lengths
-    con_files, mag_files, dop_files, aia_files = find_data(indir)
-    assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
+    # sort out input/output data files
+    con_files, mag_files, dop_files, aia_files = organize_input_output(indir, clobber=clobber)
 
-    # set filenames
-    fname1 = outdir + "rv_full_disk.csv"
-    fname2 = outdir + "rv_mu.csv"
-    fname3 = outdir + "rv_regions.csv"
-
-    if clobber:
-        # truncate files if they exist
-        truncate_output_file(fname1)
-        truncate_output_file(fname2)
-        truncate_output_file(fname3)
-    elif all(map(exists, (fname1, fname2, fname3))) & \
-         all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
-        # find out the last MJD analyzed
-        mjd_str = find_last_date(fname1)
-
-        # remove all lines with that mjd (in case regions didn't finish)
-        remove_line_by_mjd(mjd_str, fname1)
-        remove_line_by_mjd(mjd_str, fname2)
-        remove_line_by_mjd(mjd_str, fname3)
-
-        # find subset of sdo date to start with
-        mjd = Time(mjd_str, format="mjd")
-        mjd = round_time(date=mjd.datetime)
-
-        # get dates and index of occurence of mjd
-        con_dates = get_dates(con_files)
-        idx = con_dates.index(mjd)
-
-        # subset the lists
-        con_files = con_files[idx:]
-        mag_files = mag_files[idx:]
-        dop_files = dop_files[idx:]
-        aia_files = aia_files[idx:]
-    else:
-        create_output_file(fname1)
-        create_output_file(fname2)
-        create_output_file(fname3)
-
-    # set mu threshold and number of mu_rings
+    # set mu threshold, number of mu rings
     n_rings = 10
     mu_thresh = 0.1
-
-    # grid of mu values to iterate over
-    # TODO, evenly spaced in mu or theta?
-    mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
-
-    # decide whether to plot
     plot = False
 
     # loop over files
     for i in range(len(con_files)):
-        # make SDOImage instances
-        try:
-            con = SDOImage(con_files[i])
-            mag = SDOImage(mag_files[i])
-            dop = SDOImage(dop_files[i])
-            aia = SDOImage(aia_files[i])
-        except OSError:
-            print("\t >>> Invalid file, skipping " + get_date(con_files[i]).isoformat())
-            continue
-
-        # get MJD for observations and report status
-        iso = Time(con.date_obs).iso
-        mjd = Time(con.date_obs).mjd
-
-        # interpolate aia image onto hmi image scale
-        aia.rescale_to_hmi(con)
-
-        # correct magnetogram for foreshortening
-        mag.correct_magnetogram()
-
-        # calculate differential rotation & observer velocity
-        dop.calc_vrot_vobs()
-
-        # calculate limb darkening/brightening in continuum map and filtergram
-        try:
-            con.calc_limb_darkening()
-            aia.calc_limb_darkening()
-        except RuntimeError:
-            print("\t >>> Limb darkening fit failed, skipping " + iso)
-
-        # set values to nan for mu less than mu_thresh
-        con.mask_low_mu(mu_thresh)
-        dop.mask_low_mu(mu_thresh)
-        mag.mask_low_mu(mu_thresh)
-        aia.mask_low_mu(mu_thresh)
-
-        # identify regions for thresholding
-        mask = SunMask(con, mag, dop, aia)
-
-        # plot the data
-        if plot:
-            mag.plot_image(outdir=outdir)
-            dop.plot_image(outdir=outdir)
-            con.plot_image(outdir=outdir)
-            aia.plot_image(outdir=outdir)
-            mask.plot_image(outdir=outdir)
-
-        # compute velocities and write to disk
-        vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-                   mask.umb_frac, mask.quiet_frac,
-                   mask.plage_frac, vels)
-
-        # loop over mu annuli
-        for i in range(n_rings-1):
-            # mu values for annuli
-            lo_mu=mu_grid[i]
-            hi_mu=mu_grid[i+1]
-
-            # compute velocity in mu annulus
-            vels_reg = calc_velocities(con, mag, dop, aia, mask, lo_mu=lo_mu, hi_mu=hi_mu)
-
-            # write to disk
-            write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
-
-            # loop over unique region identifiers
-            for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
-                # compute velocity components in each mu annulus by region
-                vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j, lo_mu=lo_mu, hi_mu=hi_mu)
-
-                # write to disk
-                write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
+        # analyze set of files
+        process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
+                         mu_thresh=mu_thresh, n_rings=n_rings, plot=True)
 
         # report status
         print("\t >>> Epoch " + iso + " run successfully!")
 
 if __name__ == "__main__":
     main()
+
+def process_data_set():
+
+    return None
