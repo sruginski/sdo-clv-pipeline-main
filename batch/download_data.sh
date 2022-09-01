@@ -6,7 +6,7 @@
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_data
 #SBATCH --chdir=/storage/home/mlp95/work/palumbo22
-#SBATCH --output=/storage/home/mlp95/work/logs/grass/sdo_data.%j.out
+#SBATCH --output=/storage/home/mlp95/work/logs/sdo_data.%j.out
 
 echo "About to start: $SLURM_JOB_NAME"
 date
@@ -15,7 +15,7 @@ echo "About to change into $SLURM_SUBMIT_DIR"
 cd $SLURM_SUBMIT_DIR
 
 echo "About to start Python"
-source /storage/group/ebf11/default/software/anaconda3/binactivate
+source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate solar
 python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/01/01 2014/01/31 6
 python /storage/home/mlp95/work/sdo-pypline/scripts/download/download_data.py /scratch/mlp95/sdo_data 2014/02/01 2014/02/28 6
