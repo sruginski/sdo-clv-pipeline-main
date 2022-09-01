@@ -22,6 +22,8 @@ plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 start = "2014/01/07"
 end = "2014/01/07"
 sample = 24
+
+print("\t >>> Downloading data")
 files = download_data(outdir=datadir, start=start, end=end, sample=sample)
 con_file = files[0]
 mag_file = files[1]
@@ -29,6 +31,7 @@ dop_file = files[2]
 aia_file = files[3]
 
 # preprocess the data and plot it
+print("\t >>> Processing and plotting data...")
 process_data_set(con_file, mag_file, dop_file, aia_file, plot=True, vels=False)
 
 pdb.set_trace()

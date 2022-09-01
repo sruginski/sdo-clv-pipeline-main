@@ -5,32 +5,40 @@ import pdb, warnings
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
-from scipy import ndimage
-from scipy.optimize import curve_fit
-from reproject import reproject_interp
+from astropy.io import fits
+from astropy.wcs import WCS
+
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
 
 
-def plot_image(sdo_image, outdir=None):
+def plot_image(sdo_image, outdir=None, fname=None):
     assert outdir is not None
+
+    # get the WCS
+    wcs = WCS(sdo_image.head)
+
+    # initialize the figure
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111, projection=wcs)
+
     if sdo_image.is_magnetogram():
         # get cmap
         cmap = plt.get_cmap("RdYlBu").copy()
         cmap.set_bad(color="black")
 
         # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(sdo_image.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200, interpolation=None)
-        cb = fig.colorbar(im)
-        cb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Magnetic\ Field}$")
+        img = ax1.imshow(sdo_image.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200, interpolation=None)
+        clb = fig.colorbar(img)
+        clb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig(outdir + "mag_" + sdo_image.date_obs + ".pdf", bbox_inches="tight", dpi=500)
+        ax1.set_xlabel("Helioprojective Longitude")
+        ax1.set_ylabel("Helioprojective Latitude")
+
+        # figure out the filename
+        if fname is None:
+            fname = "mag_" + sdo_image.date_obs + ".pdf"
+        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
 
@@ -40,17 +48,18 @@ def plot_image(sdo_image, outdir=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
-        cb = fig.colorbar(im)
-        cb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
+        img = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
+        clb = fig.colorbar(img)
+        clb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
         ax1.xaxis.set_visible(False)
         ax1.yaxis.set_visible(False)
         ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Dopplergram}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig(outdir + "dop_" + sdo_image.date_obs + ".pdf", bbox_inches="tight", dpi=500)
+
+        # figure out the filename
+        if fname is None:
+            fname = "dop_" + sdo_image.date_obs + ".pdf"
+        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
 
@@ -60,17 +69,17 @@ def plot_image(sdo_image, outdir=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
-        cb = fig.colorbar(im)
-        cb.set_label(r"${\rm Relative\ Intensity}$")
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm Flattened\ HMI\ Continuum}$")
+        img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        clb = fig.colorbar(img)
+        clb.set_label(r"${\rm Relative\ Intensity}$")
+        ax1.set_xlabel("Helioprojective Longitude")
+        ax1.set_ylabel("Helioprojective Latitude")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig(outdir + "con_" + sdo_image.date_obs + ".pdf", bbox_inches="tight", dpi=500)
+
+        # figure out the filename
+        if fname is None:
+            fname = "con_" + sdo_image.date_obs + ".pdf"
+        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
 
@@ -80,25 +89,24 @@ def plot_image(sdo_image, outdir=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
-        cb = fig.colorbar(im)
-        cb.set_label(r"${\rm Relative\ Intensity}$")
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm Flattened\ AIA\ 1700\AA\ Filtergram}$")
+        img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        clb = fig.colorbar(img)
+        clb.set_label(r"${\rm Relative\ Intensity}$")
+        ax1.set_xlabel("Helioprojective Longitude")
+        ax1.set_ylabel("Helioprojective Latitude")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig(outdir + "aia_" + sdo_image.date_obs + ".pdf", bbox_inches="tight", dpi=500)
+
+        # figure out the filename
+        if fname is None:
+            fname = "aia_" + sdo_image.date_obs + ".pdf"
+        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
         plt.clf(); plt.close()
         return None
 
     else:
         return None
 
-
-def plot_mask(mask, outdir=None):
+def plot_mask(mask, outdir=None, fname=None):
     assert outdir is not None
 
     # get cmap
@@ -106,18 +114,22 @@ def plot_mask(mask, outdir=None):
     cmap.set_bad(color="black")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
 
+    # get the WCS
+    wcs = WCS(sdo_image.head)
+
     # plot the sun
     fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    im = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-    cb = fig.colorbar(im, ticks=[0.5, 1.5, 2.5, 3.5])
-    cb.ax.set_yticklabels(["Umbrae", "Penumbrae", "Quiet Sun", "Plage"])
-    ax1.xaxis.set_visible(False)
-    ax1.yaxis.set_visible(False)
-    ax1.set_title(r"${\rm Identified\ Regions}$")
+    ax1 = fig.add_subplot(111, projection=wcs)
+    img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
+    clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5])
+    clb.ax.set_yticklabels(["Umbrae", "Penumbrae", "Quiet Sun", "Plage"])
+    ax1.set_xlabel("Helioprojective Longitude")
+    ax1.set_ylabel("Helioprojective Latitude")
     ax1.text(2650, 50, mask.date_obs, fontsize=8, c="white")
-    ax1.grid(False)
-    fig.savefig(outdir + "mask_" + mask.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-    plt.clf(); plt.close()
 
+    # figure out the filename
+    if fname is None:
+        fname = "mag_" + mask.date_obs + ".pdf"
+    fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+    plt.clf(); plt.close()
     return None

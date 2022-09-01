@@ -77,11 +77,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
     # plot the data
     if plot:
-        mag.plot_image(outdir=plotdir)
-        dop.plot_image(outdir=plotdir)
-        con.plot_image(outdir=plotdir)
-        aia.plot_image(outdir=plotdir)
-        mask.plot_image(outdir=plotdir)
+        pdb.set_trace()
+        con.plot_image(outdir=plotdir, **kwargs)
+        mag.plot_image(outdir=plotdir, **kwargs)
+        dop.plot_image(outdir=plotdir, **kwargs)
+        aia.plot_image(outdir=plotdir, **kwargs)
+        mask.plot_image(outdir=plotdir, **kwargs)
 
     if vels:
         # compute velocities and write to disk
