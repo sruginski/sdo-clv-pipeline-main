@@ -14,9 +14,12 @@ echo "Job id: $SLURM_JOBID"
 echo "About to change into $SLURM_SUBMIT_DIR"
 cd $SLURM_SUBMIT_DIR
 
-echo "About to start Python"
+echo "About to activate conda environment"
 source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate solar
+echo "Environment activated"
+
+echo "About to start Python"
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py
 echo "Python exited"
 date
