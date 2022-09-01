@@ -19,7 +19,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
     wcs = WCS(sdo_image.head)
 
     # initialize the figure
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=wcs)
 
     if sdo_image.is_magnetogram():
@@ -32,8 +32,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
-        ax1.set_xlabel("Helioprojective Longitude")
-        ax1.set_ylabel("Helioprojective Latitude")
+        ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
+        ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
         ax1.grid(False)
 
         # figure out the filename
@@ -52,8 +52,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
         img = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
-        ax1.set_xlabel("Helioprojective Longitude")
-        ax1.set_ylabel("Helioprojective Latitude")
+        ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
+        ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
         ax1.grid(False)
 
@@ -73,8 +73,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
         img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Relative\ Intensity}$")
-        ax1.set_xlabel("Helioprojective Longitude")
-        ax1.set_ylabel("Helioprojective Latitude")
+        ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
+        ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
         ax1.grid(False)
 
@@ -94,8 +94,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
         img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Relative\ Intensity}$")
-        ax1.set_xlabel("Helioprojective Longitude")
-        ax1.set_ylabel("Helioprojective Latitude")
+        ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
+        ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
         ax1.grid(False)
 
@@ -121,13 +121,13 @@ def plot_mask(mask, outdir=None, fname=None):
     wcs = WCS(mask.head)
 
     # plot the sun
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5])
-    clb.ax.set_yticklabels(["Umbrae", "Penumbrae", "Quiet Sun", "Plage"])
-    ax1.set_xlabel("Helioprojective Longitude")
-    ax1.set_ylabel("Helioprojective Latitude")
+    clb.ax.set_yticklabels([r"${\rm Umbrae}$", r"${\rm Penumbrae}$", r"${\rm Quiet\ Sun}$", r"${\rm Plage}$"])
+    ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
+    ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
     ax1.text(2650, 50, mask.date_obs, fontsize=8, c="white")
     ax1.grid(False)
 
