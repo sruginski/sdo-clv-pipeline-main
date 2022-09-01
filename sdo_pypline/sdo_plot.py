@@ -113,9 +113,9 @@ def plot_mask(mask, outdir=None, fname=None):
     assert outdir is not None
 
     # get cmap
-    cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow"])
+    cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
     cmap.set_bad(color="black")
-    norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
+    norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
 
     # get the WCS
     wcs = WCS(mask.head)
@@ -124,8 +124,8 @@ def plot_mask(mask, outdir=None, fname=None):
     fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-    clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5])
-    clb.ax.set_yticklabels([r"${\rm Umbrae}$", r"${\rm Penumbrae}$", r"${\rm Quiet\ Sun}$", r"${\rm Plage}$"])
+    clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
+    clb.ax.set_yticklabels([r"${\rm Umbrae}$", r"${\rm Penumbrae}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
     ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
     ax1.text(2650, 50, mask.date_obs, fontsize=8, c="white")

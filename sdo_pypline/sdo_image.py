@@ -305,6 +305,7 @@ class SunMask:
         self.regions[ind4] = 4 # plage + network
 
         # separate out plage and network by area
+        # TODO: fix this, it is severely broken and nonsensical
         labels, nblobs = ndimage.label(self.regions == 4)
         areas = ndimage.sum(self.regions == 4, labels, range(1, nblobs+1))
         idx = np.argsort(areas)
@@ -320,23 +321,10 @@ class SunMask:
         area_thresh_idx = np.argmax(areas[idx] > area_thresh)
         label_thresh = np.unique(labels)[idx][area_thresh_idx]
 
-        pdb.set_trace()
+        label_thresh = nblobs-5
 
         for i in range(label_thresh, nblobs-1):
             self.regions[labels == i] = 5
-
-        pdb.set_trace()
-
-
-        xs = range(0, nblobs)
-        ys = np.log10(areas[idx])
-
-        plt.plot(xs, 10**ys)
-        plt.plot(xs, 10**np.polyval(pfit, xs))
-        plt.show()
-
-
-
 
         # make remaining regions quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
@@ -356,5 +344,8 @@ class SunMask:
     def is_quiet(self):
         return self.regions == 3
 
-    def is_plage(self):
+    def is_network(self):
         return self.regions == 4
+
+    def is_plage(self):
+        return self.regions == 5

@@ -47,7 +47,7 @@ def main():
                          mu_thresh=mu_thresh, n_rings=n_rings, plot=True)
 
         # report status
-        print("\t >>> Epoch " + iso + " run successfully!")
+        print("\t >>> Epoch " + get_date(con_files[i]).isoformat() + " run successfully!")
 
 if __name__ == "__main__":
     main()
