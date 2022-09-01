@@ -1,8 +1,5 @@
 import numpy as np
-from .sdo_io import *
-from .limbdark import *
-
-import pdb, warnings
+import cv2, pdb, warnings
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
@@ -11,6 +8,9 @@ from scipy.optimize import curve_fit
 from reproject import reproject_interp
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
+
+from .sdo_io import *
+from .limbdark import *
 
 warnings.simplefilter("ignore", category=VerifyWarning)
 warnings.simplefilter("ignore", category=FITSFixedWarning)
@@ -303,6 +303,40 @@ class SunMask:
         self.regions[ind2] = 2 # penumbrae
         self.regions[ind3] = 3 # quiet sun
         self.regions[ind4] = 4 # plage + network
+
+        # separate out plage and network by area
+        labels, nblobs = ndimage.label(self.regions == 4)
+        areas = ndimage.sum(self.regions == 4, labels, range(1, nblobs+1))
+        idx = np.argsort(areas)
+
+        # fit a polynomial to the areas
+        idx = np.argsort(areas)
+        # pfit = np.polyfit(range(0, nblobs), np.log10(areas[idx]), 2, w=1/np.sqrt(areas[idx]))
+        # model = np.polyval(pfit, range(0, nblobs))
+
+        # get area threshold
+        # area_thresh = model[np.argmax(model < 0)]
+        area_thresh = 50_000
+        area_thresh_idx = np.argmax(areas[idx] > area_thresh)
+        label_thresh = np.unique(labels)[idx][area_thresh_idx]
+
+        pdb.set_trace()
+
+        for i in range(label_thresh, nblobs-1):
+            self.regions[labels == i] = 5
+
+        pdb.set_trace()
+
+
+        xs = range(0, nblobs)
+        ys = np.log10(areas[idx])
+
+        plt.plot(xs, 10**ys)
+        plt.plot(xs, 10**np.polyval(pfit, xs))
+        plt.show()
+
+
+
 
         # make remaining regions quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))

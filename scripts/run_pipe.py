@@ -26,11 +26,11 @@ def main():
     clobber = args.clobber
 
     # define sdo_data directories
-    indir = "/Users/michael/Desktop/sdo_data/"
-    outdir = "/Users/michael/Desktop/"
+    indir = "/Users/michael/work/sdo-pypline/data/"
+    # outdir = "/Users/michael/Desktop/"
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
-        outdir = "/storage/home/mlp95/work/sdo_output/"
+        # outdir = "/storage/home/mlp95/work/sdo_output/"
 
     # sort out input/output data files
     con_files, mag_files, dop_files, aia_files = organize_input_output(indir, clobber=clobber)
