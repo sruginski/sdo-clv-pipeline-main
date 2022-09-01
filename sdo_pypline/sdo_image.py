@@ -219,91 +219,6 @@ class SDOImage:
         # TODO recalculate the mu???
         self.mu = hmi_image.mu
 
-    def plot_image(self, outdir=None):
-        assert outdir is not None
-        if self.is_magnetogram():
-            # get cmap
-            cmap = plt.get_cmap("RdYlBu").copy()
-            cmap.set_bad(color="black")
-
-            # plot the sun
-            fig = plt.figure()
-            ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200, interpolation=None)
-            cb = fig.colorbar(im)
-            cb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
-            ax1.xaxis.set_visible(False)
-            ax1.yaxis.set_visible(False)
-            ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Magnetic\ Field}$")
-            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
-            ax1.grid(False)
-            fig.savefig(outdir + "mag_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-            plt.clf(); plt.close()
-            return None
-
-        elif self.is_dopplergram():
-            # get cmap
-            cmap = plt.get_cmap("seismic").copy()
-            cmap.set_bad(color="black")
-
-            # plot the sun
-            fig = plt.figure()
-            ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.image - self.v_rot - self.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
-            cb = fig.colorbar(im)
-            cb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
-            ax1.xaxis.set_visible(False)
-            ax1.yaxis.set_visible(False)
-            ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Dopplergram}$")
-            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
-            ax1.grid(False)
-            fig.savefig(outdir + "dop_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-            plt.clf(); plt.close()
-            return None
-
-        elif self.is_continuum():
-            # get cmap
-            cmap = plt.get_cmap("afmhot").copy()
-            cmap.set_bad(color="black")
-
-            # plot the sun
-            fig = plt.figure()
-            ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
-            cb = fig.colorbar(im)
-            cb.set_label(r"${\rm Relative\ Intensity}$")
-            ax1.xaxis.set_visible(False)
-            ax1.yaxis.set_visible(False)
-            ax1.set_title(r"${\rm Flattened\ HMI\ Continuum}$")
-            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
-            ax1.grid(False)
-            fig.savefig(outdir + "con_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-            plt.clf(); plt.close()
-            return None
-
-        elif self.is_filtergram():
-            # get cmap
-            cmap = plt.get_cmap("Purples_r").copy()
-            cmap.set_bad(color="black")
-
-            # plot the sun
-            fig = plt.figure()
-            ax1 = fig.add_subplot(111)
-            im = ax1.imshow(self.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
-            cb = fig.colorbar(im)
-            cb.set_label(r"${\rm Relative\ Intensity}$")
-            ax1.xaxis.set_visible(False)
-            ax1.yaxis.set_visible(False)
-            ax1.set_title(r"${\rm Flattened\ AIA\ 1700\AA\ Filtergram}$")
-            ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
-            ax1.grid(False)
-            fig.savefig(outdir + "aia_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-            plt.clf(); plt.close()
-            return None
-
-        else:
-            return None
-
 # for creating pixel mask with thresholded regions
 def calculate_weights(mag):
     # set magnetic threshold
@@ -330,8 +245,11 @@ class SunMask:
         assert dop.is_dopplergram()
         assert aia.is_filtergram()
 
-        # steal some stuff
+        # copy observation date
         self.date_obs = con.date_obs
+
+        # inherit the geometry
+        self.inherit_geometry(con)
 
         # calculate weights
         self.w_active, self.w_quiet = calculate_weights(mag)
@@ -352,6 +270,17 @@ class SunMask:
         self.quiet_frac = np.nansum(self.is_quiet()) / npix
         self.plage_frac = np.nansum(self.is_plage()) / npix
 
+        return None
+
+    def inherit_geometry(self, other_image):
+        self.dist_sun = other_image.dist_sun
+        self.focal_len = other_image.focal_len
+        self.px = other_image. px
+        self.py = other_image.py
+        self.pr = other_image.pr
+        self.rr = other_image.rr
+        self.rr_obs = other_image.rr_obs
+        self.mu = other_image.mu
         return None
 
     def identify_regions(self, con, mag, dop, aia):
@@ -394,27 +323,3 @@ class SunMask:
 
     def is_plage(self):
         return self.regions == 4
-
-    def plot_image(self, outdir=None):
-        assert outdir is not None
-
-        # get cmap
-        cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow"])
-        cmap.set_bad(color="black")
-        norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
-
-        # plot the sun
-        fig = plt.figure()
-        ax1 = fig.add_subplot(111)
-        im = ax1.imshow(self.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-        cb = fig.colorbar(im, ticks=[0.5, 1.5, 2.5, 3.5])
-        cb.ax.set_yticklabels(["Umbrae", "Penumbrae", "Quiet Sun", "Plage"])
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm Identified\ Regions}$")
-        ax1.text(2650, 50, self.date_obs, fontsize=8, c="white")
-        ax1.grid(False)
-        fig.savefig(outdir + "mask_" + self.date_obs + ".pdf", bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
-
-        return None

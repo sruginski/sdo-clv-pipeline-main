@@ -7,8 +7,8 @@ import matplotlib.cm as cm
 import os, sys, pdb, csv, glob
 
 from sdo_pypline.paths import root
-from sdo_pypline.sdo_io import *
-from sdo_pypline.sdo_image import *
+from sdo_pypline.sdo_plot import *
+from sdo_pypline.sdo_process import *
 from sdo_pypline.sdo_download import download_data
 
 # sort out paths
@@ -28,5 +28,7 @@ mag_file = files[1]
 dop_file = files[2]
 aia_file = files[3]
 
+# preprocess the data and plot it
+process_data_set(con_file, mag_file, dop_file, aia_file, plot=True, vels=False)
 
 pdb.set_trace()

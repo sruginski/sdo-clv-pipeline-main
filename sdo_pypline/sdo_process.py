@@ -10,7 +10,8 @@ from .sdo_io import *
 from .sdo_vels import *
 from .sdo_image import *
 
-def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_rings=10, plot=False, **kwargs):
+def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
+                     n_rings=10, plot=False, vels=True, **kwargs):
     # figure out data directories
     if "datadir" not in kwargs:
         datadir = str(root / "data") + "/"
@@ -82,33 +83,34 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_ri
         aia.plot_image(outdir=plotdir)
         mask.plot_image(outdir=plotdir)
 
-    pdb.set_trace()
+    if vels:
+        # compute velocities and write to disk
+        vels = calc_velocities(con, mag, dop, aia, mask)
+        write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
+                   mask.umb_frac, mask.quiet_frac,
+                   mask.plage_frac, vels)
 
-    # compute velocities and write to disk
-    vels = calc_velocities(con, mag, dop, aia, mask)
-    write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-               mask.umb_frac, mask.quiet_frac,
-               mask.plage_frac, vels)
+        # loop over mu annuli
+        mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
+        for j in range(n_rings-1):
+            # mu values for annuli
+            lo_mu=mu_grid[j]
+            hi_mu=mu_grid[j+1]
 
-    # loop over mu annuli
-    mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
-    for j in range(n_rings-1):
-        # mu values for annuli
-        lo_mu=mu_grid[j]
-        hi_mu=mu_grid[j+1]
-
-        # compute velocity in mu annulus
-        vels_reg = calc_velocities(con, mag, dop, aia, mask, lo_mu=lo_mu, hi_mu=hi_mu)
-
-        # write to disk
-        write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
-
-        # loop over unique region identifiers
-        for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
-            # compute velocity components in each mu annulus by region
-            vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j, lo_mu=lo_mu, hi_mu=hi_mu)
+            # compute velocity in mu annulus
+            vels_reg = calc_velocities(con, mag, dop, aia, mask,
+                                       lo_mu=lo_mu, hi_mu=hi_mu)
 
             # write to disk
-            write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
+            write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
+
+            # loop over unique region identifiers
+            for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
+                # compute velocity components in each mu annulus by region
+                vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j,
+                                           lo_mu=lo_mu, hi_mu=hi_mu)
+
+                # write to disk
+                write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
 
     return None
