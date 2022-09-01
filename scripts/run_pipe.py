@@ -5,14 +5,15 @@ import re, pdb, csv, glob, time, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
-# use style
-plt.style.use("my.mplstyle"); plt.ioff()
-
 # bring functions into scope
+from sdo_pypline.paths import root
 from sdo_pypline.sdo_io import *
 from sdo_pypline.sdo_vels import *
 from sdo_pypline.sdo_image import *
 from sdo_pypline.sdo_process import *
+
+# use style
+plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
 # actually do things
 def main():

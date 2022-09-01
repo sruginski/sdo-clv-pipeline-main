@@ -10,7 +10,6 @@ from .sdo_io import *
 from .sdo_vels import *
 from .sdo_image import *
 
-
 def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_rings=10, plot=False, **kwargs):
     # figure out data directories
     if "datadir" not in kwargs:

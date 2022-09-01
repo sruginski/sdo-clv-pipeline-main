@@ -7,14 +7,17 @@ import os, sys, pdb, time, glob
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
+import pdb
 
-def download_data(outdir=None, start=None, end=None, sample=None)
+def download_data(outdir=None, start=None, end=None, sample=None, overwrite=False):
     # set time attributes for search
     start += 'T00:00:00'
     end += 'T24:00:00'
     trange = a.Time(start, end)
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
+
+    pdb.set_trace()
 
     # set attributes for HMI query
     instr1 = a.Instrument.hmi
@@ -27,15 +30,17 @@ def download_data(outdir=None, start=None, end=None, sample=None)
 
     # get query for HMI and download data, retry failed downloads
     vel, mag, con = Fido.search(trange, instr1, physobs, provider, sample)
-    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=False, progress=False)
+    hmi_files = Fido.fetch(vel, mag, con, path=outdir, overwrite=overwrite, progress=False)
     while len(hmi_files.errors) > 0:
-        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=False, progress=False)
+        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=overwrite, progress=False)
 
     # get query for AIA and download data
     aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
-    aia_files = Fido.fetch(aia, path=outdir, overwrite=False, progress=False)
+    aia_files = Fido.fetch(aia, path=outdir, overwrite=overwrite, progress=False)
     while len(aia_files.errors) > 0:
-        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=False, progress=False)
+        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=overwrite, progress=False)
+    pdb.set_trace()
+    return
 
 def main():
     # supress warnings
@@ -58,7 +63,7 @@ def main():
     sample = args.sample
 
     # now download the data
-    download_data(outdir=outdir, start=start, end=end, sample=sample)
+    files = download_data(outdir=outdir, start=start, end=end, sample=sample, overwrite=False)
     return None
 
 if __name__ == '__main__':

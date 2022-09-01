@@ -5,7 +5,7 @@
 #SBATCH --mem=8GB
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_pipe
-#SBATCH --chdir=/storage/home/mlp95/work/palumbo22
+#SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
 #SBATCH --output=/storage/home/mlp95/work/logs/sdo_pipe.%j.out
 
 echo "About to start: $SLURM_JOB_NAME"
