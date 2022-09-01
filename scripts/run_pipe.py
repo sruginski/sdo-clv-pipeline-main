@@ -51,7 +51,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-def process_data_set():
-
-    return None

@@ -7,8 +7,10 @@ from os.path import exists, split, isdir, getsize
 
 from .paths import root
 from .sdo_io import *
+from .sdo_plot import *
 from .sdo_vels import *
 from .sdo_image import *
+
 
 def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
                      n_rings=10, plot=False, vels=True, **kwargs):
@@ -77,12 +79,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
     # plot the data
     if plot:
-        pdb.set_trace()
-        con.plot_image(outdir=plotdir, **kwargs)
-        mag.plot_image(outdir=plotdir, **kwargs)
-        dop.plot_image(outdir=plotdir, **kwargs)
-        aia.plot_image(outdir=plotdir, **kwargs)
-        mask.plot_image(outdir=plotdir, **kwargs)
+        plot_image(con, outdir=plotdir, **kwargs)
+        plot_image(mag, outdir=plotdir, **kwargs)
+        plot_image(dop, outdir=plotdir, **kwargs)
+        plot_image(aia, outdir=plotdir, **kwargs)
+        plot_mask(mask, outdir=plotdir, **kwargs)
 
     if vels:
         # compute velocities and write to disk

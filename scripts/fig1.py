@@ -18,20 +18,42 @@ plotdir = str(root / "figures") + "/"
 # use style
 plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
-# download the data to plot
-start = "2014/01/07"
-end = "2014/01/07"
-sample = 24
+def main():
+    # see if data are already downloaded
+    files = glob.glob(datadir + "*.fits")
+    con = datadir + "hmi_ic_45s_2014_01_07_00_01_30_tai_continuum.fits"
+    mag = datadir + "hmi_m_45s_2014_01_07_00_01_30_tai_magnetogram.fits"
+    dop = datadir + "hmi_v_45s_2014_01_07_00_01_30_tai_dopplergram.fits"
+    aia = datadir + "aia_lev1_1700a_2014_01_07t00_00_30_71z_image_lev1.fits"
 
-print("\t >>> Downloading data")
-files = download_data(outdir=datadir, start=start, end=end, sample=sample)
-con_file = files[0]
-mag_file = files[1]
-dop_file = files[2]
-aia_file = files[3]
+    if any(map(lambda x: x not in files, (con, mag, dop, aia))):
+        # download the data to plot
+        print("\t >>> Downloading data")
+        start = "2014/01/07"
+        end = "2014/01/07"
+        sample = 24
+        con, mag, dop, aia = download_data(outdir=datadir, start=start,
+                                           end=end, sample=sample)
 
-# preprocess the data and plot it
-print("\t >>> Processing and plotting data...")
-process_data_set(con_file, mag_file, dop_file, aia_file, plot=True, vels=False)
+    # preprocess the data and plot it
+    print("\t >>> Processing and plotting data...")
+    process_data_set(con, mag, dop, aia, plot=True, vels=False)
 
-pdb.set_trace()
+    # find and move the files
+    con_file = glob.glob(plotdir + "*con*")
+    mag_file = glob.glob(plotdir + "*mag*")
+    dop_file = glob.glob(plotdir + "*dop*")
+    aia_file = glob.glob(plotdir + "*aia*")
+    mask_file = glob.glob(plotdir + "*mask*")
+
+    os.rename(con_file, plotdir+"fig1a.pdf")
+    os.rename(mag_file, plotdir+"fig1b.pdf")
+    os.rename(dop_file, plotdir+"fig1c.pdf")
+    os.rename(aia_file, plotdir+"fig1d.pdf")
+    os.rename(mask_file, plotdir+"fig1e.pdf")
+    return None
+
+if __name__ == "__main__":
+    main()
+
+

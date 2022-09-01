@@ -248,7 +248,8 @@ class SunMask:
         # copy observation date
         self.date_obs = con.date_obs
 
-        # inherit the geometry
+        # inherit the geometry and the head
+        self.head = con.head
         self.inherit_geometry(con)
 
         # calculate weights

@@ -34,6 +34,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
         ax1.set_xlabel("Helioprojective Longitude")
         ax1.set_ylabel("Helioprojective Latitude")
+        ax1.grid(False)
 
         # figure out the filename
         if fname is None:
@@ -51,10 +52,10 @@ def plot_image(sdo_image, outdir=None, fname=None):
         img = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
-        ax1.xaxis.set_visible(False)
-        ax1.yaxis.set_visible(False)
-        ax1.set_title(r"${\rm Corrected\ HMI\ LOS\ Dopplergram}$")
+        ax1.set_xlabel("Helioprojective Longitude")
+        ax1.set_ylabel("Helioprojective Latitude")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.grid(False)
 
         # figure out the filename
         if fname is None:
@@ -75,6 +76,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.set_xlabel("Helioprojective Longitude")
         ax1.set_ylabel("Helioprojective Latitude")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.grid(False)
 
         # figure out the filename
         if fname is None:
@@ -95,6 +97,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.set_xlabel("Helioprojective Longitude")
         ax1.set_ylabel("Helioprojective Latitude")
         ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.grid(False)
 
         # figure out the filename
         if fname is None:
@@ -115,7 +118,7 @@ def plot_mask(mask, outdir=None, fname=None):
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4], ncolors=cmap.N, clip=True)
 
     # get the WCS
-    wcs = WCS(sdo_image.head)
+    wcs = WCS(mask.head)
 
     # plot the sun
     fig = plt.figure()
@@ -126,10 +129,11 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.set_xlabel("Helioprojective Longitude")
     ax1.set_ylabel("Helioprojective Latitude")
     ax1.text(2650, 50, mask.date_obs, fontsize=8, c="white")
+    ax1.grid(False)
 
     # figure out the filename
     if fname is None:
-        fname = "mag_" + mask.date_obs + ".pdf"
+        fname = "mask_" + mask.date_obs + ".pdf"
     fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
     plt.clf(); plt.close()
     return None
