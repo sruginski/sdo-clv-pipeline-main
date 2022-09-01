@@ -7,7 +7,7 @@ from astropy.io import fits
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
-from .paths import src
+from .paths import root
 
 # read headers and data
 def read_header(file):
@@ -85,7 +85,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
 
     # figure out data directories
     if datadir == None:
-        datadir = str(src / "data") + "/"
+        datadir = str(root / "data") + "/"
 
     # name output files
     fname1 = datadir + "rv_full_disk.csv"
@@ -93,12 +93,12 @@ def organize_input_output(indir, datadir=None, clobber=False):
     fname3 = datadir + "rv_regions.csv"
 
     # replace/create/modify output files
-    if clobber:
+    if clobber and all(map(exists, (fname1, fname2, fname3))):
         # truncate files if they exist
         truncate_output_file(fname1)
         truncate_output_file(fname2)
         truncate_output_file(fname3)
-    elif all(map(exists, (fname1, fname2, fname3))) & \
+    elif all(map(exists, (fname1, fname2, fname3))) and \
          all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
         # find out the last MJD analyzed
         mjd_str = find_last_date(fname1)

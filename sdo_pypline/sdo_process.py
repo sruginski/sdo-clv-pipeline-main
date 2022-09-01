@@ -5,7 +5,7 @@ import re, pdb, csv, glob, time, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
-from .paths import src
+from .paths import root
 from .sdo_io import *
 from .sdo_vels import *
 from .sdo_image import *
@@ -14,7 +14,7 @@ from .sdo_image import *
 def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_rings=10, plot=False, **kwargs):
     # figure out data directories
     if "datadir" not in kwargs:
-        datadir = str(src / "data") + "/"
+        datadir = str(root / "data") + "/"
     else:
         datadir = kwargs["datadir"]
 
@@ -25,11 +25,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_ri
 
     # figure out plot output directors
     if "plotdir" not in kwargs:
-        plotdir = str(src / "figures") + "/"
+        plotdir = str(root / "figures") + "/"
     else:
         plotdir = kwargs["plotdir"]
-
-    pdb.set_trace()
 
     # make SDOImage instances
     try:
@@ -41,7 +39,13 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_ri
         print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat())
         return None
 
-    # get MJD for observations and report status
+    # calculate geometries
+    con.calc_geometry()
+    mag.inherit_geometry(con)
+    dop.inherit_geometry(con)
+    aia.calc_geometry()
+
+    # get MJD for observations
     iso = Time(con.date_obs).iso
     mjd = Time(con.date_obs).mjd
 
@@ -78,6 +82,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, n_ri
         con.plot_image(outdir=plotdir)
         aia.plot_image(outdir=plotdir)
         mask.plot_image(outdir=plotdir)
+
+    pdb.set_trace()
 
     # compute velocities and write to disk
     vels = calc_velocities(con, mag, dop, aia, mask)

@@ -1,5 +1,12 @@
+# file types
 *.DS_STORE
 *.pyc
-__pycache__
 *egg-info*
+
+# directories
+data/*
+figures/*
+
+# other
+__pycache__
 sftp-config.json

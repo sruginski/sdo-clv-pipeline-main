@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # Absolute path to the top level of the repository
-root = Path(__file__).resolve().parents[2].absolute()
+root = Path(__file__).resolve().parents[1].absolute()
 
 # Absolute path to the `src` folder
 src = root / "sdo_pypline"

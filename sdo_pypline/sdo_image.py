@@ -25,29 +25,6 @@ class SDOImage:
 
         # initialize mu_thresh
         self.mu_thresh = 0.0
-
-        # get distance to sun in solar radii and focal length
-        self.dist_sun = self.dsun_obs/self.rsun_ref
-        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
-
-        # mesh of pixels and distances to pixels in pixel units
-        paxis1 = np.arange(self.naxis1) - self.crpix1
-        paxis2 = np.arange(self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
-        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
-
-        #  distances in solar radii
-        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
-        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
-        self.rr_obs = np.real(np.sqrt(1.0 - self.rr**2 + 0j))
-
-        # calculate grid of mus
-        cos_alpha = self.rr_obs
-        sin_alpha = self.rr
-        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
-        sin_theta = np.sqrt(1.0 - cos_theta**2)
-        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
-
         return None
 
     def parse_header(self, file):
@@ -82,6 +59,41 @@ class SDOImage:
             self.content = head["CONTENT"]
         else:
             self.content = "FILTERGRAM"
+        return None
+
+    def calc_geometry(self):
+        # get distance to sun in solar radii and focal length
+        self.dist_sun = self.dsun_obs/self.rsun_ref
+        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
+
+        # mesh of pixels and distances to pixels in pixel units
+        paxis1 = np.arange(self.naxis1) - self.crpix1
+        paxis2 = np.arange(self.naxis2) - self.crpix2
+        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
+        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
+
+        #  distances in solar radii
+        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
+        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
+        self.rr_obs = np.real(np.sqrt(1.0 - self.rr**2 + 0j))
+
+        # calculate grid of mus
+        cos_alpha = self.rr_obs
+        sin_alpha = self.rr
+        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
+        sin_theta = np.sqrt(1.0 - cos_theta**2)
+        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+        return None
+
+    def inherit_geometry(self, other_image):
+        self.dist_sun = other_image.dist_sun
+        self.focal_len = other_image.focal_len
+        self.px = other_image. px
+        self.py = other_image.py
+        self.pr = other_image.pr
+        self.rr = other_image.rr
+        self.rr_obs = other_image.rr_obs
+        self.mu = other_image.mu
         return None
 
     def is_magnetogram(self):
