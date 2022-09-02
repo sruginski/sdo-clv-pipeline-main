@@ -310,9 +310,21 @@ class SunMask:
         labels, nlabels = ndimage.label(binary_img, structure=structure)
         areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
-        # calculate the threshold size
-        pdb.set_trace()
-        area_thresh = 5_000
+        # get distribution of areas
+        ahist, bin_edges = np.histogram(areas, bins=np.logspace(0, np.log10(np.max(areas)), num=100))
+        bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
+
+        # fit the distribution
+        mask_nans = ~(ahist == 0.0)
+        pfit1 = np.polyfit(np.log10(bin_centers[mask_nans]), np.log10(ahist[mask_nans]), 2)
+
+        # evaluate the model
+        model_xs = np.logspace(0, np.log10(np.max(areas)), num=1000)
+        model_ys = np.polyval(pfit1, np.log10(model_xs))
+
+        # find where the fit cuts off the large-area tail
+        idx = np.argmax(model_ys < 0.0)
+        area_thresh = model_xs[idx]
 
         # assign region type to plage for areas greater than area thresh
         inds5 = areas > area_thresh
@@ -324,6 +336,8 @@ class SunMask:
 
         # set values beyond mu_thresh to nan
         self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
+
+        pdb.set_trace()
 
         return None
 
