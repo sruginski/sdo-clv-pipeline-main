@@ -302,29 +302,21 @@ class SunMask:
         self.regions[ind1] = 1 # umbrae
         self.regions[ind2] = 2 # penumbrae
         self.regions[ind3] = 3 # quiet sun
-        self.regions[ind4] = 4 # plage + network
+        self.regions[ind4] = 4 # bright areas (will separate into plage+network)
 
-        # separate out plage and network by area
-        # TODO: fix this, it is severely broken and nonsensical
-        labels, nblobs = ndimage.label(self.regions == 4)
-        areas = ndimage.sum(self.regions == 4, labels, range(1, nblobs+1))
-        idx = np.argsort(areas)
+        # label unique contiguous bright regions and calculate their sizes
+        binary_img = self.regions == 4
+        structure = ndimage.generate_binary_structure(2,2)
+        labels, nlabels = ndimage.label(binary_img, structure=structure)
+        areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
-        # fit a polynomial to the areas
-        idx = np.argsort(areas)
-        # pfit = np.polyfit(range(0, nblobs), np.log10(areas[idx]), 2, w=1/np.sqrt(areas[idx]))
-        # model = np.polyval(pfit, range(0, nblobs))
+        # calculate the threshold size
+        pdb.set_trace()
+        area_thresh = 5_000
 
-        # get area threshold
-        # area_thresh = model[np.argmax(model < 0)]
-        area_thresh = 50_000
-        area_thresh_idx = np.argmax(areas[idx] > area_thresh)
-        label_thresh = np.unique(labels)[idx][area_thresh_idx]
-
-        label_thresh = nblobs-5
-
-        for i in range(label_thresh, nblobs-1):
-            self.regions[labels == i] = 5
+        # assign region type to plage for areas greater than area thresh
+        inds5 = areas > area_thresh
+        self.regions[inds5[labels]] = 5 # plage
 
         # make remaining regions quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
