@@ -363,3 +363,19 @@ class SunMask:
 
     def is_plage(self):
         return self.regions == 5
+
+
+# umbra = np.sum(mask.is_umbra())
+# penumbra = np.sum(mask.is_penumbra())
+# quiet = np.sum(mask.is_quiet())
+# network = np.sum(mask.is_network())
+# plage = np.sum(mask.is_plage())
+# total = umbra + penumbra + quiet + network + plage
+
+# umbra /= total / 100
+# penumbra /= total / 100
+# quiet /= total / 100
+# network /= total / 100
+# plage /= total / 100
+
+# umbra + penumbra + quiet + network + plage

@@ -99,12 +99,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
             lo_mu=mu_grid[j]
             hi_mu=mu_grid[j+1]
 
-            # compute velocity in mu annulus
-            vels_reg = calc_velocities(con, mag, dop, aia, mask,
-                                       lo_mu=lo_mu, hi_mu=hi_mu)
+            # # compute velocity in mu annulus
+            # vels_reg = calc_velocities(con, mag, dop, aia, mask,
+            #                            lo_mu=lo_mu, hi_mu=hi_mu)
 
-            # write to disk
-            write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
+            # # write to disk
+            # write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
 
             # loop over unique region identifiers
             for j in np.unique(mask.regions[~np.isnan(mask.regions)]):

@@ -42,12 +42,13 @@ def main():
 
     # loop over files
     for i in range(len(con_files)):
+        # report status
+        print("\t >>> Running epoch " + get_date(con_files[i]).isoformat())
+
         # analyze set of files
         process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                          mu_thresh=mu_thresh, n_rings=n_rings, plot=True)
 
-        # report status
-        print("\t >>> Epoch " + get_date(con_files[i]).isoformat() + " run successfully!")
 
 if __name__ == "__main__":
     main()
