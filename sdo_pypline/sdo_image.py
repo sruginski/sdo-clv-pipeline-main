@@ -347,8 +347,6 @@ class SunMask:
         # set values beyond mu_thresh to nan
         self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
 
-        pdb.set_trace()
-
         return None
 
     def is_umbra(self):
