@@ -5,6 +5,10 @@ import re, pdb, csv, glob, time, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
+# multiprocessing stuff
+import multiprocessing as mp
+
+# relative imports
 from .paths import root
 from .sdo_io import *
 from .sdo_plot import *
@@ -87,10 +91,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
     if vels:
         # compute velocities and write to disk
-        vels = calc_velocities(con, mag, dop, aia, mask)
-        write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-                   mask.umb_frac, mask.quiet_frac,
-                   mask.plage_frac, vels)
+        # vels = calc_velocities(con, mag, dop, aia, mask, None, None, None)
+        # write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
+        #            mask.umb_frac, mask.quiet_frac,
+        #            mask.plage_frac, vels)
 
         # loop over mu annuli
         mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
@@ -99,20 +103,36 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
             lo_mu=mu_grid[j]
             hi_mu=mu_grid[j+1]
 
-            # # compute velocity in mu annulus
-            # vels_reg = calc_velocities(con, mag, dop, aia, mask,
-            #                            lo_mu=lo_mu, hi_mu=hi_mu)
+            # assembles items to iterate over
+            items = []
+            for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
+                # items.append((con, mag, dop, aia, mask, k, hi_mu, lo_mu))
+                items.append((con, k, hi_mu, lo_mu))
 
-            # # write to disk
-            # write_vels_by_region(fname2, mjd, 0, lo_mu, hi_mu, vels_reg)
+            pdb.set_trace()
+
+            print(">>> About to parallel process")
+            t0 = time.time()
+            # with mp.Pool() as pool:
+            pool = mp.Pool()
+            results = pool.starmap(calc_velocities, items)
+            pool.close()
+            print(results)
+            print("Parallel: --- %s seconds ---" % (time.time() - t0))
+
+            pdb.set_trace()
 
             # loop over unique region identifiers
-            for j in np.unique(mask.regions[~np.isnan(mask.regions)]):
+            print(">>> About to serial process")
+            t0 = time.time()
+            for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
                 # compute velocity components in each mu annulus by region
-                vels_reg = calc_velocities(con, mag, dop, aia, mask, region=j,
-                                           lo_mu=lo_mu, hi_mu=hi_mu)
+                vels_reg = calc_velocities(con, mag, dop, aia, mask, k, hi_mu, lo_mu)
+            print("Serial: --- %s seconds ---" % (time.time() - t0))
+
+            pdb.set_trace()
 
                 # write to disk
-                write_vels_by_region(fname3, mjd, j, lo_mu, hi_mu, vels_reg)
+                # write_vels_by_region(fname3, mjd, k, lo_mu, hi_mu, vels_reg)
 
     return None

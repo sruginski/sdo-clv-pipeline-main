@@ -1,5 +1,5 @@
 import numpy as np
-import cv2, pdb, warnings
+import pdb, warnings
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
@@ -312,7 +312,7 @@ class SunMask:
         areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
         # get distribution of areas
-        ahist, bin_edges = np.histogram(areas, bins=len(areas))
+        ahist, bin_edges = np.histogram(areas, bins=int(len(areas)/3))
         bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
         indices = np.arange(1, len(ahist) + 1)
 
