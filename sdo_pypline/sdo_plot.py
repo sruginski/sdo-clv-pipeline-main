@@ -35,7 +35,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
         ax1.grid(False)
 
         # figure out the filename
@@ -58,7 +58,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
         ax1.grid(False)
 
         # figure out the filename
@@ -81,7 +81,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
         ax1.grid(False)
 
         # figure out the filename
@@ -104,7 +104,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(2650, 50, sdo_image.date_obs, fontsize=8, c="white")
+        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
         ax1.grid(False)
 
         # figure out the filename
@@ -138,8 +138,9 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.invert_yaxis()
     ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
     ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-    ax1.text(2650, 50, mask.date_obs, fontsize=8, c="white")
+    ax1.text(1400, 4000, mask.date_obs, fontsize=10, c="white")
     ax1.grid(False)
+    plt.show()
 
     # figure out the filename
     if fname is None:
