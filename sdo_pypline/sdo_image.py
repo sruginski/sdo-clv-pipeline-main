@@ -293,6 +293,7 @@ class SunMask:
         self.regions = np.zeros(np.shape(con.image))
 
         # get thresholds for penumbrae, umbrae, quiet sun, and plage
+        # TODO check motivations for these
         ind1 = (con.iflat <= (0.6 * con_thresh))
         ind2 = ((con.iflat <= con_thresh) & (con.iflat > (0.6 * con_thresh)))
         ind3 = ((con.iflat > con_thresh) & self.w_quiet)# & (aia.iflat < (1.3 * aia_thresh)))
@@ -307,28 +308,33 @@ class SunMask:
         # label unique contiguous bright regions and calculate their sizes
         binary_img = self.regions == 4
         structure = ndimage.generate_binary_structure(2,2)
-        labels, nlabels = ndimage.label(binary_img, structure=structure)
+        labels, nlabels = ndimage.label(binary_img)#, structure=structure)
         areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
         # get distribution of areas
-        ahist, bin_edges = np.histogram(areas, bins=np.logspace(0, np.log10(np.max(areas)), num=100))
+        ahist, bin_edges = np.histogram(areas, bins=len(areas))
         bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
+        indices = np.arange(1, len(ahist) + 1)
+
+        # mask the nans and find where distribution goes to 0
+        peak_idx = np.argmax(ahist)
+        zero_idx = np.argmax(ahist == 0.0)
 
         # fit the distribution
-        mask_nans = ~(ahist == 0.0)
-        pfit1 = np.polyfit(np.log10(bin_centers[mask_nans]), np.log10(ahist[mask_nans]), 2)
+        pfit1 = np.polyfit(np.log10(indices[peak_idx:zero_idx]),
+                           np.log10(ahist[peak_idx:zero_idx]), 1,
+                           w=1.0/np.sqrt(ahist[peak_idx:zero_idx]))
 
-        # evaluate the model
-        model_xs = np.logspace(0, np.log10(np.max(areas)), num=1000)
-        model_ys = np.polyval(pfit1, np.log10(model_xs))
-
-        # find where the fit cuts off the large-area tail
-        idx = np.argmax(model_ys < 0.0)
-        area_thresh = model_xs[idx]
+        # evaluate the model and find where the fit cuts off the large-area tail
+        model_ys = np.polyval(pfit1, np.log10(indices))
+        thresh_idx = np.argmax(model_ys < 0.0)
+        area_thresh = bin_centers[thresh_idx]
 
         # assign region type to plage for areas greater than area thresh
-        inds5 = areas > area_thresh
+        ind5 = (areas > area_thresh)[labels]
         self.regions[inds5[labels]] = 5 # plage
+
+        pdb.set_trace()
 
         # make remaining regions quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
