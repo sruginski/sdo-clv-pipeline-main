@@ -140,7 +140,6 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
     ax1.text(1400, 4000, mask.date_obs, fontsize=10, c="white")
     ax1.grid(False)
-    plt.show()
 
     # figure out the filename
     if fname is None:
