@@ -308,7 +308,7 @@ class SunMask:
         # label unique contiguous bright regions and calculate their sizes
         binary_img = self.regions == 4
         structure = ndimage.generate_binary_structure(2,2)
-        labels, nlabels = ndimage.label(binary_img)#, structure=structure)
+        labels, nlabels = ndimage.label(binary_img, structure=structure)
         areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
         # get distribution of areas
@@ -321,9 +321,11 @@ class SunMask:
         zero_idx = np.argmax(ahist == 0.0)
 
         # fit the distribution
+        order = 1
+        weights = 1.0/np.sqrt(ahist[peak_idx:zero_idx])
         pfit1 = np.polyfit(np.log10(indices[peak_idx:zero_idx]),
-                           np.log10(ahist[peak_idx:zero_idx]), 1,
-                           w=1.0/np.sqrt(ahist[peak_idx:zero_idx]))
+                           np.log10(ahist[peak_idx:zero_idx]),
+                           order, w=weights)
 
         # evaluate the model and find where the fit cuts off the large-area tail
         model_ys = np.polyval(pfit1, np.log10(indices))
@@ -332,13 +334,15 @@ class SunMask:
 
         # assign region type to plage for areas greater than area thresh
         ind5 = (areas > area_thresh)[labels]
-        self.regions[inds5[labels]] = 5 # plage
+        self.regions[ind5] = 5 # plage
 
-        pdb.set_trace()
+        # set isolated bright pixels to quiet sun
+        ind_iso = (areas == 1)[labels]
+        self.regions[ind_iso] = 3 # quiet sun
 
         # make remaining regions quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
-        self.regions[ind_rem] = 3
+        self.regions[ind_rem] = 3 # quiet sun
 
         # set values beyond mu_thresh to nan
         self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
