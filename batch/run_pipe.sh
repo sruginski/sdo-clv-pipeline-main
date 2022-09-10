@@ -20,6 +20,6 @@ conda activate solar
 echo "Environment activated"
 
 echo "About to start Python"
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py
+python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --clobber
 echo "Python exited"
 date
