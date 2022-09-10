@@ -1,4 +1,5 @@
 import numpy as np
+from .sdo_io import *
 from .sdo_image import *
 
 import pdb, warnings
@@ -16,7 +17,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
     assert outdir is not None
 
     # get the WCS
-    wcs = WCS(sdo_image.head)
+    wcs = sdo_image.wcs
 
     # initialize the figure
     fig = plt.figure(figsize=(6.4, 4.8))
@@ -126,7 +127,7 @@ def plot_mask(mask, outdir=None, fname=None):
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
 
     # get the WCS
-    wcs = WCS(mask.head)
+    wcs = mask.wcs
 
     # plot the sun
     fig = plt.figure(figsize=(6.4, 4.8))

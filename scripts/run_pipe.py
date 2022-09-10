@@ -12,6 +12,8 @@ from sdo_pypline.sdo_vels import *
 from sdo_pypline.sdo_image import *
 from sdo_pypline.sdo_process import *
 
+import multiprocessing as mp
+
 # use style
 plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
@@ -26,7 +28,7 @@ def main():
     clobber = args.clobber
 
     # define sdo_data directories
-    indir = "/Users/michael/work/sdo-pypline/data/"
+    indir = "/Users/michael/Desktop/sdo_data/"
     # outdir = "/Users/michael/Desktop/"
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
@@ -40,15 +42,34 @@ def main():
     mu_thresh = 0.1
     plot = False
 
-    # loop over files
-    for i in range(len(con_files)):
-        # report status
-        print("\t >>> Running epoch " + get_date(con_files[i]).isoformat())
+    # get number of cpus
+    try:
+        from os import sched_getaffinity
+        ncpus = len(sched_getaffinity(0))
+    except:
+        ncpus = mp.cpu_count()
 
-        # analyze set of files
-        process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
-                         mu_thresh=mu_thresh, n_rings=n_rings, plot=True)
+    # process the data either in parallel or serially
+    if ncpus > 1:
+        # prepare arguments for starmap
+        items = []
+        for i in range(len(con_files)):
+            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
 
+        # run in parallel
+        print(">>> About to parallel process")
+        t0 = time.time()
+        with mp.Pool(ncpus) as pool:
+            pool.starmap(process_data_set, items)
+        print("Parallel: --- %s seconds ---" % (time.time() - t0))
+    else:
+        # run serially
+        print(">>> About to serial process")
+        t0 = time.time()
+        for i in range(len(con_files)):
+            process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
+                             mu_thresh=mu_thresh, n_rings=n_rings, plot=False)
+        print("Serial: --- %s seconds ---" % (time.time() - t0))
 
 if __name__ == "__main__":
     main()

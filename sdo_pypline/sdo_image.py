@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 from scipy import ndimage
+from astropy.wcs import WCS
 from scipy.optimize import curve_fit
 from reproject import reproject_interp
 from astropy.wcs import FITSFixedWarning
@@ -15,8 +16,11 @@ from .limbdark import *
 warnings.simplefilter("ignore", category=VerifyWarning)
 warnings.simplefilter("ignore", category=FITSFixedWarning)
 
-class SDOImage:
+class SDOImage(object):
     def __init__(self, file):
+        # set the filename
+        self.filename = file
+
         # set attributes from the heaader
         self.parse_header(file)
 
@@ -30,7 +34,7 @@ class SDOImage:
     def parse_header(self, file):
         # read the header
         head = read_header(file)
-        self.head = head
+        self.wcs = WCS(head)
 
         # parse it
         self.naxis1 = head["NAXIS1"]
@@ -86,14 +90,14 @@ class SDOImage:
         return None
 
     def inherit_geometry(self, other_image):
-        self.dist_sun = other_image.dist_sun
-        self.focal_len = other_image.focal_len
-        self.px = other_image. px
-        self.py = other_image.py
-        self.pr = other_image.pr
-        self.rr = other_image.rr
-        self.rr_obs = other_image.rr_obs
-        self.mu = other_image.mu
+        self.dist_sun = np.copy(other_image.dist_sun)
+        self.focal_len = np.copy(other_image.focal_len)
+        self.px = np.copy(other_image.px)
+        self.py = np.copy(other_image.py)
+        self.pr = np.copy(other_image.pr)
+        self.rr = np.copy(other_image.rr)
+        self.rr_obs = np.copy(other_image.rr_obs)
+        self.mu = np.copy(other_image.mu)
         return None
 
     def is_magnetogram(self):
@@ -214,7 +218,9 @@ class SDOImage:
         assert self.is_filtergram()
 
         # rescale the image
-        self.image = reproject_interp((self.image, self.head), hmi_image.head, return_footprint=False)
+        self.image = reproject_interp((self.image, read_header(self.filename)),
+                                      read_header(hmi_image.filename),
+                                      return_footprint=False)
 
         # TODO recalculate the mu???
         self.mu = hmi_image.mu
@@ -237,7 +243,7 @@ def calculate_weights(mag):
     w_quiet[np.logical_or(mag.mu <= mag.mu_thresh, np.isnan(mag.mu))] = False
     return w_active, w_quiet
 
-class SunMask:
+class SunMask(object):
     def __init__(self, con, mag, dop, aia):
         # check argument order/names are correct
         assert con.is_continuum()
@@ -248,8 +254,8 @@ class SunMask:
         # copy observation date
         self.date_obs = con.date_obs
 
-        # inherit the geometry and the head
-        self.head = con.head
+        # inherit the geometry and the WCS
+        self.wcs = WCS(read_header(con.filename))
         self.inherit_geometry(con)
 
         # calculate weights
@@ -363,19 +369,3 @@ class SunMask:
 
     def is_plage(self):
         return self.regions == 5
-
-
-# umbra = np.sum(mask.is_umbra())
-# penumbra = np.sum(mask.is_penumbra())
-# quiet = np.sum(mask.is_quiet())
-# network = np.sum(mask.is_network())
-# plage = np.sum(mask.is_plage())
-# total = umbra + penumbra + quiet + network + plage
-
-# umbra /= total / 100
-# penumbra /= total / 100
-# quiet /= total / 100
-# network /= total / 100
-# plage /= total / 100
-
-# umbra + penumbra + quiet + network + plage
