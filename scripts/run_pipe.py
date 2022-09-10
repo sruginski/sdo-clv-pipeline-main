@@ -49,6 +49,9 @@ def main():
 
     # process the data either in parallel or serially
     if ncpus > 1:
+        # report states
+        print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(items), ncpus, chunksize))
+
         # prepare arguments for starmap
         items = []
         for i in range(len(con_files)):
@@ -61,14 +64,13 @@ def main():
             chunksize = int(np.ceil(len(items)/ncpus))
 
         # run in parallel
-        print(">>> About to parallel process with %s processes" % ncpus)
         t0 = time.time()
         with mp.Pool(ncpus) as pool:
             pool.starmap(process_data_set, items, chunksize=chunksize)
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
         # run serially
-        print(">>> About to serial process")
+        print(">>> Processing %s epochs on a single process" % len(con_files))
         t0 = time.time()
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
