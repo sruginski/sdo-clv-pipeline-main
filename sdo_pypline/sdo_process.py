@@ -48,9 +48,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
         return None
 
-    # report status
-    print("\t >>> Running epoch " + get_date(con_file).isoformat(), flush=True)
-
     # calculate geometries
     con.calc_geometry()
     mag.inherit_geometry(con)
@@ -122,5 +119,5 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
                 # write to disk
                 write_vels_by_region(fname3, mjd, k, lo_mu, hi_mu, vels_reg)
-    print("\t\t >>> Done with " + iso, flush=True)
+    print("\t >>> Epoch %s run successfully" % iso, flush=True)
     return None

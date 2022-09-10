@@ -54,11 +54,17 @@ def main():
         for i in range(len(con_files)):
             items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
 
+        # figure out chunksize
+        if len(items) <= ncpus:
+            chunksize = 1
+        else:
+            chunksize = int(np.ceil(len(items)/ncpus))
+
         # run in parallel
-        print(">>> About to parallel process")
+        print(">>> About to parallel process with %s processes" % ncpus)
         t0 = time.time()
         with mp.Pool(ncpus) as pool:
-            pool.starmap(process_data_set, items)
+            pool.starmap(process_data_set, items, chunksize=chunksize)
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
         # run serially

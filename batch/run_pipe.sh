@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -A ebf11_c
 #SBATCH --nodes=1
-#SBATCH --ntasks=12
-#SBATCH --mem-per-cpu=1536
+#SBATCH --ntasks=8
+#SBATCH --mem-per-cpu=2048
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_pipe
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline

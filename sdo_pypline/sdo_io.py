@@ -92,12 +92,22 @@ def organize_input_output(indir, datadir=None, clobber=False):
     fname2 = datadir + "rv_mu.csv"
     fname3 = datadir + "rv_regions.csv"
 
+    header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
+                "quiet_frac", "plage_frac", "v_hat", \
+                "v_phot", "v_quiet", "v_conv"]
+    header2 = ["mjd", "region", "lo_mu", "hi_mu", \
+                "v_hat", "v_phot", "v_quiet", "v_conv"]
+
     # replace/create/modify output files
     if clobber and all(map(exists, (fname1, fname2, fname3))):
-        # truncate files if they exist
+        # delete the files
         truncate_output_file(fname1)
         truncate_output_file(fname2)
         truncate_output_file(fname3)
+
+        create_file(fname1, header1)
+        create_file(fname2, header2)
+        create_file(fname3, header2)
     elif all(map(exists, (fname1, fname2, fname3))) and \
          all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
         # find out the last MJD analyzed
@@ -122,12 +132,6 @@ def organize_input_output(indir, datadir=None, clobber=False):
         dop_files = dop_files[idx:]
         aia_files = aia_files[idx:]
     else:
-        header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                   "quiet_frac", "plage_frac", "v_hat", \
-                   "v_phot", "v_quiet", "v_conv"]
-        header2 = ["mjd", "region", "lo_mu", "hi_mu", \
-                    "v_hat", "v_phot", "v_quiet", "v_conv"]
-
         create_file(fname1, header1)
         create_file(fname2, header2)
         create_file(fname3, header2)
