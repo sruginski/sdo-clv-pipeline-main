@@ -122,4 +122,5 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
                 # write to disk
                 write_vels_by_region(fname3, mjd, k, lo_mu, hi_mu, vels_reg)
+    print("\t\t >>> Done with " + iso, flush=True)
     return None

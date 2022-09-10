@@ -122,9 +122,15 @@ def organize_input_output(indir, datadir=None, clobber=False):
         dop_files = dop_files[idx:]
         aia_files = aia_files[idx:]
     else:
-        create_output_file(fname1)
-        create_output_file(fname2)
-        create_output_file(fname3)
+        header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
+                   "quiet_frac", "plage_frac", "v_hat", \
+                   "v_phot", "v_quiet", "v_conv"]
+        header2 = ["mjd", "region", "lo_mu", "hi_mu", \
+                    "v_hat", "v_phot", "v_quiet", "v_conv"]
+
+        create_file(fname1, header1)
+        create_file(fname2, header2)
+        create_file(fname3, header2)
 
     return con_files, mag_files, dop_files, aia_files
 
@@ -134,11 +140,6 @@ def truncate_output_file(fname):
         with open(fname, "w") as f:
             f.truncate()
     return None
-
-def create_output_file(fname):
-    if not exists(fname):
-        with open(fname, "w") as f:
-            pass
 
 def find_last_date(fname):
     with open(fname, "r") as f:
@@ -173,11 +174,7 @@ def create_file(fname, header):
     return None
 
 def write_vels(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
-    # create the file if it doesn't exist or if it's empty
-    if (((not exists(fname)) or getsize(fname) == 0) and isdir(split(fname)[0])):
-        create_file(fname, ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                            "quiet_frac", "plage_frac", "v_hat", \
-                            "v_phot", "v_quiet", "v_conv"])
+    assert exists(fname)
 
     # write the vels
     with open(fname, "a") as f:
@@ -187,10 +184,7 @@ def write_vels(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_
     return None
 
 def write_vels_by_region(fname, mjd, region, lo_mu, hi_mu, vels):
-    # create the file if it doesn't exist or if it's empty
-    if (((not exists(fname)) or getsize(fname) == 0) and isdir(split(fname)[0])):
-         create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
-                             "v_hat", "v_phot", "v_quiet", "v_conv"])
+    assert exists(fname)
 
     # write the vels
     with open(fname, "a") as f:
