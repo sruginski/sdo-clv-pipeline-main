@@ -45,11 +45,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         dop = SDOImage(dop_file)
         aia = SDOImage(aia_file)
     except OSError:
-        print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat())
+        print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
         return None
 
     # report status
-    print("\t >>> Running epoch " + get_date(con_file).isoformat())
+    print("\t >>> Running epoch " + get_date(con_file).isoformat(), flush=True)
 
     # calculate geometries
     con.calc_geometry()
@@ -75,7 +75,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         con.calc_limb_darkening()
         aia.calc_limb_darkening()
     except RuntimeError:
-        print("\t >>> Limb darkening fit failed, skipping " + iso)
+        print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
         return None
 
     # set values to nan for mu less than mu_thresh
