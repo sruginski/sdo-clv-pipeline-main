@@ -51,7 +51,7 @@ def main():
     # process the data either in parallel or serially
     if ncpus > 1:
         # report states
-        print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(items), ncpus, chunksize))
+        print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(con_files), ncpus, chunksize))
 
         # prepare arguments for starmap
         items = []
