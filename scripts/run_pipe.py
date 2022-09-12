@@ -76,7 +76,7 @@ def main():
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                              mu_thresh=mu_thresh, n_rings=n_rings, plot=False)
-    print("Serial: --- %s seconds ---" % (time.time() - t0))
+        print("Serial: --- %s seconds ---" % (time.time() - t0))
 
 if __name__ == "__main__":
     main()
