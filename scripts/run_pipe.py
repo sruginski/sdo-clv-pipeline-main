@@ -66,7 +66,8 @@ def main():
 
         # run in parallel
         t0 = time.time()
-        with get_context("spawn").Pool(ncpus) as pool:
+        # with get_context("spawn").Pool(ncpus) as pool:
+        with get_context("forkserver").Pool(ncpus) as pool:
             pool.starmap(process_data_set, items, chunksize=chunksize)
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
