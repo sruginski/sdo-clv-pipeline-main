@@ -12,6 +12,7 @@ from sdo_pypline.sdo_vels import *
 from sdo_pypline.sdo_image import *
 from sdo_pypline.sdo_process import *
 
+from multiprocessing import get_context
 import multiprocessing as mp
 
 # use style
@@ -65,7 +66,7 @@ def main():
 
         # run in parallel
         t0 = time.time()
-        with mp.Pool(ncpus) as pool:
+        with get_context("spawn").Pool(ncpus) as pool:
             pool.starmap(process_data_set, items, chunksize=chunksize)
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
@@ -75,7 +76,7 @@ def main():
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                              mu_thresh=mu_thresh, n_rings=n_rings, plot=False)
-        print("Serial: --- %s seconds ---" % (time.time() - t0))
+    print("Serial: --- %s seconds ---" % (time.time() - t0))
 
 if __name__ == "__main__":
     main()

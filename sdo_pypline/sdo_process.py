@@ -95,9 +95,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
     if vels:
         # compute velocities and write to disk
         vels = calc_velocities(con, mag, dop, aia, mask, None, None, None)
-        write_vels(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-                   mask.umb_frac, mask.quiet_frac,
-                   mask.plage_frac, vels)
+        write_vels_whole_disk(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
+                              mask.umb_frac, mask.quiet_frac, mask.plage_frac, vels)
 
         # loop over mu annuli
         mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
@@ -113,11 +112,13 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
 
 
             # loop over unique region identifiers
+            results = []
             for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
                 # compute velocity components in each mu annulus by region
                 vels_reg = calc_velocities(con, mag, dop, aia, mask, k, hi_mu, lo_mu)
+                results.append((mjd, k, lo_mu, hi_mu, *vels_reg))
 
-                # write to disk
-                write_vels_by_region(fname3, mjd, k, lo_mu, hi_mu, vels_reg)
+            # write to disk
+            write_vels_by_region(fname3, results)
     print("\t >>> Epoch %s run successfully" % iso, flush=True)
     return None

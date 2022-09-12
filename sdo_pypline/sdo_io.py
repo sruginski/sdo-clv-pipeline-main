@@ -177,7 +177,7 @@ def create_file(fname, header):
         writer.writerow(header)
     return None
 
-def write_vels(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
+def write_vels_whole_disk(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
     assert exists(fname)
 
     # write the vels
@@ -187,12 +187,18 @@ def write_vels(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_
 
     return None
 
-def write_vels_by_region(fname, mjd, region, lo_mu, hi_mu, vels):
+def write_vels_by_region(fname, results):
+    assert exists(fname)
+
+    for line in results:
+        write_vels_by_region_lines(fname, *line)
+    return None
+
+def write_vels_by_region_lines(fname, mjd, region, lo_mu, hi_mu, v1, v2, v3, v4):
     assert exists(fname)
 
     # write the vels
     with open(fname, "a") as f:
         writer = csv.writer(f)
-        writer.writerow(np.concatenate(([mjd], [region], [lo_mu], [hi_mu], [v for v in vels])))
-
+        writer.writerow([mjd, region, lo_mu, hi_mu, v1, v2, v3, v4])
     return None
