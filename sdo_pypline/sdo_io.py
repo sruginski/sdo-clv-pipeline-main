@@ -2,7 +2,7 @@
 import numpy as np
 import sunpy as sp
 import datetime as dt
-import re, pdb, csv, glob
+import re, pdb, csv, glob, fcntl
 from astropy.io import fits
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
@@ -182,9 +182,10 @@ def write_vels_whole_disk(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_f
 
     # write the vels
     with open(fname, "a") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
         writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
-
+        fcntl.flock(f, fcntl.LOCK_UN)
     return None
 
 def write_vels_by_region(fname, results):
@@ -199,6 +200,8 @@ def write_vels_by_region_lines(fname, mjd, region, lo_mu, hi_mu, v1, v2, v3, v4)
 
     # write the vels
     with open(fname, "a") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
         writer.writerow([mjd, region, lo_mu, hi_mu, v1, v2, v3, v4])
+        fcntl.flock(f, fcntl.LOCK_UN)
     return None

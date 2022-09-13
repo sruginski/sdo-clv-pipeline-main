@@ -154,7 +154,7 @@ if __name__ == "__main__":
         from os import sched_getaffinity
         ncpus = len(sched_getaffinity(0))
     except:
-        ncpus = mp.cpu_count()
+        ncpus = np.min([len(con_files), mp.cpu_count()])
 
     # process the data either in parallel or serially
     if ncpus > 1:
