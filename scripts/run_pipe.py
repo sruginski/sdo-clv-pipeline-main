@@ -175,7 +175,7 @@ if __name__ == "__main__":
         else:
             chunksize = int(np.ceil(len(items)/ncpus))
 
-        # report in parellel
+        # run in parellel
         print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(con_files), ncpus, chunksize))
         t0 = time.time()
         pids = []
@@ -192,7 +192,7 @@ if __name__ == "__main__":
         outfiles1 = glob.glob(datadir + "rv_full_disk_*")
         outfiles2 = glob.glob(datadir + "rv_regions_*")
 
-        # stitch them together
+        # stitch them together on the main process
         stitch_output_files(datadir + "rv_full_disk.csv", outfiles1)
         stitch_output_files(datadir + "rv_regions.csv", outfiles2)
 
