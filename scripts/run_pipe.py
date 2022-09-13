@@ -193,8 +193,8 @@ if __name__ == "__main__":
         outfiles2 = glob.glob(datadir + "rv_regions_*")
 
         # stitch them together on the main process
-        stitch_output_files(datadir + "rv_full_disk.csv", outfiles1)
-        stitch_output_files(datadir + "rv_regions.csv", outfiles2)
+        stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
+        stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
 
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
