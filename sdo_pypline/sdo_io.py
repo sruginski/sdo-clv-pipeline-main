@@ -2,10 +2,10 @@
 import numpy as np
 import sunpy as sp
 import datetime as dt
-import re, pdb, csv, glob, fcntl
+import os, re, pdb, csv, glob, fcntl
 from astropy.io import fits
 from astropy.time import Time
-from os.path import exists, split, isdir, getsize
+from os.path import exists, split, isdir, getsize, splitext
 
 from .paths import root
 
@@ -105,6 +105,23 @@ def organize_input_output(indir, datadir=None, clobber=False):
         truncate_output_file(fname2)
         truncate_output_file(fname3)
 
+        # find any stray files from multiprocessing
+        fname1_mp = glob.glob(datadir + "rv_full_disk_*")
+        fname2_mp = glob.glob(datadir + "rv_mu_*")
+        fname3_mp = glob.glob(datadir + "rv_regions_*")
+
+        # remove them
+        if not not fname1_mp:
+            for f in fname1_mp:
+                os.remove(f)
+        if not not fname2_mp:
+            for f in fname2_mp:
+                os.remove(f)
+        if not not fname3_mp:
+            for f in fname3_mp:
+                os.remove(f)
+
+        # create the files with headers
         create_file(fname1, header1)
         create_file(fname2, header2)
         create_file(fname3, header2)
@@ -178,30 +195,51 @@ def create_file(fname, header):
     return None
 
 def write_vels_whole_disk(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
-    assert exists(fname)
+    if not exists(fname):
+        create_file(fname, ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
+                            "quiet_frac", "plage_frac", "v_hat", \
+                            "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
+        # fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
         writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
-        fcntl.flock(f, fcntl.LOCK_UN)
+        # fcntl.flock(f, fcntl.LOCK_UN)
     return None
 
 def write_vels_by_region(fname, results):
-    assert exists(fname)
+    if not exists(fname):
+        create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
+                            "v_hat", "v_phot", "v_quiet", "v_conv"])
 
     for line in results:
         write_vels_by_region_lines(fname, *line)
     return None
 
 def write_vels_by_region_lines(fname, mjd, region, lo_mu, hi_mu, v1, v2, v3, v4):
-    assert exists(fname)
+    if not exists(fname):
+        create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
+                            "v_hat", "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
-        fcntl.flock(f, fcntl.LOCK_EX)
+        # fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
         writer.writerow([mjd, region, lo_mu, hi_mu, v1, v2, v3, v4])
-        fcntl.flock(f, fcntl.LOCK_UN)
+        # fcntl.flock(f, fcntl.LOCK_UN)
+    return None
+
+def stitch_output_files(fname, files, delete=False):
+    with open(fname, "a") as f:
+        for file in files:
+            with open(file) as g:
+                for line in g:
+                    if "mjd" in line:
+                        continue
+                    f.write(line)
+
+    if delete:
+        for f in files:
+            os.remove(f)
     return None

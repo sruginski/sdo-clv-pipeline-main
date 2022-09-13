@@ -1,7 +1,7 @@
 import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
-import re, pdb, csv, glob, time, argparse
+import os, re, pdb, csv, glob, time, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
 
@@ -23,11 +23,12 @@ def process_data_set_parallel(con_file, mag_file, dop_file,
                               aia_file, mu_thresh, n_rings):
     process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=mu_thresh, n_rings=n_rings,
+                     suffix=str(mp.current_process().pid),
                      plot=False, vels=True)
     return None
 
 def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
-                     n_rings=10, plot=False, vels=True, **kwargs):
+                     n_rings=10, plot=False, vels=True, suffix=None, **kwargs):
     # figure out data directories
     if "datadir" not in kwargs:
         datadir = str(root / "data") + "/"
@@ -35,9 +36,14 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         datadir = kwargs["datadir"]
 
     # name output files
-    fname1 = datadir + "rv_full_disk.csv"
-    fname2 = datadir + "rv_mu.csv"
-    fname3 = datadir + "rv_regions.csv"
+    if suffix is None:
+        fname1 = datadir + "rv_full_disk.csv"
+        fname2 = datadir + "rv_mu.csv"
+        fname3 = datadir + "rv_regions.csv"
+    else:
+        fname1 = datadir + "rv_full_disk_" + suffix + ".csv"
+        fname2 = datadir + "rv_mu_" + suffix + ".csv"
+        fname3 = datadir + "rv_regions_" + suffix + ".csv"
 
     # figure out plot output directors
     if "plotdir" not in kwargs:
@@ -172,8 +178,24 @@ if __name__ == "__main__":
         # report in parellel
         print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(con_files), ncpus, chunksize))
         t0 = time.time()
+        pids = []
         with get_context("forkserver").Pool(ncpus) as pool:
-            pool.starmap(process_data_set, items, chunksize=chunksize)
+            # get PIDs of workers
+            for child in mp.active_children():
+                pids.append(child.pid)
+
+            # run the analysis
+            results = pool.starmap(process_data_set_parallel, items, chunksize=chunksize)
+
+        # find the output data sets
+        datadir = str(root / "data") + "/"
+        outfiles1 = glob.glob(datadir + "rv_full_disk_*")
+        outfiles2 = glob.glob(datadir + "rv_regions_*")
+
+        # stitch them together
+        stitch_output_files(datadir + "rv_full_disk.csv", outfiles1)
+        stitch_output_files(datadir + "rv_regions.csv", outfiles2)
+
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
         # run serially
