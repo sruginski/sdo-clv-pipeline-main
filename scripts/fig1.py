@@ -20,11 +20,10 @@ plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
 def main():
     # see if data are already downloaded
-    files = glob.glob(datadir + "*.fits")
-    con = datadir + "hmi_ic_45s_2014_01_07_00_01_30_tai_continuum.fits"
-    mag = datadir + "hmi_m_45s_2014_01_07_00_01_30_tai_magnetogram.fits"
-    dop = datadir + "hmi_v_45s_2014_01_07_00_01_30_tai_dopplergram.fits"
-    aia = datadir + "aia_lev1_1700a_2014_01_07t00_00_30_71z_image_lev1.fits"
+    con = datadir + "fits/hmi_ic_45s_2014_01_07_00_01_30_tai_continuum.fits"
+    mag = datadir + "fits/hmi_m_45s_2014_01_07_00_01_30_tai_magnetogram.fits"
+    dop = datadir + "fits/hmi_v_45s_2014_01_07_00_01_30_tai_dopplergram.fits"
+    aia = datadir + "fits/aia_lev1_1700a_2014_01_07t00_00_30_71z_image_lev1.fits"
 
     if any(map(lambda x: x not in files, (con, mag, dop, aia))):
         # download the data to plot
@@ -32,8 +31,7 @@ def main():
         start = "2014/01/07"
         end = "2014/01/07"
         sample = 24
-        con, mag, dop, aia = download_data(outdir=datadir + "fits/",
-                                           start=start, end=end, sample=sample)
+        con, mag, dop, aia = download_data(outdir=datadir + "fits/", start=start, end=end, sample=sample)
 
     # preprocess the data and plot it
     print("\t >>> Processing and plotting data...")

@@ -1,9 +1,11 @@
 #!/bin/bash
-#SBATCH -A ebf11_c
+#SBATCH --account=ebf11_c
+##SBATCH --partition=burst
+##SBATCH --qos=burst2x
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
-#SBATCH --mem-per-cpu=4096
-#SBATCH --time=48:00:00
+#SBATCH --mem-per-cpu=8192
+#SBATCH --time=8:00:00
 #SBATCH --job-name=sdo_pipe
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
 #SBATCH --output=/storage/home/mlp95/work/logs/sdo_pipe.%j.out
