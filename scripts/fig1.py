@@ -32,8 +32,8 @@ def main():
         start = "2014/01/07"
         end = "2014/01/07"
         sample = 24
-        con, mag, dop, aia = download_data(outdir=datadir, start=start,
-                                           end=end, sample=sample)
+        con, mag, dop, aia = download_data(outdir=datadir + "fits/",
+                                           start=start, end=end, sample=sample)
 
     # preprocess the data and plot it
     print("\t >>> Processing and plotting data...")

@@ -20,6 +20,13 @@ df_full.sort_values("mjd", inplace=True)
 df_regs.sort_values("mjd", inplace=True)
 df_mu.sort_values("mjd", inplace=True)
 
+# get coverage of year
+xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
+ys = [any(np.isclose(date, df_full.mjd, rtol=1e-4)) for date in xs]
+
+plt.plot(xs, ys)
+plt.show()
+
 # make time series
 fig = plt.figure()
 ax1 = fig.add_subplot()
@@ -51,7 +58,7 @@ plt.clf(); plt.close()
 # make time series
 fig = plt.figure()
 ax1 = fig.add_subplot()
-idx = (df_regs.region == 4) & (df_regs.v_hat != 0.0)
+idx = (df_regs.region == 5) & (df_regs.v_hat != 0.0)
 # ax1.scatter(df_regs.mjd[idx], df_regs.v_hat[idx], s=2, label="v_hat")
 ax1.scatter(df_regs.mjd[idx], df_regs.v_phot[idx], s=2, label="v_phot")
 ax1.scatter(df_regs.mjd[idx], df_regs.v_conv[idx], s=2, label="v_conv")
@@ -149,9 +156,10 @@ ax1.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean
 ax1.errorbar(mu_bin, plage_rv_mean, yerr=plage_rv_err, fmt=".", color="tab:purple", label="Plage")
 ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_std, color="tab:purple", alpha=0.5)
 
+ax1.set_xticks(np.arange(0.1, 1.1, 0.1))
 ax1.invert_xaxis()
 ax1.set_xlabel(r"$\mu$")
-ax1.set_ylabel(r"${\rm Velocity (m/s)}$")
+ax1.set_ylabel(r"${\rm Velocity\ (m/s)}$")
 ax1.legend(loc="upper left", ncol=3, fontsize=11)
 plt.savefig(datdir + "mu_dist_regions.pdf")
 plt.clf(); plt.close()

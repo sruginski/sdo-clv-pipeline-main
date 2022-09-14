@@ -275,6 +275,7 @@ class SunMask(object):
         self.pen_frac = np.nansum(self.is_penumbra()) / npix
         self.umb_frac = np.nansum(self.is_umbra()) / npix
         self.quiet_frac = np.nansum(self.is_quiet()) / npix
+        self.network_frac = np.nansum(self.is_network()) / npix
         self.plage_frac = np.nansum(self.is_plage()) / npix
 
         return None

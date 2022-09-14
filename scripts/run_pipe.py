@@ -140,7 +140,7 @@ def get_parser_args():
     clobber = args.clobber
     return clobber
 
-if __name__ == "__main__":
+def main():
     # define sdo_data directories
     indir = "/Users/michael/Desktop/sdo_data/"
     if not isdir(indir):
@@ -160,7 +160,8 @@ if __name__ == "__main__":
         from os import sched_getaffinity
         ncpus = len(sched_getaffinity(0))
     except:
-        ncpus = np.min([len(con_files), mp.cpu_count()])
+        # ncpus = np.min([len(con_files), mp.cpu_count()])
+        ncpus = 2
 
     # process the data either in parallel or serially
     if ncpus > 1:
@@ -168,24 +169,17 @@ if __name__ == "__main__":
         items = []
         for i in range(len(con_files)):
             items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
-
-        # figure out chunksize
-        if len(items) <= ncpus:
-            chunksize = 1
-        else:
-            chunksize = int(np.ceil(len(items)/ncpus))
-
         # run in parellel
-        print(">>> Processing %s epochs with %s processes (chunksize = %s)" % (len(con_files), ncpus, chunksize))
+        print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
         t0 = time.time()
         pids = []
-        with get_context("forkserver").Pool(ncpus) as pool:
+        with get_context("spawn").Pool(ncpus, maxtasksperchild=2) as pool:
             # get PIDs of workers
             for child in mp.active_children():
                 pids.append(child.pid)
 
             # run the analysis
-            results = pool.starmap(process_data_set_parallel, items, chunksize=chunksize)
+            results = pool.starmap(process_data_set_parallel, items, chunksize=4)
 
         # find the output data sets
         datadir = str(root / "data") + "/"
@@ -205,3 +199,7 @@ if __name__ == "__main__":
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                              mu_thresh=mu_thresh, n_rings=n_rings, plot=False)
         print("Serial: --- %s seconds ---" % (time.time() - t0))
+    return None
+
+if __name__ == "__main__":
+    main()
