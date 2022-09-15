@@ -43,7 +43,9 @@ def main():
     # get number of cpus
     try:
         from os import sched_getaffinity
-        ncpus = len(sched_getaffinity(0))
+        print(">>> OS claims %s CPUs are available..." % len(sched_getaffinity(0)))
+        # ncpus = len(sched_getaffinity(0))
+        ncpus = 7
     except:
         # ncpus = np.min([len(con_files), mp.cpu_count()])
         ncpus = 4
