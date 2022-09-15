@@ -20,11 +20,12 @@ df_full.sort_values("mjd", inplace=True)
 df_regs.sort_values("mjd", inplace=True)
 df_mu.sort_values("mjd", inplace=True)
 
+pdb.set_trace()
 # get coverage of year
 xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
-ys = [any(np.isclose(date, df_full.mjd, rtol=1e-4)) for date in xs]
+ys = [any(np.isclose(date, df_full.mjd, rtol=1e-6)) for date in xs]
 
-plt.plot(xs, ys)
+plt.scatter(xs, ys, s=1)
 plt.show()
 
 # make time series

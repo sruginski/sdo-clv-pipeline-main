@@ -1,7 +1,7 @@
 import numpy as np
 import pdb
 
-def calc_velocities(con, mag, dop, aia, mask, region, hi_mu, lo_mu):
+def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None):
     # get weights
     w_quiet = mask.w_quiet
     w_active = mask.w_active
