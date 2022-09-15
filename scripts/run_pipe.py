@@ -46,7 +46,7 @@ def main():
         ncpus = len(sched_getaffinity(0))
     except:
         # ncpus = np.min([len(con_files), mp.cpu_count()])
-        ncpus = 2
+        ncpus = 4
 
     # process the data either in parallel or serially
     if ncpus > 1:
@@ -59,7 +59,7 @@ def main():
         print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
         t0 = time.time()
         pids = []
-        with get_context("forkserver").Pool(ncpus, maxtasksperchild=2) as pool:
+        with get_context("spawn").Pool(ncpus, maxtasksperchild=2) as pool:
             # get PIDs of workers
             for child in mp.active_children():
                 pids.append(child.pid)

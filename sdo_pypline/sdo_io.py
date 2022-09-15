@@ -106,9 +106,9 @@ def organize_input_output(indir, datadir=None, clobber=False):
         truncate_output_file(fname3)
 
         # find any stray files from multiprocessing
-        fname1_mp = glob.glob(datadir + "rv_full_disk_*")
-        fname2_mp = glob.glob(datadir + "rv_mu_*")
-        fname3_mp = glob.glob(datadir + "rv_regions_*")
+        fname1_mp = glob.glob(datadir + "tmp/rv_full_disk_*")
+        fname2_mp = glob.glob(datadir + "tmp/rv_mu_*")
+        fname3_mp = glob.glob(datadir + "tmp/rv_regions_*")
 
         # remove them
         if not not fname1_mp:

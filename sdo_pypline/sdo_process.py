@@ -8,7 +8,6 @@ from os.path import exists, split, isdir, getsize
 from .paths import root
 from .sdo_io import *
 from .sdo_vels import *
-from .sdo_plot import *
 from .sdo_image import *
 
 # multiprocessing imports
@@ -26,7 +25,9 @@ def process_data_set_parallel(con_file, mag_file, dop_file,
 def process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=0.1, n_rings=10, suffix=None):
     # figure out data directories
-    datadir = kwargs["datadir"]
+    datadir = str(root / "data") + "/"
+    if not isdir(datadir):
+        os.mkdir(datadir)
 
     # name output files
     if suffix is None:
