@@ -34,7 +34,7 @@ srun="srun --nodes 1 --ntasks 1"
 parallel="parallel --max-procs $SLURM_NTASKS --joblog parallel_joblog"
 
 echo "About to start Python w/ gnuparallel"
-$parallel "$srun python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data_new {1} 4" :::: batch/dates_to_download.txt
+$parallel "$srun python sdo_pypline/sdo_download.py {1}" :::: batch/dates_to_download.txt
 echo "Python exited"
 date
 
