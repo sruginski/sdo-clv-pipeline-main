@@ -31,7 +31,8 @@ export OMP_NUM_THREADS=1
 srun="srun --nodes 1 --ntasks 1"
 
 # define parallel arguments:
-parallel="parallel --max-procs $SLURM_NTASKS --joblog $SLURM_JOB_NAME.$SLURM_JOBID.paralleljoblog"
+export PJOBLOG = "/storage/home/mlp95/work/logs/$SLURM_JOB_NAME.$SLURM_JOBID.pjoblog"
+parallel="parallel --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
 
 echo "About to start Python w/ gnuparallel"
 $parallel "$srun python sdo_pypline/sdo_download.py {1}" :::: batch/dates_to_download.txt
