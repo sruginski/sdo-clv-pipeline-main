@@ -326,7 +326,7 @@ class SunMask(object):
         # mask the nans and find where distribution goes to 0
         # TODO "polyfit may be poorly conditioned"
         peak_idx = np.argmax(ahist)
-        zero_idx = np.argmax(ahist == 0.0)
+        zero_idx = np.argmax(bin_centers >= 170)
 
         # fit the distribution
         order = 1

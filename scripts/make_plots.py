@@ -20,7 +20,6 @@ df_full.sort_values("mjd", inplace=True)
 df_regs.sort_values("mjd", inplace=True)
 df_mu.sort_values("mjd", inplace=True)
 
-pdb.set_trace()
 # get coverage of year
 xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
 ys = [any(np.isclose(date, df_full.mjd, rtol=1e-6)) for date in xs]
@@ -144,7 +143,6 @@ ax1 = fig.add_subplot()
 
 ax1.errorbar(mu_bin, whole_sun_rv_mean, yerr=whole_sun_rv_err, fmt=".", color="black", label="All regions")
 ax1.fill_between(mu_bin, whole_sun_rv_mean - whole_sun_rv_std, whole_sun_rv_mean + whole_sun_rv_std, color="black", alpha=0.5)
-
 ax1.errorbar(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err, fmt=".", color="tab:blue", label="Quiet Sun")
 ax1.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean + quiet_sun_rv_std, color="tab:blue", alpha=0.5)
 

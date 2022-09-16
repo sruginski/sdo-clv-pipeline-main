@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
 #SBATCH --mem-per-cpu=8192
-#SBATCH --time=8:00:00
+#SBATCH --time=16:00:00
 #SBATCH --job-name=sdo_pipe
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
 #SBATCH --output=/storage/home/mlp95/work/logs/sdo_pipe.%j.out

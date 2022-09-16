@@ -134,7 +134,7 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1 = fig.add_subplot(111, projection=wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
-    clb.ax.set_yticklabels([r"${\rm Umbrae}$", r"${\rm Penumbrae}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
+    clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.invert_xaxis()
     ax1.invert_yaxis()
     ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")

@@ -89,7 +89,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     aia.mask_low_mu(mu_thresh)
 
     # identify regions for thresholding
-    mask = SunMask(con, mag, dop, aia)
+    try:
+        mask = SunMask(con, mag, dop, aia)
+    except TypeError:
+        println("\t >>> Region identification failed, skipping " + iso, flush=True)
 
     # compute velocities and write to disk
     vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)
@@ -98,20 +101,26 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # loop over mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
-    results = []
+    results_mu = []
+    results_reg = []
     for j in range(n_rings-1):
         # mu values for annuli
         lo_mu=mu_grid[j]
         hi_mu=mu_grid[j+1]
 
+        # compute velocity within mu
+        vels_mu = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        results_mu.append((mjd, 0, lo_mu, hi_mu, *vels_mu))
+
         # loop over unique region identifiers
         for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
             # compute velocity components in each mu annulus by region
             vels_reg = calc_velocities(con, mag, dop, aia, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
-            results.append((mjd, k, lo_mu, hi_mu, *vels_reg))
+            results_reg.append((mjd, k, lo_mu, hi_mu, *vels_reg))
 
         # write to disk
-        write_vels_by_region(fname3, results)
+        write_vels_by_region(fname2, results_mu)
+        write_vels_by_region(fname3, results_reg)
 
     # do some memory cleanup
     del con
@@ -120,7 +129,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del aia
     del mask
     del vels
-    del results
+    del results_mu
+    del results_reg
     gc.collect()
 
     # report success and return

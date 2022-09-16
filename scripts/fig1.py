@@ -48,7 +48,7 @@ def main():
     os.rename(mag_file[0], plotdir+"fig1b.pdf")
     os.rename(dop_file[0], plotdir+"fig1c.pdf")
     os.rename(aia_file[0], plotdir+"fig1d.pdf")
-    os.rename(mask_file[0], plotdir+"fig1e.pdf")
+    os.rename(mask_file[0], plotdir+"fig2.pdf")
     return None
 
 if __name__ == "__main__":

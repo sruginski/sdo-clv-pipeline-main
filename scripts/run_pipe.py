@@ -67,17 +67,19 @@ def main():
                 pids.append(child.pid)
 
             # run the analysis
-            results = pool.starmap(process_data_set_parallel, items, chunksize=8)
+            pool.starmap(process_data_set_parallel, items, chunksize=8)
 
         # find the output data sets
         datadir = str(root / "data") + "/"
         tmpdir = datadir + "tmp/"
         outfiles1 = glob.glob(tmpdir + "rv_full_disk_*")
         outfiles2 = glob.glob(tmpdir + "rv_regions_*")
+        outfiles3 = glob.glob(tmpdir + "rv_mu_*")
 
         # stitch them together on the main process
         stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
         stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
 
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
