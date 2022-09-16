@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -A ebf11_c
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --mem=8GB
+#SBATCH --ntasks=8
+#SBATCH --mem-per-cpu=4096
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_data
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
@@ -14,25 +14,29 @@ echo "Job id: $SLURM_JOBID"
 echo "About to change into $SLURM_SUBMIT_DIR"
 cd $SLURM_SUBMIT_DIR
 
+echo "About to load gnuparallel"
+module load parallel
+echo "gnuparallel loaded"
+
 echo "About to activate conda environment"
 source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate solar
 echo "Environment activated"
 
-echo "About to start Python"
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/01/01 2014/01/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/02/01 2014/02/28 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/03/01 2014/03/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/04/01 2014/04/30 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/05/01 2014/05/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/06/01 2014/06/30 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/07/01 2014/07/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/08/01 2014/08/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/09/01 2014/09/30 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/10/01 2014/10/31 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/11/01 2014/11/30 6
-python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data 2014/12/01 2014/12/31 6
+# use one thread per copy of python
+export OMP_NUM_THREADS=1
+
+# Define srun arguments:
+# allocates a single core to each task
+srun="srun --nodes 1 --ntasks 1"
+
+# define parallel arguments:
+parallel="parallel --max-procs $SLURM_NTASKS --joblog parallel_joblog"
+
+echo "About to start Python w/ gnuparallel"
+$parallel "$srun python sdo_pypline/sdo_download.py /scratch/mlp95/sdo_data_new {1} 4" :::: batch/dates_to_download.txt
 echo "Python exited"
 date
+
 
 
