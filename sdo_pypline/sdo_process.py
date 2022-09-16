@@ -97,7 +97,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # compute velocities and write to disk
     vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)
     write_vels_whole_disk(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-                          mask.umb_frac, mask.quiet_frac, mask.plage_frac, vels)
+                          mask.umb_frac, mask.quiet_frac, mask.network_frac,
+                          mask.plage_frac, vels)
 
     # loop over mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)

@@ -2,7 +2,7 @@
 import numpy as np
 import sunpy as sp
 import datetime as dt
-import os, re, pdb, csv, glob, fcntl
+import os, re, pdb, csv, glob
 from astropy.io import fits
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize, splitext
@@ -93,7 +93,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
     fname3 = datadir + "rv_regions.csv"
 
     header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                "quiet_frac", "plage_frac", "v_hat", \
+                "quiet_frac", "network_frac", "plage_frac", "v_hat", \
                 "v_phot", "v_quiet", "v_conv"]
     header2 = ["mjd", "region", "lo_mu", "hi_mu", \
                 "v_hat", "v_phot", "v_quiet", "v_conv"]
@@ -197,15 +197,15 @@ def create_file(fname, header):
 def write_vels_whole_disk(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
     if not exists(fname):
         create_file(fname, ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                            "quiet_frac", "plage_frac", "v_hat", \
+                            "quiet_frac", "network_frac", "plage_frac", "v_hat", \
                             "v_phot", "v_quiet", "v_conv"])
 
     # write the vels
     with open(fname, "a") as f:
-        # fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
-        writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac], [v for v in vels])))
-        # fcntl.flock(f, fcntl.LOCK_UN)
+        writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac,
+                                         umb_frac, quiet_frac, network_frac,
+                                         plage_frac], [v for v in vels])))
     return None
 
 def write_vels_by_region(fname, results):
@@ -224,10 +224,8 @@ def write_vels_by_region_lines(fname, mjd, region, lo_mu, hi_mu, v1, v2, v3, v4)
 
     # write the vels
     with open(fname, "a") as f:
-        # fcntl.flock(f, fcntl.LOCK_EX)
         writer = csv.writer(f)
         writer.writerow([mjd, region, lo_mu, hi_mu, v1, v2, v3, v4])
-        # fcntl.flock(f, fcntl.LOCK_UN)
     return None
 
 def stitch_output_files(fname, files, delete=False):

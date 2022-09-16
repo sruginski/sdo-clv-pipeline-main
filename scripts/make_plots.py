@@ -10,7 +10,7 @@ import pandas as pd
 plt.style.use("my.mplstyle"); plt.ioff()
 
 # data files
-datdir = "/Users/michael/Desktop/sdo_output/"
+datdir = "/Users/michael/Desktop/sdo-pypline/data/"
 df_full = pd.read_csv(datdir + "rv_full_disk.csv")
 df_regs = pd.read_csv(datdir + "rv_regions.csv")
 df_mu = pd.read_csv(datdir + "rv_mu.csv")
@@ -21,11 +21,10 @@ df_regs.sort_values("mjd", inplace=True)
 df_mu.sort_values("mjd", inplace=True)
 
 # get coverage of year
-xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
-ys = [any(np.isclose(date, df_full.mjd, rtol=1e-6)) for date in xs]
-
-plt.scatter(xs, ys, s=1)
-plt.show()
+# xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
+# ys = [any(np.isclose(date, df_full.mjd, rtol=1e-5)) for date in xs]
+# plt.scatter(xs, ys, s=1)
+# plt.show()
 
 # make time series
 fig = plt.figure()
@@ -71,18 +70,32 @@ fig.savefig(datdir + "plage_series.pdf")
 plt.clf(); plt.close()
 
 # time series of other stuff
+network_frac = 1.0 - (df_full.quiet_frac + df_full.pen_frac + df_full.umb_frac + df_full.plage_frac)
 fig = plt.figure()
 ax1 = fig.add_subplot()
-ax1.scatter(df_full.mjd, df_full.ffactor, s=2, label="Mag. Filling Factor")
-ax1.scatter(df_full.mjd, df_full.plage_frac, s=2, label="Plage Frac.")
-ax1.scatter(df_full.mjd, df_full.umb_frac + df_full.pen_frac, s=2, label="Spot Frac.")
+ax1.scatter(df_full.mjd, df_full.ffactor, s=2, label="Mag. Filling")
+ax1.scatter(df_full.mjd, df_full.plage_frac, s=2, label="Plage")
+ax1.scatter(df_full.mjd, df_full.plage_frac + network_frac, s=2, label="Plage + Network")
+ax1.scatter(df_full.mjd, df_full.umb_frac + df_full.pen_frac, s=2, label="Spot")
 ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Fraction}$")
 ax1.set_ylim(-0.025, 0.12)
-ax1.legend(ncol=3)
+ax1.legend(fontsize=9)
 fig.savefig(datdir + "frac.pdf")
 plt.clf(); plt.close()
 
+# correlation
+fig = plt.figure()
+ax1 = fig.add_subplot()
+ax1.scatter(df_full.ffactor, df_full.plage_frac, s=2, label="Plage")
+ax1.scatter(df_full.ffactor, df_full.plage_frac + network_frac, s=2, label="Plage + Network")
+ax1.set_xlabel(r"${\rm Magnetic\ Filling\ Factor}$")
+ax1.set_ylabel(r"${\rm Fraction}$")
+ax1.set_xlim(0.05, 0.125)
+ax1.set_ylim(0.00, 0.125)
+ax1.legend(fontsize=9)
+fig.savefig(datdir + "frac_corr.pdf")
+plt.clf(); plt.close()
 
 # get centers of mu bins
 lo_mus = np.unique(df_regs.lo_mu)
