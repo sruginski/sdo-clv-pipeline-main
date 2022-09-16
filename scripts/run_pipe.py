@@ -35,6 +35,11 @@ def main():
     clobber = get_parser_args()
     con_files, mag_files, dop_files, aia_files = organize_input_output(indir, clobber=clobber)
 
+    con_files=con_files[0:4]
+    mag_files=mag_files[0:4]
+    dop_files=dop_files[0:4]
+    aia_files=aia_files[0:4]
+
     # set mu threshold, number of mu rings
     n_rings = 10
     mu_thresh = 0.1
@@ -66,7 +71,7 @@ def main():
                 pids.append(child.pid)
 
             # run the analysis
-            pool.starmap(process_data_set_parallel, items, chunksize=8)
+            pool.starmap(process_data_set_parallel, items, chunksize=1)
 
         # find the output data sets
         datadir = str(root / "data") + "/"
@@ -74,11 +79,15 @@ def main():
         outfiles1 = glob.glob(tmpdir + "rv_full_disk_*")
         outfiles2 = glob.glob(tmpdir + "rv_regions_*")
         outfiles3 = glob.glob(tmpdir + "rv_mu_*")
+        outfiles4 = glob.glob(tmpdir + "*aia*")
+        outfiles5 = glob.glob(tmpdir + "*hmi*")
 
         # stitch them together on the main process
         stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
         stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
         stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + "aia_ld_params.csv", outfiles4, delete=True)
+        stitch_output_files(datadir + "hmi_ld_params.csv", outfiles5, delete=True)
 
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:

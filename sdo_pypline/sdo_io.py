@@ -91,12 +91,15 @@ def organize_input_output(indir, datadir=None, clobber=False):
     fname1 = datadir + "rv_full_disk.csv"
     fname2 = datadir + "rv_mu.csv"
     fname3 = datadir + "rv_regions.csv"
+    fname4 = datadir + "aia_ld_params.csv"
+    fname5 = datadir + "hmi_ld_params.csv"
 
     header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
                 "quiet_frac", "network_frac", "plage_frac", "v_hat", \
                 "v_phot", "v_quiet", "v_conv"]
     header2 = ["mjd", "region", "lo_mu", "hi_mu", \
                 "v_hat", "v_phot", "v_quiet", "v_conv"]
+    header3 = ["mjd", "a", "b", "c"]
 
     # replace/create/modify output files
     if clobber and all(map(exists, (fname1, fname2, fname3))):
@@ -104,11 +107,14 @@ def organize_input_output(indir, datadir=None, clobber=False):
         truncate_output_file(fname1)
         truncate_output_file(fname2)
         truncate_output_file(fname3)
+        truncate_output_file(fname4)
+        truncate_output_file(fname5)
 
         # find any stray files from multiprocessing
         fname1_mp = glob.glob(datadir + "tmp/rv_full_disk_*")
         fname2_mp = glob.glob(datadir + "tmp/rv_mu_*")
         fname3_mp = glob.glob(datadir + "tmp/rv_regions_*")
+        fname4_mp = glob.glob(datadir + "tmp/*_ld_params_*")
 
         # remove them
         if not not fname1_mp:
@@ -120,38 +126,45 @@ def organize_input_output(indir, datadir=None, clobber=False):
         if not not fname3_mp:
             for f in fname3_mp:
                 os.remove(f)
+        if not not fname4_mp:
+            for f in fname4_mp:
+                os.remove(f)
 
         # create the files with headers
         create_file(fname1, header1)
         create_file(fname2, header2)
         create_file(fname3, header2)
+        create_file(fname4, header3)
+        create_file(fname5, header3)
     elif all(map(exists, (fname1, fname2, fname3))) and \
          all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
-        # find out the last MJD analyzed
-        mjd_str = find_last_date(fname1)
+        # get list of all mjds
+        # TODO fix this
 
-        # remove all lines with that mjd (in case regions didn't finish)
-        remove_line_by_mjd(mjd_str, fname1)
-        remove_line_by_mjd(mjd_str, fname2)
-        remove_line_by_mjd(mjd_str, fname3)
+        println("Continuing is broken currently")
+        return None
 
-        # find subset of sdo date to start with
-        mjd = Time(mjd_str, format="mjd")
-        mjd = round_time(date=mjd.datetime)
+        # mjd_str = find_last_date(fname1)
 
-        # get dates and index of occurence of mjd
-        con_dates = get_dates(con_files)
-        idx = con_dates.index(mjd)
+        # # find subset of sdo date to start with
+        # mjd = Time(mjd_str, format="mjd")
+        # mjd = round_time(date=mjd.datetime)
 
-        # subset the lists
-        con_files = con_files[idx:]
-        mag_files = mag_files[idx:]
-        dop_files = dop_files[idx:]
-        aia_files = aia_files[idx:]
+        # # get dates and index of occurence of mjd
+        # con_dates = get_dates(con_files)
+        # idx = con_dates.index(mjd)
+
+        # # subset the lists
+        # con_files = con_files[idx:]
+        # mag_files = mag_files[idx:]
+        # dop_files = dop_files[idx:]
+        # aia_files = aia_files[idx:]
     else:
         create_file(fname1, header1)
         create_file(fname2, header2)
         create_file(fname3, header2)
+        create_file(fname4, header3)
+        create_file(fname5, header3)
 
     return con_files, mag_files, dop_files, aia_files
 
@@ -169,63 +182,27 @@ def find_last_date(fname):
         mjd_str = line.split(",")[0]
     return mjd_str
 
-def remove_line_by_mjd(mjd_str, fname):
-    # find the lines that don't include this mjd
-    lines = []
-    with open(fname, "r") as f:
-        reader = csv.reader(f)
-        for idx, row in enumerate(reader):
-            if (idx == 0) | (mjd_str not in row):
-                lines.append(row)
-
-    # wipe the file
-    truncate_output_file(fname)
-
-    # write good lines to file
+def create_file(fname, header=None):
     with open(fname, "w") as f:
         writer = csv.writer(f)
-        writer.writerows(lines)
-
+        if header is not None:
+            writer.writerow(header)
     return None
 
-def create_file(fname, header):
-    with open(fname, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-    return None
+def write_results_to_file(fname, *args):
+    assert exists(fname)
 
-def write_vels_whole_disk(fname, mjd, ffactor, Bobs, pen_frac, umb_frac, quiet_frac, plage_frac, vels):
-    if not exists(fname):
-        create_file(fname, ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                            "quiet_frac", "network_frac", "plage_frac", "v_hat", \
-                            "v_phot", "v_quiet", "v_conv"])
+    # parse out args
+    lines = [a for a in args]
 
-    # write the vels
-    with open(fname, "a") as f:
-        writer = csv.writer(f)
-        writer.writerow(np.concatenate(([mjd, ffactor, Bobs, pen_frac,
-                                         umb_frac, quiet_frac, network_frac,
-                                         plage_frac], [v for v in vels])))
-    return None
-
-def write_vels_by_region(fname, results):
-    if not exists(fname):
-        create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
-                            "v_hat", "v_phot", "v_quiet", "v_conv"])
-
-    for line in results:
-        write_vels_by_region_lines(fname, *line)
-    return None
-
-def write_vels_by_region_lines(fname, mjd, region, lo_mu, hi_mu, v1, v2, v3, v4):
-    if not exists(fname):
-        create_file(fname, ["mjd", "region", "lo_mu", "hi_mu", \
-                            "v_hat", "v_phot", "v_quiet", "v_conv"])
-
-    # write the vels
-    with open(fname, "a") as f:
-        writer = csv.writer(f)
-        writer.writerow([mjd, region, lo_mu, hi_mu, v1, v2, v3, v4])
+    if any(isinstance(el, list) for el in lines):
+        for el in lines:
+            write_results_to_file(fname, *el)
+    else:
+        # write to disk
+        with open(fname, "a") as f:
+            writer = csv.writer(f)
+            writer.writerow(lines)
     return None
 
 def stitch_output_files(fname, files, delete=False):

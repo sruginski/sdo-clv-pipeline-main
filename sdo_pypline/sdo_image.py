@@ -202,14 +202,15 @@ class SDOImage(object):
 
         # set the initial guess parameters for optimization
         if self.is_continuum():
-            p0 = [55925.8, 0.88, -0.23]
+            p0 = [59000.0, 0.38, 0.23]
         elif self.is_filtergram():
-            p0 = [1000, 0.081, 0.4998]
+            p0 = [1000, 0.9, -0.25]
         else:
             return None
 
         # do the fit and divide out the LD profile
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
+        self.ld_coeffs = popt
         self.ldark = quad_darkening(self.mu, *popt)
         self.iflat = self.image/self.ldark
         return None
