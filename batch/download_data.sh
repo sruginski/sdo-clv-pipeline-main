@@ -32,10 +32,10 @@ srun="srun --nodes 1 --ntasks 1"
 
 # define parallel arguments:
 export PJOBLOG="/storage/home/mlp95/work/logs/$SLURM_JOB_NAME.$SLURM_JOBID.pjoblog"
-parallel="parallel --delay 0.2 --max-procs $SLURM_NTASKS --joblog $PJOBLOG --colsep ' '"
+parallel="parallel --delay 0.2 --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
 
 echo "About to start Python w/ gnuparallel"
-$parallel "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates_to_download.txt
+$parallel --colsep ' ' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates_to_download.txt
 echo "Python exited"
 date
 
