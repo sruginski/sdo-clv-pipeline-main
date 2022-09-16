@@ -52,10 +52,10 @@ def main():
     # initialize argparser
     parser = argparse.ArgumentParser(description='Download SDO data from JSOC',
                                      formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('outdir', type=str, help='full directory path for file writeout')
-    parser.add_argument('start', type=str, help='starting date formatted as YYYY/MM/DD')
-    parser.add_argument('end', type=str, help='ending date formatted as YYYY/MM/DD')
-    parser.add_argument('sample', type=int, help='cadence of sampling in hours')
+    parser.add_argument('--outdir', type=str, help='full directory path for file writeout')
+    parser.add_argument('--start', type=str, help='starting date formatted as YYYY/MM/DD')
+    parser.add_argument('--end', type=str, help='ending date formatted as YYYY/MM/DD')
+    parser.add_argument('--sample', type=int, help='cadence of sampling in hours')
 
     # parse the command line arguments
     args = parser.parse_args()
