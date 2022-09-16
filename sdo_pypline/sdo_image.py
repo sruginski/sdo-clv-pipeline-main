@@ -328,12 +328,16 @@ class SunMask(object):
         peak_idx = np.argmax(ahist)
         zero_idx = np.argmax(bin_centers >= 170)
 
-        # fit the distribution
+        # get data to fit
+        mask = ahist[peak_idx:zero_idx] == 0.0
+        xs = np.log10(indices[peak_idx:zero_idx][~mask])
+        ys = np.log10(ahist[peak_idx:zero_idx][~mask])
+        # ws = 1.0/np.sqrt(ahist[peak_idx:zero_idx][~mask])
         order = 1
-        weights = 1.0/np.sqrt(ahist[peak_idx:zero_idx])
-        pfit1 = np.polyfit(np.log10(indices[peak_idx:zero_idx]),
-                           np.log10(ahist[peak_idx:zero_idx]),
-                           order, w=weights)
+
+        # fit the distribution
+        # TODO should we weight?
+        pfit1 = np.polyfit(xs, ys, order)#, w=ws)
 
         # evaluate the model and find where the fit cuts off the large-area tail
         model_ys = np.polyval(pfit1, np.log10(indices))

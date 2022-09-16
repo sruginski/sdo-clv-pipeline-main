@@ -3,7 +3,7 @@
 ##SBATCH --partition=burst
 ##SBATCH --qos=burst2x
 #SBATCH --nodes=1
-#SBATCH --ntasks=8
+#SBATCH --ntasks=10
 #SBATCH --mem-per-cpu=8192
 #SBATCH --time=16:00:00
 #SBATCH --job-name=sdo_pipe
