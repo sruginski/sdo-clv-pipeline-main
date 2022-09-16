@@ -28,12 +28,14 @@ def download_data(outdir=None, start=None, end=None, sample=None, overwrite=Fals
     # get query for HMI and download data, retry failed downloads
     con, mag, vel = Fido.search(trange, instr1, physobs, provider, sample)
     hmi_files = Fido.fetch(con, mag, vel, path=outdir, overwrite=overwrite, progress=False)
+    println("About to fetch HMI files starting at date %s" % start)
     while len(hmi_files.errors) > 0:
         hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=overwrite, progress=False)
 
     # get query for AIA and download data
     aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
     aia_files = Fido.fetch(aia, path=outdir, overwrite=overwrite, progress=False)
+    println("About to fetch AIA files starting at date %s" % start)
     while len(aia_files.errors) > 0:
         aia_files = Fido.fetch(aia_files, path=outdir, overwrite=overwrite, progress=False)
 
