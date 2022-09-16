@@ -118,9 +118,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             vels_reg = calc_velocities(con, mag, dop, aia, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
             results_reg.append((mjd, k, lo_mu, hi_mu, *vels_reg))
 
-        # write to disk
-        write_vels_by_region(fname2, results_mu)
-        write_vels_by_region(fname3, results_reg)
+    # write to disk
+    write_vels_by_region(fname2, results_mu)
+    write_vels_by_region(fname3, results_reg)
 
     # do some memory cleanup
     del con
