@@ -50,45 +50,45 @@ def main():
         ncpus = 4
 
     # process the data either in parallel or serially
-    # if ncpus > 1:
-    #     # prepare arguments for starmap
-    #     items = []
-    #     for i in range(len(con_files)):
-    #         items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
+    if ncpus > 1:
+        # prepare arguments for starmap
+        items = []
+        for i in range(len(con_files)):
+            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
 
-    #     # run in parellel
-    #     print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
-    #     t0 = time.time()
-    #     pids = []
-    #     with get_context("spawn").Pool(ncpus, maxtasksperchild=2) as pool:
-    #         # get PIDs of workers
-    #         for child in mp.active_children():
-    #             pids.append(child.pid)
+        # run in parellel
+        print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
+        t0 = time.time()
+        pids = []
+        with get_context("spawn").Pool(ncpus, maxtasksperchild=2) as pool:
+            # get PIDs of workers
+            for child in mp.active_children():
+                pids.append(child.pid)
 
-    #         # run the analysis
-    #         pool.starmap(process_data_set_parallel, items, chunksize=8)
+            # run the analysis
+            pool.starmap(process_data_set_parallel, items, chunksize=8)
 
-    #     # find the output data sets
-    #     datadir = str(root / "data") + "/"
-    #     tmpdir = datadir + "tmp/"
-    #     outfiles1 = glob.glob(tmpdir + "rv_full_disk_*")
-    #     outfiles2 = glob.glob(tmpdir + "rv_regions_*")
-    #     outfiles3 = glob.glob(tmpdir + "rv_mu_*")
+        # find the output data sets
+        datadir = str(root / "data") + "/"
+        tmpdir = datadir + "tmp/"
+        outfiles1 = glob.glob(tmpdir + "rv_full_disk_*")
+        outfiles2 = glob.glob(tmpdir + "rv_regions_*")
+        outfiles3 = glob.glob(tmpdir + "rv_mu_*")
 
-    #     # stitch them together on the main process
-    #     stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
-    #     stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
-    #     stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
+        # stitch them together on the main process
+        stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
+        stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
 
-    #     print("Parallel: --- %s seconds ---" % (time.time() - t0))
-    # else:
-    # run serially
-    print(">>> Processing %s epochs on a single process" % len(con_files))
-    t0 = time.time()
-    for i in range(len(con_files)):
-        process_data_set(con_files[i], mag_files[i], dop_files[i],
-                         aia_files[i], mu_thresh=mu_thresh, n_rings=n_rings)
-    print("Serial: --- %s seconds ---" % (time.time() - t0))
+        print("Parallel: --- %s seconds ---" % (time.time() - t0))
+    else:
+        # run serially
+        print(">>> Processing %s epochs on a single process" % len(con_files))
+        t0 = time.time()
+        for i in range(len(con_files)):
+            process_data_set(con_files[i], mag_files[i], dop_files[i],
+                             aia_files[i], mu_thresh=mu_thresh, n_rings=n_rings)
+        print("Serial: --- %s seconds ---" % (time.time() - t0))
     return None
 
 if __name__ == "__main__":
