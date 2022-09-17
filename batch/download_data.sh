@@ -2,8 +2,8 @@
 #SBATCH -A ebf11_c
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
-#SBATCH --mem-per-cpu=4096
-#SBATCH --time=48:00:00
+#SBATCH --mem-per-cpu=2048
+#SBATCH --time=24:00:00
 #SBATCH --job-name=sdo_data
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
 #SBATCH --output=/storage/home/mlp95/work/logs/sdo_data.%j.out
@@ -23,19 +23,15 @@ source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate solar
 echo "Environment activated"
 
-# use one thread per copy of python
-export OMP_NUM_THREADS=1
-
 # Define srun arguments:
-# allocates a single core to each task
-srun="srun --nodes 1 --ntasks 1"
+srun="srun --exclusive --nodes 1 --ntasks 1"
 
 # define parallel arguments:
 export PJOBLOG="/storage/home/mlp95/work/logs/$SLURM_JOB_NAME.$SLURM_JOBID.pjoblog"
-parallel="parallel --delay 0.2 --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
+parallel="parallel --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
 
 echo "About to start Python w/ gnuparallel"
-$parallel --colsep ' ' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates_to_download.txt
+$parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py  {1} {2} {3} {4}" :::: batch/dates_to_download.txt
 echo "Python exited"
 date
 
