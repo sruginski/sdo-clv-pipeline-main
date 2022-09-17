@@ -36,6 +36,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname3 = datadir + "rv_regions.csv"
         fname4 = datadir + "aia_ld_params.csv"
         fname5 = datadir + "hmi_ld_params.csv"
+        fname6 = datadir + "con_thresh.csv"
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
@@ -48,6 +49,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname3 = datadir + "tmp/rv_regions_" + suffix + ".csv"
         fname4 = datadir + "tmp/aia_ld_params_" + suffix + ".csv"
         fname5 = datadir + "tmp/hmi_ld_params_" + suffix + ".csv"
+        fname6 = datadir + "con_thresh" + suffix + ".csv"
 
         # check if the files exist, create otherwise
         if not exists(fname1):
@@ -60,6 +62,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             create_file(fname4)
         if not exists(fname5):
             create_file(fname5)
+        if not exists(fname6):
+            create_file(fname6)
 
     # make SDOImage instances
     try:
@@ -113,6 +117,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         mask = SunMask(con, mag, dop, aia)
     except TypeError:
         println("\t >>> Region identification failed, skipping " + iso, flush=True)
+
+    # write thresholds used for masking to disk
+    write_results_to_file(fname6, mjd, mask.con_thresh, mask.aia_thresh)
 
     # compute velocities and write to disk
     vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)

@@ -81,6 +81,7 @@ def main():
         outfiles3 = glob.glob(tmpdir + "rv_mu_*")
         outfiles4 = glob.glob(tmpdir + "*aia*")
         outfiles5 = glob.glob(tmpdir + "*hmi*")
+        outfiles6 = glob.glob(tmpdir + "*thresh*")
 
         # stitch them together on the main process
         stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
@@ -88,6 +89,7 @@ def main():
         stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
         stitch_output_files(datadir + "aia_ld_params.csv", outfiles4, delete=True)
         stitch_output_files(datadir + "hmi_ld_params.csv", outfiles5, delete=True)
+        stitch_output_files(datadir + "con_thresh.csv", outfiles6, delete=True)
 
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:

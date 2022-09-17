@@ -93,6 +93,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
     fname3 = datadir + "rv_regions.csv"
     fname4 = datadir + "aia_ld_params.csv"
     fname5 = datadir + "hmi_ld_params.csv"
+    fname6 = datadir + "con_thresh.csv"
 
     header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
                 "quiet_frac", "network_frac", "plage_frac", "v_hat", \
@@ -100,6 +101,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
     header2 = ["mjd", "region", "lo_mu", "hi_mu", \
                 "v_hat", "v_phot", "v_quiet", "v_conv"]
     header3 = ["mjd", "a", "b", "c"]
+    header4 = ["mjd", "hmi_thresh", "aia_thresh"]
 
     # replace/create/modify output files
     if clobber and all(map(exists, (fname1, fname2, fname3))):
@@ -109,12 +111,14 @@ def organize_input_output(indir, datadir=None, clobber=False):
         truncate_output_file(fname3)
         truncate_output_file(fname4)
         truncate_output_file(fname5)
+        truncate_output_file(fname6)
 
         # find any stray files from multiprocessing
         fname1_mp = glob.glob(datadir + "tmp/rv_full_disk_*")
         fname2_mp = glob.glob(datadir + "tmp/rv_mu_*")
         fname3_mp = glob.glob(datadir + "tmp/rv_regions_*")
-        fname4_mp = glob.glob(datadir + "tmp/*_ld_params_*")
+        fname45_mp = glob.glob(datadir + "tmp/*_ld_params_*")
+        fname6_mp = glob.glob(datadir + "tmp/*_thresh_*")
 
         # remove them
         if not not fname1_mp:
@@ -126,8 +130,11 @@ def organize_input_output(indir, datadir=None, clobber=False):
         if not not fname3_mp:
             for f in fname3_mp:
                 os.remove(f)
-        if not not fname4_mp:
-            for f in fname4_mp:
+        if not not fname45_mp:
+            for f in fname45_mp:
+                os.remove(f)
+        if not not fname6_mp:
+            for f in fname6_mp:
                 os.remove(f)
 
         # create the files with headers
@@ -136,6 +143,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
         create_file(fname3, header2)
         create_file(fname4, header3)
         create_file(fname5, header3)
+        create_file(fname6, header4)
     elif all(map(exists, (fname1, fname2, fname3))) and \
          all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
         # get list of all mjds
@@ -165,6 +173,7 @@ def organize_input_output(indir, datadir=None, clobber=False):
         create_file(fname3, header2)
         create_file(fname4, header3)
         create_file(fname5, header3)
+        create_file(fname6, header4)
 
     return con_files, mag_files, dop_files, aia_files
 
