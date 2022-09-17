@@ -1,12 +1,12 @@
---outdir /scratch/mlp95/sdo_data,--start 2014/01/01,--end 2014/01/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/02/01,--end 2014/02/28, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/03/01,--end 2014/03/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/04/01,--end 2014/04/30, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/05/01,--end 2014/05/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/06/01,--end 2014/06/30, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/07/01,--end 2014/07/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/08/01,--end 2014/08/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/09/01,--end 2014/09/30, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/10/01,--end 2014/10/31, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/11/01,--end 2014/11/30, --sample 4
---outdir /scratch/mlp95/sdo_data,--start 2014/12/01,--end 2014/12/31, --sample 4
+/scratch/mlp95/sdo_data,2014/01/01,2014/01/31,4
+/scratch/mlp95/sdo_data,2014/02/01,2014/02/28,4
+/scratch/mlp95/sdo_data,2014/03/01,2014/03/31,4
+/scratch/mlp95/sdo_data,2014/04/01,2014/04/30,4
+/scratch/mlp95/sdo_data,2014/05/01,2014/05/31,4
+/scratch/mlp95/sdo_data,2014/06/01,2014/06/30,4
+/scratch/mlp95/sdo_data,2014/07/01,2014/07/31,4
+/scratch/mlp95/sdo_data,2014/08/01,2014/08/31,4
+/scratch/mlp95/sdo_data,2014/09/01,2014/09/30,4
+/scratch/mlp95/sdo_data,2014/10/01,2014/10/31,4
+/scratch/mlp95/sdo_data,2014/11/01,2014/11/30,4
+/scratch/mlp95/sdo_data,2014/12/01,2014/12/31,4

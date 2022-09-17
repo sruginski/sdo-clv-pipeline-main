@@ -31,7 +31,7 @@ export PJOBLOG="/storage/home/mlp95/work/logs/$SLURM_JOB_NAME.$SLURM_JOBID.pjobl
 parallel="parallel --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
 
 echo "About to start Python w/ gnuparallel"
-$parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py  {1} {2} {3} {4}" :::: batch/dates_to_download.txt
+$parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates_to_download.txt
 echo "Python exited"
 date
 
