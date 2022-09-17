@@ -49,7 +49,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname3 = datadir + "tmp/rv_regions_" + suffix + ".csv"
         fname4 = datadir + "tmp/aia_ld_params_" + suffix + ".csv"
         fname5 = datadir + "tmp/hmi_ld_params_" + suffix + ".csv"
-        fname6 = datadir + "con_thresh" + suffix + ".csv"
+        fname6 = datadir + "tmp/con_thresh" + suffix + ".csv"
 
         # check if the files exist, create otherwise
         if not exists(fname1):

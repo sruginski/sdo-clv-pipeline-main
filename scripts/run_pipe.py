@@ -35,11 +35,6 @@ def main():
     clobber = get_parser_args()
     con_files, mag_files, dop_files, aia_files = organize_input_output(indir, clobber=clobber)
 
-    con_files=con_files[0:4]
-    mag_files=mag_files[0:4]
-    dop_files=dop_files[0:4]
-    aia_files=aia_files[0:4]
-
     # set mu threshold, number of mu rings
     n_rings = 10
     mu_thresh = 0.1
