@@ -10,7 +10,8 @@ import pandas as pd
 plt.style.use("my.mplstyle"); plt.ioff()
 
 # data files
-datdir = "/Users/michael/Desktop/sdo-pypline/data/"
+# datdir = "/Users/michael/Desktop/sdo-pypline/data/"
+datdir = "/Users/michael/Desktop/sdo_output/"
 df_full = pd.read_csv(datdir + "rv_full_disk.csv")
 df_regs = pd.read_csv(datdir + "rv_regions.csv")
 df_mu = pd.read_csv(datdir + "rv_mu.csv")
