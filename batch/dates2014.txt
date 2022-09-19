@@ -3,7 +3,7 @@
 /scratch/mlp95/sdo_data,2014/03/01,2014/03/31,4
 /scratch/mlp95/sdo_data,2014/04/01,2014/04/30,4
 /scratch/mlp95/sdo_data,2014/05/01,2014/05/31,4
-/scratch/mlp95/sdo_data,2014/06/01,2014/06/30,4
+/scratch/mlp95/sdo_data,2014/06/01,2014/07/01,4
 /scratch/mlp95/sdo_data,2014/07/01,2014/07/31,4
 /scratch/mlp95/sdo_data,2014/08/01,2014/08/31,4
 /scratch/mlp95/sdo_data,2014/09/01,2014/09/30,4
