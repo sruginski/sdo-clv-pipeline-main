@@ -24,12 +24,12 @@ def read_data(file):
     return data
 
 # function to glob the input data
-def find_data(indir):
+def find_data(indir, globexp=""):
     # find the data
-    con_files, con_dates = sort_data(glob.glob(indir + "*hmi*con*.fits"))
-    mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi*mag*.fits"))
-    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*dop*.fits"))
-    aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*.fits"))
+    con_files, con_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*con*.fits"))
+    mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*mag*.fits"))
+    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*dop*.fits"))
+    aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*" + globexp + ".fits"))
 
     # find datetimes that are in *all* lists
     common_dates = list(set.intersection(*map(set, [con_dates, mag_dates, dop_dates, aia_dates])))
@@ -59,12 +59,7 @@ def get_date(f):
     return round_time(date=dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
 
 def get_dates(files):
-    date = []
-    for f in files:
-        # make it a datetime
-        date.append(get_date(f))
-
-    return date
+    return list(map(get_date, files))
 
 def round_time(date=None, round_to=3600):
    """Round a datetime object to any time lapse in seconds
@@ -77,10 +72,10 @@ def round_time(date=None, round_to=3600):
    rounding = (seconds+round_to/2) // round_to * round_to
    return date + dt.timedelta(0,rounding-seconds,-date.microsecond)
 
-def organize_input_output(indir, datadir=None, clobber=False):
+def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
     # find the input data and check the lengths
     assert isdir(indir)
-    con_files, mag_files, dop_files, aia_files = find_data(indir)
+    con_files, mag_files, dop_files, aia_files = find_data(indir, globexp=globexp)
     assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
 
     # figure out data directories
@@ -104,38 +99,10 @@ def organize_input_output(indir, datadir=None, clobber=False):
     header4 = ["mjd", "hmi_thresh", "aia_thresh"]
 
     # replace/create/modify output files
-    if clobber and all(map(exists, (fname1, fname2, fname3))):
+    fileset = (fname1, fname2, fname3, fname4, fname5, fname6)
+    if clobber and all(map(exists, fileset)):
         # delete the files
-        truncate_output_file(fname1)
-        truncate_output_file(fname2)
-        truncate_output_file(fname3)
-        truncate_output_file(fname4)
-        truncate_output_file(fname5)
-        truncate_output_file(fname6)
-
-        # find any stray files from multiprocessing
-        fname1_mp = glob.glob(datadir + "tmp/rv_full_disk_*")
-        fname2_mp = glob.glob(datadir + "tmp/rv_mu_*")
-        fname3_mp = glob.glob(datadir + "tmp/rv_regions_*")
-        fname45_mp = glob.glob(datadir + "tmp/*_ld_params_*")
-        fname6_mp = glob.glob(datadir + "tmp/*_thresh_*")
-
-        # remove them
-        if not not fname1_mp:
-            for f in fname1_mp:
-                os.remove(f)
-        if not not fname2_mp:
-            for f in fname2_mp:
-                os.remove(f)
-        if not not fname3_mp:
-            for f in fname3_mp:
-                os.remove(f)
-        if not not fname45_mp:
-            for f in fname45_mp:
-                os.remove(f)
-        if not not fname6_mp:
-            for f in fname6_mp:
-                os.remove(f)
+        clean_output_directory(*fileset)
 
         # create the files with headers
         create_file(fname1, header1)
@@ -144,29 +111,25 @@ def organize_input_output(indir, datadir=None, clobber=False):
         create_file(fname4, header3)
         create_file(fname5, header3)
         create_file(fname6, header4)
-    elif all(map(exists, (fname1, fname2, fname3))) and \
-         all(map(lambda x: getsize(x) > 0, (fname1, fname2, fname3))):
+    elif all(map(exists, fileset)) and all(map(lambda x: getsize(x) > 0, fileset)):
         # get list of all mjds
         # TODO fix this
 
-        println("Continuing is broken currently")
-        return None
+        # get list of dates from file
+        mjd_list = find_all_dates(fname1)
 
-        # mjd_str = find_last_date(fname1)
+        # convert to Time objects and round to nearest hour
+        mjd_list = list(map(lambda x: Time(x, format="mjd"), mjd_list))
+        mjd_list = list(map(lambda x: round_time(date=x.datetime), mjd_list))
 
-        # # find subset of sdo date to start with
-        # mjd = Time(mjd_str, format="mjd")
-        # mjd = round_time(date=mjd.datetime)
+        # subset the input data to list to only include dates not seen here
+        common_dates = list(set.intersection(*map(set, [get_dates(con_files), mjd_list])))
 
-        # # get dates and index of occurence of mjd
-        # con_dates = get_dates(con_files)
-        # idx = con_dates.index(mjd)
-
-        # # subset the lists
-        # con_files = con_files[idx:]
-        # mag_files = mag_files[idx:]
-        # dop_files = dop_files[idx:]
-        # aia_files = aia_files[idx:]
+        # remove epochs that are missing in any data set from all data sets
+        con_files = [con_files[idx] for idx, date in enumerate(get_dates(con_files)) if date not in common_dates]
+        mag_files = [mag_files[idx] for idx, date in enumerate(get_dates(mag_files)) if date not in common_dates]
+        dop_files = [dop_files[idx] for idx, date in enumerate(get_dates(dop_files)) if date not in common_dates]
+        aia_files = [aia_files[idx] for idx, date in enumerate(get_dates(aia_files)) if date not in common_dates]
     else:
         create_file(fname1, header1)
         create_file(fname2, header2)
@@ -177,19 +140,31 @@ def organize_input_output(indir, datadir=None, clobber=False):
 
     return con_files, mag_files, dop_files, aia_files
 
-def truncate_output_file(fname):
-    # truncate the file if it does exist
-    if exists(fname):
-        with open(fname, "w") as f:
-            f.truncate()
+def clean_output_directory(*fnames):
+    for fname in fnames:
+        truncate_output_file(fname)
+        fname_mp = glob.glob(split(fname)[0] + "/tmp/" + splitext(split(fname)[1])[0] + "_*")
+        if not not fname_mp:
+            for f_mp in fname_mp:
+                os.remove(f_mp)
     return None
 
-def find_last_date(fname):
+def truncate_output_file(*fnames):
+    # truncate the file if it does exist
+    for fname in fnames:
+        if exists(fname):
+            with open(fname, "w") as f:
+                f.truncate()
+    return None
+
+def find_all_dates(fname):
+    mjd_list = []
     with open(fname, "r") as f:
         for line in f:
-            pass
-        mjd_str = line.split(",")[0]
-    return mjd_str
+            if "mjd" in line:
+                continue
+            mjd_list.append(line.split(",")[0])
+    return mjd_list
 
 def create_file(fname, header=None):
     with open(fname, "w") as f:

@@ -19,11 +19,13 @@ def get_parser_args():
     # initialize argparser
     parser = argparse.ArgumentParser(description="Analyze SDO data")
     parser.add_argument("--clobber", action="store_true", default=False)
+    parser.add_argument("--globexp", type=str, default="")
 
     # parse the command line arguments
     args = parser.parse_args()
     clobber = args.clobber
-    return clobber
+    globexp = args.globexp
+    return clobber, globexp
 
 def main():
     # define sdo_data directories
@@ -32,8 +34,9 @@ def main():
         indir = "/storage/home/mlp95/scratch/sdo_data/"
 
     # sort out input/output data files
-    clobber = get_parser_args()
-    con_files, mag_files, dop_files, aia_files = organize_input_output(indir, clobber=clobber)
+    clobber, globexp = get_parser_args()
+    files = organize_input_output(indir, clobber=clobber, globexp=globexp)
+    con_files, mag_files, dop_files, aia_files = files
 
     # set mu threshold, number of mu rings
     n_rings = 10
