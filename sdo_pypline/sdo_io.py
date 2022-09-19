@@ -192,7 +192,7 @@ def write_results_to_file(fname, *args):
 def stitch_output_files(fname, files, delete=False):
     with open(fname, "a") as f:
         for file in files:
-            with open(file) as g:
+            with open(file, "r") as g:
                 for line in g:
                     if "mjd" in line:
                         continue
