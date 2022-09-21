@@ -23,8 +23,11 @@ echo "Environment activated"
 
 echo "About to start Python"
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --clobber --globexp "*2012*"
+wait
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --clobber "*2013*"
+wait
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2014*"
+wait
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2015*"
 echo "Python exited"
 date

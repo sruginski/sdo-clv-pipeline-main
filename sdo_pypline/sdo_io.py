@@ -42,10 +42,9 @@ def find_data(indir, globexp=""):
     return con_files, mag_files, dop_files, aia_files
 
 def sort_data(f_list):
-    # get the dates and indices to sort
-    dates = get_dates(f_list)
-    inds = np.argsort(dates)
-    return [f_list[i] for i in inds], [dates[i] for i in inds]
+    # sort, and only take unique dates
+    dates, inds = np.unique(get_dates(f_list), return_index=True)
+    return [f_list[i] for i in inds], dates
 
 def get_date(f):
     if "aia" in f:
@@ -112,9 +111,6 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         create_file(fname5, header3)
         create_file(fname6, header4)
     elif all(map(exists, fileset)) and all(map(lambda x: getsize(x) > 0, fileset)):
-        # get list of all mjds
-        # TODO fix this
-
         # get list of dates from file
         mjd_list = find_all_dates(fname1)
 
@@ -124,6 +120,8 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
 
         # subset the input data to list to only include dates not seen here
         common_dates = list(set.intersection(*map(set, [get_dates(con_files), mjd_list])))
+
+        pdb.set_trace()
 
         # remove epochs that are missing in any data set from all data sets
         con_files = [con_files[idx] for idx, date in enumerate(get_dates(con_files)) if date not in common_dates]
