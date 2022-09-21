@@ -43,3 +43,27 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
     v_conv = v_hat - v_quiet - v_phot
 
     return v_hat, v_phot, v_quiet, v_conv
+
+def calc_mag_stats(mag, mask, region=None, hi_mu=None, lo_mu=None):
+    # get mask for region type specified
+    if region is None:
+        region_mask = True
+    elif region in np.unique(mask.regions):
+        region_mask = (region == mask.regions)
+
+    # get masks for mu annuli
+    if ((hi_mu is None) | (lo_mu is None)):
+        region_mask *= True
+    else:
+        assert lo_mu < hi_mu
+        region_mask *= ((mag.mu > lo_mu) & (mag.mu <= hi_mu))
+
+    # don't bother doing math if there is nothing in the mask
+    if (type(region_mask) is np.ndarray) and (~region_mask.any()):
+        return 0.0, 0.0
+
+    # get average and std for mag field strength
+    mag_avg = np.nanmean(np.abs(mag.image) * region_mask)
+    mag_std = np.nanstd(np.abs(mag.image) * region_mask)
+
+    return mag_avg, mag_std

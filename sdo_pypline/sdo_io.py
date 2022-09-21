@@ -88,6 +88,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
     fname4 = datadir + "aia_ld_params.csv"
     fname5 = datadir + "hmi_ld_params.csv"
     fname6 = datadir + "con_thresh.csv"
+    fname7 = datadir + "mag_stats.csv"
 
     header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
                 "quiet_frac", "network_frac", "plage_frac", "v_hat", \
@@ -96,6 +97,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
                 "v_hat", "v_phot", "v_quiet", "v_conv"]
     header3 = ["mjd", "a", "b", "c"]
     header4 = ["mjd", "hmi_thresh", "aia_thresh"]
+    header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std"]
 
     # replace/create/modify output files
     fileset = (fname1, fname2, fname3, fname4, fname5, fname6)
@@ -110,6 +112,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         create_file(fname4, header3)
         create_file(fname5, header3)
         create_file(fname6, header4)
+        create_file(fname7, header5)
     elif all(map(exists, fileset)) and all(map(lambda x: getsize(x) > 0, fileset)):
         # get list of dates from file
         mjd_list = find_all_dates(fname1)
@@ -133,6 +136,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         create_file(fname4, header3)
         create_file(fname5, header3)
         create_file(fname6, header4)
+        create_file(fname7, header5)
 
     return con_files, mag_files, dop_files, aia_files
 
