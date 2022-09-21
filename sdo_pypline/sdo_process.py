@@ -152,7 +152,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         results_mu.append([mjd, 0, lo_mu, hi_mu, *vels_mu])
 
         # calculate disk-integrated unsigned magnetic field
-        mag_stats = calc_mag_stats(mag, mask, region=None, lo_mu=None, hi_mu=None)
+        mag_stats = calc_mag_stats(mag, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
         results_mag.append([mjd, 0, lo_mu, hi_mu, *mag_stats])
 
         # loop over unique region identifiers
