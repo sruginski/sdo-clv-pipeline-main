@@ -32,8 +32,11 @@ parallel="parallel --max-procs $SLURM_NTASKS --joblog $PJOBLOG"
 
 echo "About to start Python w/ gnuparallel"
 $parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates2012.txt
+wait
 $parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates2013.txt
+wait
 $parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates2014.txt
+wait
 $parallel --colsep ',' "$srun python sdo_pypline/sdo_download.py --outdir {1} --start {2} --end {3} --sample {4}" :::: batch/dates2015.txt
 echo "Python exited"
 date
