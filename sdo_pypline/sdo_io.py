@@ -121,8 +121,6 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         # subset the input data to list to only include dates not seen here
         common_dates = list(set.intersection(*map(set, [get_dates(con_files), mjd_list])))
 
-        pdb.set_trace()
-
         # remove epochs that are missing in any data set from all data sets
         con_files = [con_files[idx] for idx, date in enumerate(get_dates(con_files)) if date not in common_dates]
         mag_files = [mag_files[idx] for idx, date in enumerate(get_dates(mag_files)) if date not in common_dates]
