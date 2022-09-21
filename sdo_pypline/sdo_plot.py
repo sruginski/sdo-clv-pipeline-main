@@ -54,7 +54,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         # plot the sun
         img = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
         clb = fig.colorbar(img)
-        clb.set_label(r"${\rm LOS\ Velocity\ (km/s)}$")
+        clb.set_label(r"${\rm LOS\ Velocity\ (m/s)}$")
         ax1.invert_xaxis()
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
