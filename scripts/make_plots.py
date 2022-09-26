@@ -180,7 +180,7 @@ ax1.fill_between(mu_bin, umbrae_rv_mean - umbrae_rv_std, umbrae_rv_mean + umbrae
 ax1.errorbar(mu_bin, plage_rv_mean, yerr=plage_rv_err, fmt=".", color="tab:purple", label="Plage")
 ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_std, color="tab:purple", alpha=0.5)
 
-ax1.errorbar(mu_bin, network_rv_mean, yerr=network_rv_err, fmt=".", color="tab:purple", label="Network")
+ax1.errorbar(mu_bin, network_rv_mean, yerr=network_rv_err, fmt=".", color="tab:pink", label="Network")
 ax1.fill_between(mu_bin, network_rv_mean - network_rv_std, network_rv_mean + network_rv_std, color="tab:pink", alpha=0.5)
 
 ax1.set_xticks(np.arange(0.1, 1.1, 0.1))

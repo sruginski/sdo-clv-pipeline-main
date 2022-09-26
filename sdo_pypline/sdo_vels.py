@@ -63,7 +63,8 @@ def calc_mag_stats(mag, mask, region=None, hi_mu=None, lo_mu=None):
         return 0.0, 0.0
 
     # get average and std for mag field strength
-    mag_avg = np.nanmean(np.abs(mag.image) * region_mask)
-    mag_std = np.nanstd(np.abs(mag.image) * region_mask)
+    abs_mag = np.abs(mag.image) * region_mask
+    mag_avg = np.nanmean(abs_mag)
+    mag_std = np.nanstd(abs_mag)
 
     return mag_avg, mag_std

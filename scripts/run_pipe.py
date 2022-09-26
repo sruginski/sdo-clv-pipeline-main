@@ -63,7 +63,7 @@ def main():
         print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
         t0 = time.time()
         pids = []
-        with get_context("spawn").Pool(ncpus, maxtasksperchild=2) as pool:
+        with get_context("spawn").Pool(ncpus, maxtasksperchild=4) as pool:
             # get PIDs of workers
             for child in mp.active_children():
                 pids.append(child.pid)

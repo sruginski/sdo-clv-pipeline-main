@@ -102,7 +102,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     try:
         con.calc_limb_darkening()
         aia.calc_limb_darkening()
-    except RuntimeError:
+    except:
         print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
         return None
 
@@ -119,7 +119,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # identify regions for thresholding
     try:
         mask = SunMask(con, mag, dop, aia)
-    except TypeError:
+    except:
         println("\t >>> Region identification failed, skipping " + iso, flush=True)
 
     # write thresholds used for masking to disk

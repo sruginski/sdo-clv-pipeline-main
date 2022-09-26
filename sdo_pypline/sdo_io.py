@@ -100,7 +100,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
     header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std"]
 
     # replace/create/modify output files
-    fileset = (fname1, fname2, fname3, fname4, fname5, fname6)
+    fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7)
     if clobber and all(map(exists, fileset)):
         # delete the files
         clean_output_directory(*fileset)
