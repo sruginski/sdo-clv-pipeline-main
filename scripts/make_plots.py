@@ -105,7 +105,8 @@ hi_mus = np.unique(df_regs.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
 # plot by mu
-plage = df_regs[df_regs.region == 4.0]
+plage = df_regs[df_regs.region == 5.0]
+network = df_regs[df_regs.region == 4.0]
 quiet_sun = df_regs[df_regs.region == 3.0]
 penumbrae = df_regs[df_regs.region == 2.0]
 umbrae = df_regs[df_regs.region == 1.0]
@@ -123,6 +124,9 @@ penumbrae_rv_err = np.zeros(len(lo_mus))
 umbrae_rv_mean = np.zeros(len(lo_mus))
 umbrae_rv_std = np.zeros(len(lo_mus))
 umbrae_rv_err = np.zeros(len(lo_mus))
+network_rv_mean = np.zeros(len(lo_mus))
+network_rv_std = np.zeros(len(lo_mus))
+network_rv_err = np.zeros(len(lo_mus))
 plage_rv_mean = np.zeros(len(lo_mus))
 plage_rv_std = np.zeros(len(lo_mus))
 plage_rv_err = np.zeros(len(lo_mus))
@@ -147,6 +151,11 @@ for i in range(len(lo_mus)):
     umbrae_rv_std[i] = np.std(umbrae.v_hat[idx])
     umbrae_rv_err[i] = umbrae_rv_std[i]/np.sqrt(len(umbrae.v_hat[idx]))
 
+    idx = network.lo_mu == lo_mus[i]
+    network_rv_mean[i] = np.mean(network.v_hat[idx])
+    network_rv_std[i] = np.std(network.v_hat[idx])
+    network_rv_err[i] = network_rv_std[i]/np.sqrt(len(network.v_hat[idx]))
+
     idx = plage.lo_mu == lo_mus[i]
     plage_rv_mean[i] = np.mean(plage.v_hat[idx])
     plage_rv_std[i] = np.std(plage.v_hat[idx])
@@ -156,8 +165,9 @@ for i in range(len(lo_mus)):
 fig = plt.figure()
 ax1 = fig.add_subplot()
 
-ax1.errorbar(mu_bin, whole_sun_rv_mean, yerr=whole_sun_rv_err, fmt=".", color="black", label="All regions")
-ax1.fill_between(mu_bin, whole_sun_rv_mean - whole_sun_rv_std, whole_sun_rv_mean + whole_sun_rv_std, color="black", alpha=0.5)
+# ax1.errorbar(mu_bin, whole_sun_rv_mean, yerr=whole_sun_rv_err, fmt=".", color="black", label="All regions")
+# ax1.fill_between(mu_bin, whole_sun_rv_mean - whole_sun_rv_std, whole_sun_rv_mean + whole_sun_rv_std, color="black", alpha=0.5)
+
 ax1.errorbar(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err, fmt=".", color="tab:blue", label="Quiet Sun")
 ax1.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean + quiet_sun_rv_std, color="tab:blue", alpha=0.5)
 
@@ -169,6 +179,9 @@ ax1.fill_between(mu_bin, umbrae_rv_mean - umbrae_rv_std, umbrae_rv_mean + umbrae
 
 ax1.errorbar(mu_bin, plage_rv_mean, yerr=plage_rv_err, fmt=".", color="tab:purple", label="Plage")
 ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_std, color="tab:purple", alpha=0.5)
+
+ax1.errorbar(mu_bin, network_rv_mean, yerr=network_rv_err, fmt=".", color="tab:purple", label="Network")
+ax1.fill_between(mu_bin, network_rv_mean - network_rv_std, network_rv_mean + network_rv_std, color="tab:pink", alpha=0.5)
 
 ax1.set_xticks(np.arange(0.1, 1.1, 0.1))
 ax1.invert_xaxis()
