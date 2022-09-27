@@ -195,7 +195,7 @@ class SDOImage(object):
             # mask section that are big outliers
             ints = self.image[inds]
             ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
-            avg_int[i] = np.mean(ints[~np.isnan(ints)])
+            avg_int[i] = np.nanmean(ints)
 
         # take averages in mu annuli to fit to
         mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
