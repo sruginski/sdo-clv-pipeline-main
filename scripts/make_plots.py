@@ -15,17 +15,19 @@ datdir = "/Users/michael/Desktop/sdo_output/"
 df_full = pd.read_csv(datdir + "rv_full_disk.csv")
 df_regs = pd.read_csv(datdir + "rv_regions.csv")
 df_mu = pd.read_csv(datdir + "rv_mu.csv")
+df_aia_ld = pd.read_csv(datdir + "aia_ld_params.csv")
+df_hmi_ld = pd.read_csv(datdir + "hmi_ld_params.csv")
+df_con_thresh = pd.read_csv(datdir + "con_thresh.csv")
+df_mag_stats = pd.read_csv(datdir + "mag_stats.csv")
 
 # sort by date
 df_full.sort_values("mjd", inplace=True)
 df_regs.sort_values("mjd", inplace=True)
 df_mu.sort_values("mjd", inplace=True)
-
-# get coverage of year
-# xs = np.arange(np.min(df_full.mjd), np.max(df_full.mjd), np.min(np.diff(df_full.mjd)))
-# ys = [any(np.isclose(date, df_full.mjd, rtol=1e-5)) for date in xs]
-# plt.scatter(xs, ys, s=1)
-# plt.show()
+df_aia_ld.sort_values("mjd", inplace=True)
+df_hmi_ld.sort_values("mjd", inplace=True)
+df_con_thresh.sort_values("mjd", inplace=True)
+df_mag_stats.sort_values("mjd", inplace=True)
 
 # make time series
 fig = plt.figure()
@@ -111,6 +113,15 @@ quiet_sun = df_regs[df_regs.region == 3.0]
 penumbrae = df_regs[df_regs.region == 2.0]
 umbrae = df_regs[df_regs.region == 1.0]
 
+# plot some histograms
+fig = plt.figure()
+ax1 = fig.add_subplot()
+n, bins, patches = ax1.hist(quiet_sun.v_hat, density=True)
+ax1.set_xlabel(r"${\rm Velocity\ (m/s)}$")
+ax1.set_ylabel(r"${\rm Probability Density}$")
+plt.savefig(datdir + "hist1.pdf")
+plt.clf(); plt.close()
+
 # get mean, std, etc.
 whole_sun_rv_mean = np.zeros(len(lo_mus))
 whole_sun_rv_std = np.zeros(len(lo_mus))
@@ -165,23 +176,23 @@ for i in range(len(lo_mus)):
 fig = plt.figure()
 ax1 = fig.add_subplot()
 
-# ax1.errorbar(mu_bin, whole_sun_rv_mean, yerr=whole_sun_rv_err, fmt=".", color="black", label="All regions")
-# ax1.fill_between(mu_bin, whole_sun_rv_mean - whole_sun_rv_std, whole_sun_rv_mean + whole_sun_rv_std, color="black", alpha=0.5)
+ax1.errorbar(mu_bin, whole_sun_rv_mean, yerr=whole_sun_rv_err, fmt=".", color="black", label="All regions")
+ax1.fill_between(mu_bin, whole_sun_rv_mean - whole_sun_rv_std, whole_sun_rv_mean + whole_sun_rv_std, color="black", alpha=0.5)
 
-ax1.errorbar(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err, fmt=".", color="tab:blue", label="Quiet Sun")
-ax1.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean + quiet_sun_rv_std, color="tab:blue", alpha=0.5)
+# ax1.errorbar(mu_bin, quiet_sun_rv_mean, yerr=quiet_sun_rv_err, fmt=".", color="tab:blue", label="Quiet Sun")
+# ax1.fill_between(mu_bin, quiet_sun_rv_mean - quiet_sun_rv_std, quiet_sun_rv_mean + quiet_sun_rv_std, color="tab:blue", alpha=0.5)
 
-ax1.errorbar(mu_bin, penumbrae_rv_mean, yerr=penumbrae_rv_err, fmt=".", color="tab:orange", label="Penumbrae")
-ax1.fill_between(mu_bin, penumbrae_rv_mean - penumbrae_rv_std, penumbrae_rv_mean + penumbrae_rv_std, color="tab:orange", alpha=0.5)
+# ax1.errorbar(mu_bin, penumbrae_rv_mean, yerr=penumbrae_rv_err, fmt=".", color="tab:orange", label="Penumbrae")
+# ax1.fill_between(mu_bin, penumbrae_rv_mean - penumbrae_rv_std, penumbrae_rv_mean + penumbrae_rv_std, color="tab:orange", alpha=0.5)
 
-ax1.errorbar(mu_bin, umbrae_rv_mean, yerr=umbrae_rv_err, fmt=".", color="tab:green", label="Umbrae")
-ax1.fill_between(mu_bin, umbrae_rv_mean - umbrae_rv_std, umbrae_rv_mean + umbrae_rv_std, color="tab:green", alpha=0.5)
+# ax1.errorbar(mu_bin, umbrae_rv_mean, yerr=umbrae_rv_err, fmt=".", color="tab:green", label="Umbrae")
+# ax1.fill_between(mu_bin, umbrae_rv_mean - umbrae_rv_std, umbrae_rv_mean + umbrae_rv_std, color="tab:green", alpha=0.5)
 
-ax1.errorbar(mu_bin, plage_rv_mean, yerr=plage_rv_err, fmt=".", color="tab:purple", label="Plage")
-ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_std, color="tab:purple", alpha=0.5)
+# ax1.errorbar(mu_bin, plage_rv_mean, yerr=plage_rv_err, fmt=".", color="tab:purple", label="Plage")
+# ax1.fill_between(mu_bin, plage_rv_mean - plage_rv_std, plage_rv_mean + plage_rv_std, color="tab:purple", alpha=0.5)
 
-ax1.errorbar(mu_bin, network_rv_mean, yerr=network_rv_err, fmt=".", color="tab:pink", label="Network")
-ax1.fill_between(mu_bin, network_rv_mean - network_rv_std, network_rv_mean + network_rv_std, color="tab:pink", alpha=0.5)
+# ax1.errorbar(mu_bin, network_rv_mean, yerr=network_rv_err, fmt=".", color="tab:pink", label="Network")
+# ax1.fill_between(mu_bin, network_rv_mean - network_rv_std, network_rv_mean + network_rv_std, color="tab:pink", alpha=0.5)
 
 ax1.set_xticks(np.arange(0.1, 1.1, 0.1))
 ax1.invert_xaxis()

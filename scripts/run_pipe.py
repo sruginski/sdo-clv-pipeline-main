@@ -74,23 +74,18 @@ def main():
         # find the output data sets
         datadir = str(root / "data") + "/"
         tmpdir = datadir + "tmp/"
-        outfiles1 = glob.glob(tmpdir + "rv_full_disk_*")
-        outfiles2 = glob.glob(tmpdir + "rv_regions_*")
-        outfiles3 = glob.glob(tmpdir + "rv_mu_*")
-        outfiles4 = glob.glob(tmpdir + "*aia*")
-        outfiles5 = glob.glob(tmpdir + "*hmi*")
-        outfiles6 = glob.glob(tmpdir + "*thresh*")
-        outfiles7 = glob.glob(tmpdir + "*mag*")
+        outfiles1 = glob.glob(tmpdir + "intensities_*")
+        outfiles2 = glob.glob(tmpdir + "disk_stats_*")
+        outfiles3 = glob.glob(tmpdir + "velocities_*")
+        outfiles4 = glob.glob(tmpdir + "mag_stats_*")
 
         # stitch them together on the main process
-        stitch_output_files(datadir + "rv_full_disk.csv", outfiles1, delete=True)
-        stitch_output_files(datadir + "rv_regions.csv", outfiles2, delete=True)
-        stitch_output_files(datadir + "rv_mu.csv", outfiles3, delete=True)
-        stitch_output_files(datadir + "aia_ld_params.csv", outfiles4, delete=True)
-        stitch_output_files(datadir + "hmi_ld_params.csv", outfiles5, delete=True)
-        stitch_output_files(datadir + "con_thresh.csv", outfiles6, delete=True)
-        stitch_output_files(datadir + "mag_stats.csv", outfiles7, delete=True)
+        stitch_output_files(datadir + "intensities.csv", outfiles1, delete=True)
+        stitch_output_files(datadir + "disk_stats.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "velocities.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + "mag_stats.csv", outfiles4, delete=True)
 
+        # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:
         # run serially
@@ -99,6 +94,8 @@ def main():
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i],
                              aia_files[i], mu_thresh=mu_thresh, n_rings=n_rings)
+
+        # print run time
         print("Serial: --- %s seconds ---" % (time.time() - t0))
     return None
 

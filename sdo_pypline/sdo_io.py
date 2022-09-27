@@ -82,25 +82,19 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         datadir = str(root / "data") + "/"
 
     # name output files
-    fname1 = datadir + "rv_full_disk.csv"
-    fname2 = datadir + "rv_mu.csv"
-    fname3 = datadir + "rv_regions.csv"
-    fname4 = datadir + "aia_ld_params.csv"
-    fname5 = datadir + "hmi_ld_params.csv"
-    fname6 = datadir + "con_thresh.csv"
-    fname7 = datadir + "mag_stats.csv"
+    fname1 = datadir + "intensities.csv"
+    fname2 = datadir + "disk_stats.csv"
+    fname3 = datadir + "velocities.csv"
+    fname4 = datadir + "mag_stats.csv"
 
-    header1 = ["mjd", "ffactor", "Bobs", "pen_frac", "umb_frac", \
-                "quiet_frac", "network_frac", "plage_frac", "v_hat", \
-                "v_phot", "v_quiet", "v_conv"]
-    header2 = ["mjd", "region", "lo_mu", "hi_mu", \
-                "v_hat", "v_phot", "v_quiet", "v_conv"]
-    header3 = ["mjd", "a", "b", "c"]
-    header4 = ["mjd", "hmi_thresh", "aia_thresh"]
-    header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std"]
+    # headers for output files
+    header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh", "a_hmi", "b_hmi", "c_hmi"]
+    header2 = ["mjd", "ffactor", "umb_frac", "pen_frac", "quiet_frac", "network_frac", "plage_frac"]
+    header3 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+    header4 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std", "mag_unsigned"]
 
     # replace/create/modify output files
-    fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7)
+    fileset = (fname1, fname2, fname3, fname4)
     if clobber and all(map(exists, fileset)):
         # delete the files
         clean_output_directory(*fileset)
@@ -108,11 +102,8 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         # create the files with headers
         create_file(fname1, header1)
         create_file(fname2, header2)
-        create_file(fname3, header2)
-        create_file(fname4, header3)
-        create_file(fname5, header3)
-        create_file(fname6, header4)
-        create_file(fname7, header5)
+        create_file(fname3, header3)
+        create_file(fname4, header4)
     elif all(map(exists, fileset)) and all(map(lambda x: getsize(x) > 0, fileset)):
         # get list of dates from file
         mjd_list = find_all_dates(fname1)
@@ -132,11 +123,8 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
     else:
         create_file(fname1, header1)
         create_file(fname2, header2)
-        create_file(fname3, header2)
-        create_file(fname4, header3)
-        create_file(fname5, header3)
-        create_file(fname6, header4)
-        create_file(fname7, header5)
+        create_file(fname3, header3)
+        create_file(fname4, header4)
 
     return con_files, mag_files, dop_files, aia_files
 

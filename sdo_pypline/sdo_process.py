@@ -31,13 +31,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # name output files
     if suffix is None:
-        fname1 = datadir + "rv_full_disk.csv"
-        fname2 = datadir + "rv_mu.csv"
-        fname3 = datadir + "rv_regions.csv"
-        fname4 = datadir + "aia_ld_params.csv"
-        fname5 = datadir + "hmi_ld_params.csv"
-        fname6 = datadir + "con_thresh.csv"
-        fname7 = datadir + "mag_stats.csv"
+        fname1 = datadir + "intensities.csv"
+        fname2 = datadir + "disk_stats.csv"
+        fname3 = datadir + "velocities.csv"
+        fname4 = datadir + "mag_stats.csv"
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
@@ -45,13 +42,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             os.mkdir(tmpdir)
 
         # filenames
-        fname1 = datadir + "tmp/rv_full_disk_" + suffix + ".csv"
-        fname2 = datadir + "tmp/rv_mu_" + suffix + ".csv"
-        fname3 = datadir + "tmp/rv_regions_" + suffix + ".csv"
-        fname4 = datadir + "tmp/aia_ld_params_" + suffix + ".csv"
-        fname5 = datadir + "tmp/hmi_ld_params_" + suffix + ".csv"
-        fname6 = datadir + "tmp/con_thresh_" + suffix + ".csv"
-        fname7 = datadir + "tmp/mag_stats_" + suffix + ".csv"
+        fname1 = tmpdir + "intensities_" + suffix + ".csv"
+        fname2 = tmpdir + "disk_stats_" + suffix + ".csv"
+        fname3 = tmpdir + "velocities_" + suffix + ".csv"
+        fname4 = tmpdir + "mag_stats_" + suffix + ".csv"
 
         # check if the files exist, create otherwise
         if not exists(fname1):
@@ -62,12 +56,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             create_file(fname3)
         if not exists(fname4):
             create_file(fname4)
-        if not exists(fname5):
-            create_file(fname5)
-        if not exists(fname6):
-            create_file(fname6)
-        if not exists(fname7):
-            create_file(fname7)
 
     # make SDOImage instances
     try:
@@ -106,10 +94,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
         return None
 
-    # write the limb darkening parameters to disk
-    write_results_to_file(fname4, mjd, *aia.ld_coeffs)
-    write_results_to_file(fname5, mjd, *con.ld_coeffs)
-
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
     dop.mask_low_mu(mu_thresh)
@@ -122,53 +106,52 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     except:
         println("\t >>> Region identification failed, skipping " + iso, flush=True)
 
-    # write thresholds used for masking to disk
-    write_results_to_file(fname6, mjd, mask.con_thresh, mask.aia_thresh)
+    # write the limb darkening parameters and pixel fractions to disk
+    write_results_to_file(fname1, mjd, mask.aia_thresh, *aia.ld_coeffs,
+                          mask.con_thresh, *con.ld_coeffs)
+    write_results_to_file(fname2, mjd, mask.ff, mask.umb_frac, mask.pen_frac,
+                          mask.quiet_frac, mask.network_frac, mask.plage_frac)
 
-    # compute velocities and write to disk
-    vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)
-    write_results_to_file(fname1, mjd, mask.ff, mask.Bobs, mask.pen_frac,
-                          mask.umb_frac, mask.quiet_frac, mask.network_frac,
-                          mask.plage_frac, *vels)
-
-    # grid to loop over mu annuli + results containers
-    mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
-    results_mu = []
-    results_reg = []
+    # create arrays to hold velocity and magnetic field results
+    results_vel = []
     results_mag = []
 
+    # calculate disk-integrated velocities
+    vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)
+    results_vel.append([mjd, 0, np.nan, np.nan, *vels])
+
     # calculate disk-integrated unsigned magnetic field
-    mag_stats = calc_mag_stats(mag, mask, region=None, lo_mu=None, hi_mu=None)
-    results_mag.append([mjd, 0, np.nan, np.nan, *mag_stats])
+    mags = calc_mag_stats(con, mag, mask, region=None, lo_mu=None, hi_mu=None)
+    results_mag.append([mjd, 0, np.nan, np.nan, *mags])
 
     # loop over the mu annuli
+    mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
     for j in range(n_rings-1):
         # mu values for annuli
         lo_mu=mu_grid[j]
         hi_mu=mu_grid[j+1]
 
         # compute velocity within mu
-        vels_mu = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
-        results_mu.append([mjd, 0, lo_mu, hi_mu, *vels_mu])
+        vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        results_vel.append([mjd, 0, lo_mu, hi_mu, *vels])
 
-        # calculate disk-integrated unsigned magnetic field
-        mag_stats = calc_mag_stats(mag, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
-        results_mag.append([mjd, 0, lo_mu, hi_mu, *mag_stats])
+        # calculate unsigned magnetic field within mu
+        mags = calc_mag_stats(con, mag, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        results_mag.append([mjd, 0, lo_mu, hi_mu, *mags])
 
         # loop over unique region identifiers
         for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
             # compute velocity components in each mu annulus by region
-            vels_reg = calc_velocities(con, mag, dop, aia, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
-            results_reg.append([mjd, k, lo_mu, hi_mu, *vels_reg])
+            vels = calc_velocities(con, mag, dop, aia, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+            results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
 
             # compute magnetic field strength within each region
-            mag_stats = calc_mag_stats(mag, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
-            results_mag.append([mjd, k, lo_mu, hi_mu, *mag_stats])
+            mags = calc_mag_stats(con, mag, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+            results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
 
     # write to disk
-    write_results_to_file(fname2, results_mu)
-    write_results_to_file(fname3, results_reg)
-    write_results_to_file(fname7, results_mag)
+    write_results_to_file(fname3, results_vel)
+    write_results_to_file(fname4, results_mag)
 
     # do some memory cleanup
     del con
@@ -177,9 +160,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del aia
     del mask
     del vels
+    del mags
     del mu_grid
-    del results_mu
-    del results_reg
+    del results_vel
     del results_mag
     gc.collect()
 

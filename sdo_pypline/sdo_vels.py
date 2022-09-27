@@ -2,10 +2,6 @@ import numpy as np
 import pdb
 
 def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None):
-    # get weights
-    w_quiet = mask.w_quiet
-    w_active = mask.w_active
-
     # get mask for region type specified
     if region is None:
         region_mask = True
@@ -22,6 +18,10 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
     # don't bother doing math if there is nothing in the mask
     if (type(region_mask) is np.ndarray) and (~region_mask.any()):
         return 0.0, 0.0, 0.0, 0.0
+
+    # get weights
+    w_quiet = mask.w_quiet
+    w_active = mask.w_active
 
     # calculate scaling factor for continuum and filtergrams
     k_hat_con = np.nansum(con.image * con.ldark * w_quiet) / np.nansum(con.ldark**2 * w_quiet)
@@ -44,7 +44,7 @@ def calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=Non
 
     return v_hat, v_phot, v_quiet, v_conv
 
-def calc_mag_stats(mag, mask, region=None, hi_mu=None, lo_mu=None):
+def calc_mag_stats(con, mag, mask, region=None, hi_mu=None, lo_mu=None):
     # get mask for region type specified
     if region is None:
         region_mask = True
@@ -67,4 +67,7 @@ def calc_mag_stats(mag, mask, region=None, hi_mu=None, lo_mu=None):
     mag_avg = np.nanmean(abs_mag)
     mag_std = np.nanstd(abs_mag)
 
-    return mag_avg, mag_std
+    # get intensity weighted unsigned magnetic field strength
+    mag_unsigned = np.nansum(np.abs(mag.image) * con.image * region_mask) / np.nansum(con.image * region_mask)
+
+    return mag_avg, mag_std, mag_unsigned
