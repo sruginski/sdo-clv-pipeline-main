@@ -73,12 +73,53 @@ def main():
     # identify regions for thresholding
     mask = SunMask(con, mag, dop, aia)
 
+    # get intensities to plot
+    aia_flat = aia.iflat[~np.isnan(aia.iflat)]
+    con_flat = con.iflat[~np.isnan(con.iflat)]
+    mag_img = mag.image[~np.isnan(mag.image)]
+
+    # plot I_flat vs mag for AIA
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.axhline(mask.aia_thresh, ls="--", c="k")
+    ax1.axvline(24.0, ls="--", c="k")
+    ax1.scatter(np.abs(mag_img), aia_flat, s=1, alpha=0.75, color="black", rasterized=True)
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
+    ax1.set_ylabel(r"${\rm AIA}\ 1700{\rm \AA}\ I_{{\rm flat}, ij}$")
+    fig.savefig("/Users/michael/Desktop/aia_flat_vs_mag.pdf", dpi=150)
+    plt.clf(); plt.close()
+
+    # plot I_flat vs mag for HMI
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.axhline(mask.con_thresh, ls="--", c="k")
+    ax1.axvline(24.0, ls="--", c="k")
+    ax1.scatter(np.abs(mag_img), con_flat, s=1, alpha=0.75, color="black", rasterized=True)
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
+    ax1.set_ylabel(r"${\rm HMI}\ I_{{\rm flat}, ij}$")
+    fig.savefig("/Users/michael/Desktop/hmi_flat_vs_mag.pdf", dpi=150)
+    plt.clf(); plt.close()
+
+    # plot the distribution of
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.axvline(mask.aia_thresh, ls="--", c="k")
+    n, bins, patches = ax1.hist(aia_flat, bins="auto", density=True)
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"$1700{\rm \AA}\ I_{{\rm flat}, ij}$")
+    ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    fig.savefig("/Users/michael/Desktop/aia_flat_dist.pdf", dpi=150)
+    plt.show()
+
+
+    pdb.set_trace()
+
+
+    print("derp")
+
     # plot them
-    plot_image(con, outdir=plotdir, fname="fig1a.pdf")
-    plot_image(mag, outdir=plotdir, fname="fig1b.pdf")
-    plot_image(dop, outdir=plotdir, fname="fig1c.pdf")
-    plot_image(aia, outdir=plotdir, fname="fig1d.pdf")
-    plot_mask(mask, outdir=plotdir, fname="fig1e.pdf")
     return None
 
 if __name__ == "__main__":

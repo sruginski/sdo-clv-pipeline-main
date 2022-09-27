@@ -211,7 +211,7 @@ class SDOImage(object):
         # do the fit and divide out the LD profile
         popt, pcov = curve_fit(quad_darkening, mu_avgs, avg_int, p0=p0)
         self.ld_coeffs = popt
-        self.ldark = quad_darkening(self.mu, *popt)
+        self.ldark = quad_darkening_two(self.mu, *popt[1:])
         self.iflat = self.image/self.ldark
         return None
 

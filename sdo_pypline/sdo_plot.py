@@ -77,7 +77,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         # plot the sun
         img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
-        clb.set_label(r"${\rm Relative\ Intensity}$")
+        clb.set_label(r"${\rm HMI\ Continuum\ Intensity}$")
         ax1.invert_xaxis()
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
@@ -100,7 +100,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         # plot the sun
         img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
-        clb.set_label(r"${\rm Relative\ Intensity}$")
+        clb.set_label(r"${\rm 1700\AA \ Continuum\ Intensity}$")
         ax1.invert_xaxis()
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
