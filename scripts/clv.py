@@ -107,7 +107,7 @@ mu_samps = [0.9, 0.8, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
 # create figure objects
-fig, axs = plt.subplots(nrows=6, ncols=n_mu_samps, tight_layout=True)
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=6, ncols=n_mu_samps, tight_layout=True)
 
 # loop over valus
 for i in range(n_mu_samps):
@@ -131,6 +131,5 @@ for i in range(n_mu_samps):
     idx1 = plage.lo_mu == mu_samps[i]
     axs[5, i].hist(plage.v_hat[idx1], bins="auto", density=True)
 
-fig.savefig(datdir + "vel_reg_hists.pdf")
+fig.savefig(datdir + "vel_reg_hists.pdf", bbox_inches="tight")
 plt.clf(); plt.close()
-pdb.set_trace()
