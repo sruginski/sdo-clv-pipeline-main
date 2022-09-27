@@ -293,7 +293,7 @@ class SunMask(object):
     def identify_regions(self, con, mag, dop, aia):
         # calculate intensity thresholds for HMI and AIA
         self.con_thresh = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
-        self.aia_thresh = 0.89 * np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+        self.aia_thresh = 0.43 * np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
 
         # allocate memory for mask array
         self.regions = np.zeros(np.shape(con.image))

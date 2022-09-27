@@ -77,6 +77,8 @@ def main():
     aia_flat = aia.iflat[~np.isnan(aia.iflat)]
     con_flat = con.iflat[~np.isnan(con.iflat)]
     mag_img = mag.image[~np.isnan(mag.image)]
+    w_active = mask.w_active[~np.isnan(mag.image)]
+    w_quiet = mask.w_quiet[~np.isnan(mag.image)]
 
     # length assertion
     assert len(aia_flat) == len(con_flat) == len(mag_img)
@@ -109,28 +111,38 @@ def main():
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.axvline(mask.aia_thresh, ls="--", c="k")
-    n, bins, patches = ax1.hist(aia_flat, bins="auto", density=True)
+    _, bins, patches = ax1.hist(aia_flat, cumulative=False, bins="auto", color="black", histtype="step", density=True)
+    _, bins, patches = ax1.hist(aia_flat[w_active], cumulative=False, bins="auto", color="tab:blue", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
     ax1.set_xscale("log")
     ax1.set_xlabel(r"$1700\ {\rm \AA}\ I_{{\rm flat}, ij}$")
     ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    fig.savefig(plotdir + "aia_flat_dist.pdf", dpi=150)
-    plt.show()
+    ax1.legend(fontsize=12, loc="upper left")
+    fig.savefig(plotdir + "aia_flat_dist.pdf")
+    plt.clf(); plt.close()
 
     # plot the distribution of hmi intensities
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.axvline(mask.con_thresh, ls="--", c="k")
-    n, bins, patches = ax1.hist(con_flat, bins="auto", density=True)
+    _, bins, patches = ax1.hist(con_flat, cumulative=False, bins="auto", color="black", histtype="step", density=True)
+    _, bins, patches = ax1.hist(con_flat[w_active], cumulative=False, bins="auto", color="tab:blue", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
+    ax1.set_xlim(3e4, ax1.get_xlim()[1])
     ax1.set_xscale("log")
     ax1.set_xlabel(r"$1700\ {\rm \AA}\ I_{{\rm flat}, ij}$")
     ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    fig.savefig(plotdir + "con_flat_dist.pdf", dpi=150)
-    plt.show()
+    ax1.legend(fontsize=12, loc="upper left")
+    fig.savefig(plotdir + "hmi_flat_dist.pdf")
+    plt.clf(); plt.close()
 
 
     pdb.set_trace()
 
 
+    print("derp")
+    print("derp")
+    print("derp")
+    print("derp")
+    print("derp")
     print("derp")
 
     # plot them
