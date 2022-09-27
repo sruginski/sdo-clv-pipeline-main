@@ -301,9 +301,9 @@ class SunMask(object):
         # get thresholds for penumbrae, umbrae, quiet sun, and plage
         # TODO check motivations for these
         ind1 = (con.iflat <= (0.6 * self.con_thresh))
-        ind2 = ((con.iflat <= self.con_thresh) & (con.iflat > (0.6 * self.con_thresh)))
-        ind3 = ((con.iflat > self.con_thresh) & self.w_quiet)# & (aia.iflat < (1.3 * self.aia_thresh)))
-        ind4 = ((aia.iflat > self.aia_thresh) & self.w_active & (~ind1) & (~ind2))
+        ind2 = (con.iflat <= self.con_thresh) & (con.iflat > (0.6 * self.con_thresh))
+        ind3 = ((con.iflat > self.con_thresh) & self.w_quiet)
+        ind4 = ((con.iflat > self.con_thresh) & self.w_active) | ((aia.iflat > self.aia_thresh) & self.w_active & (~ind1) & (~ind2))
 
         # set mask indices
         self.regions[ind1] = 1 # umbrae
