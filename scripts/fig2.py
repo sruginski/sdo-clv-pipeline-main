@@ -78,6 +78,9 @@ def main():
     con_flat = con.iflat[~np.isnan(con.iflat)]
     mag_img = mag.image[~np.isnan(mag.image)]
 
+    # length assertion
+    assert len(aia_flat) == len(con_flat) == len(mag_img)
+
     # plot I_flat vs mag for AIA
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -87,7 +90,7 @@ def main():
     ax1.set_xscale("log")
     ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
     ax1.set_ylabel(r"${\rm AIA}\ 1700{\rm \AA}\ I_{{\rm flat}, ij}$")
-    fig.savefig("/Users/michael/Desktop/aia_flat_vs_mag.pdf", dpi=150)
+    fig.savefig(plotdir + "aia_flat_vs_mag.pdf", dpi=150)
     plt.clf(); plt.close()
 
     # plot I_flat vs mag for HMI
@@ -99,18 +102,29 @@ def main():
     ax1.set_xscale("log")
     ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
     ax1.set_ylabel(r"${\rm HMI}\ I_{{\rm flat}, ij}$")
-    fig.savefig("/Users/michael/Desktop/hmi_flat_vs_mag.pdf", dpi=150)
+    fig.savefig(plotdir + "hmi_flat_vs_mag.pdf", dpi=150)
     plt.clf(); plt.close()
 
-    # plot the distribution of
+    # plot the distribution of aia intensities
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax1.axvline(mask.aia_thresh, ls="--", c="k")
     n, bins, patches = ax1.hist(aia_flat, bins="auto", density=True)
     ax1.set_xscale("log")
-    ax1.set_xlabel(r"$1700{\rm \AA}\ I_{{\rm flat}, ij}$")
+    ax1.set_xlabel(r"$1700\ {\rm \AA}\ I_{{\rm flat}, ij}$")
     ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    fig.savefig("/Users/michael/Desktop/aia_flat_dist.pdf", dpi=150)
+    fig.savefig(plotdir + "aia_flat_dist.pdf", dpi=150)
+    plt.show()
+
+    # plot the distribution of hmi intensities
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.axvline(mask.con_thresh, ls="--", c="k")
+    n, bins, patches = ax1.hist(con_flat, bins="auto", density=True)
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"$1700\ {\rm \AA}\ I_{{\rm flat}, ij}$")
+    ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    fig.savefig(plotdir + "con_flat_dist.pdf", dpi=150)
     plt.show()
 
 

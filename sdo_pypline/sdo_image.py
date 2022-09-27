@@ -224,6 +224,7 @@ class SDOImage(object):
                                       return_footprint=False)
 
         # TODO recalculate the mu???
+        self.wcs = hmi_image.wcs
         self.mu = hmi_image.mu
 
 # for creating pixel mask with thresholded regions
