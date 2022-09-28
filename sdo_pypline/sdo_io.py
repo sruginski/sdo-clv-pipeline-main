@@ -88,7 +88,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
     fname4 = datadir + "mag_stats.csv"
 
     # headers for output files
-    header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh", "a_hmi", "b_hmi", "c_hmi"]
+    header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
     header2 = ["mjd", "ffactor", "umb_frac", "pen_frac", "quiet_frac", "network_frac", "plage_frac"]
     header3 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
     header4 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std", "mag_unsigned"]

@@ -14,6 +14,58 @@ from .sdo_image import *
 from multiprocessing import get_context
 import multiprocessing as mp
 
+def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
+    # make SDOImage instances
+    try:
+        con = SDOImage(con_file)
+        mag = SDOImage(mag_file)
+        dop = SDOImage(dop_file)
+        aia = SDOImage(aia_file)
+    except OSError:
+        print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
+        return None
+
+    # calculate geometries
+    con.calc_geometry()
+    mag.inherit_geometry(con)
+    dop.inherit_geometry(con)
+    aia.calc_geometry()
+
+    # get time of observations
+    iso = Time(con.date_obs).iso
+
+    # interpolate aia image onto hmi image scale
+    aia.rescale_to_hmi(con)
+
+    # correct magnetogram for foreshortening
+    mag.correct_magnetogram()
+
+    # calculate differential rotation & observer velocity
+    dop.calc_vrot_vobs()
+
+    # calculate limb darkening/brightening in continuum map and filtergram
+    try:
+        con.calc_limb_darkening()
+        aia.calc_limb_darkening()
+    except:
+        print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
+        return None
+
+    # set values to nan for mu less than mu_thresh
+    con.mask_low_mu(mu_thresh)
+    dop.mask_low_mu(mu_thresh)
+    mag.mask_low_mu(mu_thresh)
+    aia.mask_low_mu(mu_thresh)
+
+    # identify regions for thresholding
+    try:
+        mask = SunMask(con, mag, dop, aia)
+    except:
+        print("\t >>> Region identification failed, skipping " + iso, flush=True)
+
+    return con, mag, dop, aia, mask
+
+
 def process_data_set_parallel(con_file, mag_file, dop_file,
                               aia_file, mu_thresh, n_rings):
     process_data_set(con_file, mag_file, dop_file, aia_file,
@@ -57,58 +109,15 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         if not exists(fname4):
             create_file(fname4)
 
-    # make SDOImage instances
-    try:
-        con = SDOImage(con_file)
-        mag = SDOImage(mag_file)
-        dop = SDOImage(dop_file)
-        aia = SDOImage(aia_file)
-    except OSError:
-        print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
-        return None
+    # reduce the data set
+    con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=mu_thresh)
 
-    # calculate geometries
-    con.calc_geometry()
-    mag.inherit_geometry(con)
-    dop.inherit_geometry(con)
-    aia.calc_geometry()
-
-    # get MJD for observations
-    iso = Time(con.date_obs).iso
+    # get the MJD of the obs
     mjd = Time(con.date_obs).mjd
-
-    # interpolate aia image onto hmi image scale
-    aia.rescale_to_hmi(con)
-
-    # correct magnetogram for foreshortening
-    mag.correct_magnetogram()
-
-    # calculate differential rotation & observer velocity
-    dop.calc_vrot_vobs()
-
-    # calculate limb darkening/brightening in continuum map and filtergram
-    try:
-        con.calc_limb_darkening()
-        aia.calc_limb_darkening()
-    except:
-        print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
-        return None
-
-    # set values to nan for mu less than mu_thresh
-    con.mask_low_mu(mu_thresh)
-    dop.mask_low_mu(mu_thresh)
-    mag.mask_low_mu(mu_thresh)
-    aia.mask_low_mu(mu_thresh)
-
-    # identify regions for thresholding
-    try:
-        mask = SunMask(con, mag, dop, aia)
-    except:
-        println("\t >>> Region identification failed, skipping " + iso, flush=True)
 
     # write the limb darkening parameters and pixel fractions to disk
     write_results_to_file(fname1, mjd, mask.aia_thresh, *aia.ld_coeffs,
-                          mask.con_thresh, *con.ld_coeffs)
+                          mask.con_thresh1, mask.con_thresh2, *con.ld_coeffs)
     write_results_to_file(fname2, mjd, mask.ff, mask.umb_frac, mask.pen_frac,
                           mask.quiet_frac, mask.network_frac, mask.plage_frac)
 

@@ -28,8 +28,11 @@ def plot_image(sdo_image, outdir=None, fname=None):
         cmap = plt.get_cmap("RdYlBu").copy()
         cmap.set_bad(color="black")
 
+        # get the norm
+        norm = colors.SymLogNorm(1, vmin=-4200, vmax=4200)
+
         # plot the sun
-        img = ax1.imshow(sdo_image.image, cmap=cmap, origin="lower", vmin=-4200, vmax=4200, interpolation=None)
+        img = ax1.imshow(sdo_image.image, cmap=cmap, origin="lower", norm=norm, interpolation=None)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
         ax1.invert_xaxis()
