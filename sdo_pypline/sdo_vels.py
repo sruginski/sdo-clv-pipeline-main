@@ -60,7 +60,7 @@ def calc_mag_stats(con, mag, mask, region=None, hi_mu=None, lo_mu=None):
 
     # don't bother doing math if there is nothing in the mask
     if (type(region_mask) is np.ndarray) and (~region_mask.any()):
-        return 0.0, 0.0
+        return 0.0, 0.0, 0.0
 
     # get average and std for mag field strength
     abs_mag = np.abs(mag.image) * region_mask
