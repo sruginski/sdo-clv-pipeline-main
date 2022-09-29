@@ -62,6 +62,7 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
         mask = SunMask(con, mag, dop, aia)
     except:
         print("\t >>> Region identification failed, skipping " + iso, flush=True)
+        return None
 
     return con, mag, dop, aia, mask
 

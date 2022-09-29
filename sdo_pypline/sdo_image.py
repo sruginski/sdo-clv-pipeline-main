@@ -291,20 +291,25 @@ class SunMask(object):
         return None
 
     def identify_regions(self, con, mag, dop, aia, area_thresh=None):
-        # calculate intensity thresholds for HMI and AIA
-        self.con_thresh1 = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
-        self.con_thresh2 = 0.45 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
-        self.aia_thresh = np.nansum(aia.iflat * self.w_quiet)/np.nansum(self.w_quiet)
-
         # allocate memory for mask array
         self.regions = np.zeros(np.shape(con.image))
 
-        # get thresholds for penumbrae, umbrae, quiet sun, and plage
+        # calculate intensity thresholds for HMI
+        self.con_thresh1 = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+        self.con_thresh2 = 0.45 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
+
+        # get indices for penumbrae, umbrae, quiet sun
         ind1 = con.iflat <= self.con_thresh2
         ind2 = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
         ind3 = (con.iflat > self.con_thresh1) & self.w_quiet
+
+        # calculate intensity thresholds for AIA
+        weights = self.w_active * (~ind1) * (~ind2)
+        self.aia_thresh = np.nansum(aia.iflat * weights)/np.nansum(weights)
+
+        # get indices for bright regions (plage/faculae + network)
         ind4a = (con.iflat > self.con_thresh1) & self.w_active
-        ind4b = (aia.iflat > self.aia_thresh) & self.w_active & (~ind1) & (~ind2)
+        ind4b = (aia.iflat > self.aia_thresh) & (~ind1) & (~ind2)
         ind4 = ind4a | ind4b
 
         # set mask indices
