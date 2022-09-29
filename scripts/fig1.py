@@ -40,7 +40,7 @@ def main():
     plot_image(aia, outdir=plotdir, fname="fig1d.pdf")
 
     print("\t>>> Plotting mask...")
-    plot_mask(mask, outdir=plotdir, fname="fig3.pdf")
+    plot_mask(mask, outdir=plotdir, fname="fig5.pdf")
     return None
 
 if __name__ == "__main__":

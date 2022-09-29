@@ -7,6 +7,7 @@ from scipy import ndimage
 from astropy.wcs import WCS
 from scipy.optimize import curve_fit
 from reproject import reproject_interp
+from skimage.measure import regionprops
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
 
@@ -290,7 +291,7 @@ class SunMask(object):
         self.mu = other_image.mu
         return None
 
-    def identify_regions(self, con, mag, dop, aia, area_thresh=None):
+    def identify_regions(self, con, mag, dop, aia):
         # allocate memory for mask array
         self.regions = np.zeros(np.shape(con.image))
 
@@ -322,44 +323,26 @@ class SunMask(object):
         binary_img = self.regions == 4
         structure = ndimage.generate_binary_structure(2,2)
         labels, nlabels = ndimage.label(binary_img, structure=structure)
-        areas = ndimage.sum(binary_img, labels, range(nlabels+1))
 
-        # get distribution of areas
-        if area_thresh is None:
-            ahist, bin_edges = np.histogram(areas, bins=int(len(areas)/3))
-            bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
-            indices = np.arange(1, len(ahist) + 1)
+        # get labeled region areas and perimeters
+        rprops = regionprops(labels)
+        areas = np.array([rprop.area for rprop in rprops])
+        perimeters = np.array([rprop.perimeter for rprop in rprops])
 
-            # mask the nans and find where distribution goes to 0
-            # TODO "polyfit may be poorly conditioned"
-            peak_idx = np.argmax(ahist)
-            zero_idx = np.argmax(bin_centers >= 170)
+        # calculate the perimeter to area ratio and apply threshold
+        ratios = perimeters/areas
+        ratio_thresh = 0.5
+        area_thresh = 30
 
-            # get data to fit
-            mask = ahist[peak_idx:zero_idx] == 0.0
-            xs = np.log10(indices[peak_idx:zero_idx][~mask])
-            ys = np.log10(ahist[peak_idx:zero_idx][~mask])
-            # ws = 1.0/np.sqrt(ahist[peak_idx:zero_idx][~mask])
-            order = 1
-
-            # fit the distribution
-            # TODO should we weight?
-            pfit1 = np.polyfit(xs, ys, order)#, w=ws)
-
-            # evaluate the model and find where the fit cuts off the large-area tail
-            model_ys = np.polyval(pfit1, np.log10(indices))
-            thresh_idx = np.argmax(model_ys < 0.0)
-            area_thresh = bin_centers[thresh_idx]
-
-        # assign region type to plage for areas greater than area thresh
-        ind5 = (areas > area_thresh)[labels]
+        # assign region type to plage for ratios less than ratio thresh
+        ind5 = np.concatenate(([False], (ratios < ratio_thresh) & (areas > area_thresh)))[labels]
         self.regions[ind5] = 5 # plage
 
         # set isolated bright pixels to quiet sun
-        ind_iso = (areas == 1)[labels]
+        ind_iso = np.concatenate(([False], areas == 1))[labels]
         self.regions[ind_iso] = 3 # quiet sun
 
-        # make remaining regions quiet sun
+        # make any remaining unclassified pixels quiet sun
         ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
         self.regions[ind_rem] = 3 # quiet sun
 

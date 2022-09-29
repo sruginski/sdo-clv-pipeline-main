@@ -7,6 +7,7 @@ import matplotlib.cm as cm
 import os, sys, pdb, csv, glob
 
 from scipy import ndimage
+from skimage.measure import regionprops
 from sdo_pypline.paths import root
 from sdo_pypline.sdo_process import *
 from sdo_pypline.sdo_download import *
@@ -55,47 +56,98 @@ def get_areas_for_set(con_file, mag_file, dop_file, aia_file):
     binary_img = regions == 4
     structure = ndimage.generate_binary_structure(2,2)
     labels, nlabels = ndimage.label(binary_img, structure=structure)
-    areas = ndimage.sum(binary_img, labels, range(nlabels+1))
-    return areas
+
+    # get labeled region properties
+    rprops = regionprops(labels)
+    areas = np.array([rprop.area for rprop in rprops])
+    perimeters = np.array([rprop.perimeter for rprop in rprops])
+    return areas, perimeters
 
 def main():
     # see if the areas have already been saved
     areas_file = datadir + "areas.txt"
-    if not exists(areas_file):
+    perimeters_file = datadir + "perimeters.txt"
+    if (not exists(areas_file)) | (not exists(perimeters_file)):
         # get the data to process (1 week at one day cadence)
         start = "2014/01/01"
-        end = "2014/01/21"
+        end = "2014/01/31"
         sample = 24
         files = download_data(outdir=datadir+"fits/", start=start, end=end, sample=24, overwrite=False)
         con_files, mag_files, dop_files, aia_files = find_data(datadir+"fits/")
 
         # get the areas
         areas = []
+        perimeters = []
         for i in range(len(con_files)):
             print(i)
-            areas.append(get_areas_for_set(con_files[i], mag_files[i], dop_files[i], aia_files[i]))
+            area, perimeter = get_areas_for_set(con_files[i], mag_files[i], dop_files[i], aia_files[i])
+            areas.append(area)
+            perimeters.append(perimeter)
 
         # write the areas to disk
         areas = np.concatenate(areas)
+        perimeters = np.concatenate(perimeters)
         np.savetxt(areas_file, areas)
+        np.savetxt(perimeters_file, perimeters)
     else:
         areas = np.loadtxt(areas_file)
+        perimeters = np.loadtxt(perimeters_file)
+
+    # only use areas > 1 pix
+    # areas = areas[areas > 1]
 
     pdb.set_trace()
 
-    # only use areas > 1 pix
-    areas = areas[areas > 1]
+    # calculate ratios
+    ratios = perimeters/areas
+
+    # make a mask
+    mask = (perimeters >= 2)
 
     # get the bins to use
-    linbins = np.log10(np.linspace(4, 10, 5))
-    linbins = []
-    logbins = np.logspace(np.log10(10),np.log10(np.max(areas)),100)
-    bins = np.concatenate((linbins, logbins))
+    bins = np.logspace(np.log10(np.min(perimeters[mask])), np.log10(np.max(perimeters)), 50)
+    plt.hist(perimeters[mask], bins=bins, histtype="step")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("region perimeter (pixels)")
+    plt.ylabel("count")
+    plt.savefig("/Users/michael/Desktop/perimeter_dist.pdf")
+    plt.clf(); plt.close()
+
+    bins = np.logspace(np.log10(np.min(areas[mask])), np.log10(np.max(areas)), 50)
+    plt.hist(areas[mask], bins=bins, histtype="step")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("region area (pixels)")
+    plt.ylabel("count")
+    plt.savefig("/Users/michael/Desktop/area_dist.pdf")
+    plt.clf(); plt.close()
+
+    bins = np.linspace(np.min(ratios[mask]), np.max(ratios), 50)
+    plt.hist(ratios[mask & (areas > 25)], bins=bins, histtype="step")
+    plt.yscale("log")
+    plt.xlabel("perimeter/area")
+    plt.ylabel("count")
+    plt.savefig("/Users/michael/Desktop/ratio_dist.pdf")
+    plt.clf(); plt.close()
+
+    idx1 = np.random.choice(len(ratios[mask]), int(np.floor(len(ratios[mask])/1)))
+    plt.axhline(30, ls="--", c="k", alpha=0.75)
+    plt.axvline(0.5, ls=":", c="k", alpha=0.75)
+    plt.scatter(ratios[mask][idx1], areas[mask][idx1], s=1, c=np.log10(perimeters[mask][idx1]), rasterized=True)
+    clb = plt.colorbar()
+    clb.set_label("log10(perimeter [pixels])")
+    plt.xlabel("perimeter/area")
+    plt.ylabel("region area (pixels)")
+    plt.yscale("log")
+    plt.savefig("/Users/michael/Desktop/ratio_area_scatter.pdf", dpi=200)
+    plt.clf(); plt.close()
+
 
     # get the distribution
-    ahist, bin_edges = np.histogram(areas, bins=bins)
+    rhist, bin_edges = np.histogram(ratios, bins="auto")
     bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
-    indices = np.arange(1, len(ahist) + 1)
+    indices = np.arange(1, len(rhist) + 1)
 
     # mask the nans and find where distribution goes to 0
     # TODO "polyfit may be poorly conditioned"
