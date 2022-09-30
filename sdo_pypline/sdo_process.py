@@ -111,7 +111,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             create_file(fname4)
 
     # reduce the data set
-    con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=mu_thresh)
+    try:
+        con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file,
+                                                     dop_file, aia_file,
+                                                      mu_thresh=mu_thresh)
+    except:
+        return None
 
     # get the MJD of the obs
     mjd = Time(con.date_obs).mjd

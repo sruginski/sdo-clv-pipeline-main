@@ -6,11 +6,8 @@ import matplotlib.dates as mdates
 import matplotlib.cm as cm
 import os, sys, pdb, csv, glob
 
-from scipy import ndimage
-from skimage.measure import regionprops
 from sdo_pypline.paths import root
 from sdo_pypline.sdo_process import *
-from sdo_pypline.sdo_download import *
 from download_plot_data import download_plot_data
 
 # sort out paths
@@ -20,177 +17,147 @@ plotdir = str(root / "figures") + "/"
 # use style
 plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
-def get_areas_for_set(con_file, mag_file, dop_file, aia_file):
-    # reduce the data
-    print(">>> Processing dataset...")
-    con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1)
-
-    # step through the region id process for AIA
-    regions = np.zeros(np.shape(con.image))
-
-    # calculate intensity thresholds for HMI
-    con_thresh1 = 0.89 * np.nansum(con.iflat * mask.w_quiet)/np.nansum(mask.w_quiet)
-    con_thresh2 = 0.45 * np.nansum(con.iflat * mask.w_quiet)/np.nansum(mask.w_quiet)
-
-    # get indices for penumbrae, umbrae, quiet sun
-    ind1 = con.iflat <= con_thresh2
-    ind2 = (con.iflat <= con_thresh1) & (con.iflat > con_thresh2)
-    ind3 = (con.iflat > con_thresh1) & mask.w_quiet
-
-    # calculate intensity thresholds for AIA
-    weights = mask.w_active * (~ind1) * (~ind2)
-    aia_thresh = np.nansum(aia.iflat * weights)/np.nansum(weights)
-
-    # get indices for bright regions (plage/faculae + network)
-    ind4a = (con.iflat > con_thresh1) & mask.w_active
-    ind4b = (aia.iflat > aia_thresh) & (~ind1) & (~ind2)
-    ind4 = ind4a | ind4b
-
-    # set mask indices
-    regions[ind1] = 1 # umbrae
-    regions[ind2] = 2 # penumbrae
-    regions[ind3] = 3 # quiet sun
-    regions[ind4] = 4 # bright areas (will separate into plage/faculae+network)
-
-    # label unique contiguous bright regions and calculate their sizes
-    binary_img = regions == 4
-    structure = ndimage.generate_binary_structure(2,2)
-    labels, nlabels = ndimage.label(binary_img, structure=structure)
-
-    # get labeled region properties
-    rprops = regionprops(labels)
-    areas = np.array([rprop.area for rprop in rprops])
-    perimeters = np.array([rprop.perimeter for rprop in rprops])
-    return areas, perimeters
-
 def main():
-    # see if the areas have already been saved
-    areas_file = datadir + "areas.txt"
-    perimeters_file = datadir + "perimeters.txt"
-    if (not exists(areas_file)) | (not exists(perimeters_file)):
-        # get the data to process (1 week at one day cadence)
-        start = "2014/01/01"
-        end = "2014/01/31"
-        sample = 24
-        files = download_data(outdir=datadir+"fits/", start=start, end=end, sample=24, overwrite=False)
-        con_files, mag_files, dop_files, aia_files = find_data(datadir+"fits/")
+    # get the sdo data to plot
+    con, mag, dop, aia = download_plot_data()
 
-        # get the areas
-        areas = []
-        perimeters = []
-        for i in range(len(con_files)):
-            print(i)
-            area, perimeter = get_areas_for_set(con_files[i], mag_files[i], dop_files[i], aia_files[i])
-            areas.append(area)
-            perimeters.append(perimeter)
+    # reduce the data
+    print(">>> Processing and plotting data...")
+    con, mag, dop, aia, mask = reduce_sdo_images(con, mag, dop, aia, mu_thresh=0.1)
 
-        # write the areas to disk
-        areas = np.concatenate(areas)
-        perimeters = np.concatenate(perimeters)
-        np.savetxt(areas_file, areas)
-        np.savetxt(perimeters_file, perimeters)
-    else:
-        areas = np.loadtxt(areas_file)
-        perimeters = np.loadtxt(perimeters_file)
+    # get intensities to plot
+    aia_flat = aia.iflat[~np.isnan(aia.iflat)] / aia.ld_coeffs[0]
+    con_flat = con.iflat[~np.isnan(con.iflat)] / con.ld_coeffs[0]
+    mag_img = mag.image[~np.isnan(mag.image)]
+    w_active = mask.w_active[~np.isnan(mag.image)]
+    w_quiet = mask.w_quiet[~np.isnan(mag.image)]
+    is_umbra = mask.is_umbra()[~np.isnan(mag.image)]
+    is_penumbra = mask.is_penumbra()[~np.isnan(mag.image)]
+    is_dark = np.logical_or(mask.is_umbra(), mask.is_penumbra())[~np.isnan(mag.image)]
+    is_network = mask.is_network()[~np.isnan(mag.image)]
+    is_plage = mask.is_plage()[~np.isnan(mag.image)]
+    is_bright = np.logical_or(mask.is_network(), mask.is_plage())[~np.isnan(mag.image)]
+    mask_dark = ~is_dark
 
-    # only use areas > 1 pix
-    # areas = areas[areas > 1]
+    # length assertion
+    assert len(aia_flat) == len(con_flat) == len(mag_img)
 
-    pdb.set_trace()
+    # get random indices
+    idx1 = np.random.choice(len(aia_flat), int(np.floor(len(aia_flat)/50)))
+    idx2 = np.random.choice(len(aia_flat[w_active]), int(np.floor(len(aia_flat[w_active])/50)))
 
-    # calculate ratios
-    ratios = perimeters/areas
+    # plot elephant for AIA
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axhline(mask.aia_thresh, ls="--", c="k")
+    # ax1.axvline(24.0, ls="--", c="k")
+    # ax1.scatter(np.abs(mag_img), aia_flat, s=1, alpha=0.75, color="black", rasterized=True)
+    # ax1.set_xscale("log")
+    # ax1.set_yscale("log")
+    # ax1.set_xlabel(r"$\left| B_{r,ij} \right| \ {\rm G}$")
+    # ax1.set_ylabel(r"${\rm AIA}\ 1700{\rm \AA}\ I_{{\rm flat}, ij}$")
+    # fig.savefig(plotdir + "aia_flat_vs_mag.pdf", dpi=150)
+    # plt.clf(); plt.close()
 
-    # make a mask
-    mask = (perimeters >= 2)
+    # plot elephant for HMI
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axhline(mask.con_thresh, ls="--", c="k")
+    # ax1.axvline(24.0, ls="--", c="k")
+    # ax1.scatter(np.abs(mag_img)[idx1], con_flat[idx1] * con.ld_coeffs[0], s=1, alpha=0.75, color="black", rasterized=True)
+    # ax1.set_xscale("log")
+    # # ax1.set_yscale("log")
+    # ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
+    # ax1.set_ylabel(r"${\rm HMI}\ I_{{\rm flat}, ij}$")
+    # fig.savefig(plotdir + "hmi_flat_vs_mag.pdf", dpi=150)
+    # plt.clf(); plt.close()
 
-    # get the bins to use
-    bins = np.logspace(np.log10(np.min(perimeters[mask])), np.log10(np.max(perimeters)), 50)
-    plt.hist(perimeters[mask], bins=bins, histtype="step")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("region perimeter (pixels)")
-    plt.ylabel("count")
-    plt.savefig("/Users/michael/Desktop/perimeter_dist.pdf")
-    plt.clf(); plt.close()
+    # plot continuum vs continuum
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axhline(mask.con_thresh/con.ld_coeffs[0], ls="--", c="k", label=r"${I_{\rm thresh, HMI}}$")
+    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="dotted", c="k", label=r"${I_{\rm thresh, AIA}}$")
+    # ax1.axvline(1.57 * np.nanmean(aia_flat[w_quiet]), ls="dotted", c="k", label=r"${I_{\rm thresh, AIA}}$")
+    # ax1.scatter(aia_flat[idx1], con_flat[idx1], s=1, alpha=0.75, color="black", rasterized=True, label=r"${\rm Any\ }\left| B_{r,ij}\right|$")
+    # ax1.scatter(aia_flat[w_active][idx2], con_flat[w_active][idx2], s=1, alpha=0.75, color="tab:blue", rasterized=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
+    # # ax1.set_xscale("log")
+    # # ax1.set_yscale("log")
+    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
+    # ax1.set_ylabel(r"${\rm Normalized\ HMI\ Continuum\ Intensity}$")
+    # ax1.legend()
+    # fig.savefig(plotdir + "aia_vs_hmi.pdf", dpi=150)
+    # plt.clf(); plt.close()
 
-    bins = np.logspace(np.log10(np.min(areas[mask])), np.log10(np.max(areas)), 50)
-    plt.hist(areas[mask], bins=bins, histtype="step")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("region area (pixels)")
-    plt.ylabel("count")
-    plt.savefig("/Users/michael/Desktop/area_dist.pdf")
-    plt.clf(); plt.close()
-
-    bins = np.linspace(np.min(ratios[mask]), np.max(ratios), 50)
-    plt.hist(ratios[mask & (areas > 25)], bins=bins, histtype="step")
-    plt.yscale("log")
-    plt.xlabel("perimeter/area")
-    plt.ylabel("count")
-    plt.savefig("/Users/michael/Desktop/ratio_dist.pdf")
-    plt.clf(); plt.close()
-
-    idx1 = np.random.choice(len(ratios[mask]), int(np.floor(len(ratios[mask])/1)))
-    plt.axhline(30, ls="--", c="k", alpha=0.75)
-    plt.axvline(0.5, ls=":", c="k", alpha=0.75)
-    plt.scatter(ratios[mask][idx1], areas[mask][idx1], s=1, c=np.log10(perimeters[mask][idx1]), rasterized=True)
-    clb = plt.colorbar()
-    clb.set_label("log10(perimeter [pixels])")
-    plt.xlabel("perimeter/area")
-    plt.ylabel("region area (pixels)")
-    plt.yscale("log")
-    plt.savefig("/Users/michael/Desktop/ratio_area_scatter.pdf", dpi=200)
-    plt.clf(); plt.close()
-
-
-    # get the distribution
-    rhist, bin_edges = np.histogram(ratios, bins="auto")
-    bin_centers = (bin_edges[1:] + bin_edges[0:-1]) / 2
-    indices = np.arange(1, len(rhist) + 1)
-
-    # mask the nans and find where distribution goes to 0
-    # TODO "polyfit may be poorly conditioned"
-    peak_idx = np.argmax(ahist)
-    zero_idx = np.argmax(bin_centers >= 1e4)
-
-    # get data to fit
-    mask = ahist[peak_idx:zero_idx] == 0.0
-    xs = np.log10(bin_centers[peak_idx:zero_idx][~mask])
-    ys = np.log10(ahist[peak_idx:zero_idx][~mask])
-    ws = 1.0/np.sqrt(ahist[peak_idx:zero_idx][~mask])
-    order = 1
-
-    # fit the distribution
-    # TODO should we weight?
-    pfit1 = np.polyfit(xs, ys, order, w=ws)
-
-    # evaluate the model and find where the fit cuts off the large-area tail
-    model_ys = np.polyval(pfit1, np.log10(bin_centers))
-    thresh_idx = np.argmax(model_ys < 0.0)
-    area_thresh = bin_centers[thresh_idx]
-
-    # make the plot
+    # plot the distribution of intensities
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    ax1.axvline(bin_centers[peak_idx])
-    ax1.axvline(bin_centers[zero_idx])
-    ax1.hist(areas, bins=bins, histtype="step")
-    ax1.plot(bin_centers, 10**model_ys)
-    ax1.set_xlim(1, ax1.get_xlim()[1])
+    ax1.axvline(mask.con_thresh1/con.ld_coeffs[0], ls="--", c="k", label=r"$0.89\ \hat{I}_{\rm quiet}$")
+    ax1.axvspan(0, mask.con_thresh1/con.ld_coeffs[0], fill=False, ec="tab:orange", hatch="/", alpha=0.75)
+    ax1.axvspan(0, mask.con_thresh1/con.ld_coeffs[0], fill=False, ec="tab:green", hatch="\\", alpha=0.75)
+    x1, bins, patches = ax1.hist(con_flat, bins="fd", color="black", lw=2, histtype="step", density=True, label=r"${\rm Any\ }\left| B_{r}\right|$")
+    x2, bins, patches = ax1.hist(con_flat[w_active], bins="fd", color="tab:blue", lw=2, histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
     ax1.set_xscale("log")
-    ax1.set_yscale("log")
-    ax1.set_xlabel("Region area (pixels)")
-    ax1.set_ylabel("Count")
+    ax1.set_xlim(6e-1, 1.25)
+    ax1.set_xlabel(r"${\rm Normalized\ HMI\ Continuum\ Intensity}$")
+    ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    ax1.legend(fontsize=12, loc="upper left")
+    ax1.grid(False)
+    fig.savefig(plotdir + "fig3a.pdf")
+    plt.clf(); plt.close()
 
-    pdb.set_trace()
-    print("derp")
-    print("derp")
-    print("derp")
-    print("derp")
-    print("derp")
+    # plot the distribution of dark hmi intensities
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.axvline(mask.con_thresh1/con.ld_coeffs[0], ls="--", c="k", label=r"$0.89\ \hat{I}_{\rm quiet}$")
+    ax1.axvline(mask.con_thresh2/con.ld_coeffs[0], ls=":", c="k", label=r"$0.45\ \hat{I}_{\rm quiet}$")
+    ax1.axvspan(0, mask.con_thresh2/con.ld_coeffs[0], fill=False, ec="tab:green", hatch="/", alpha=0.75)
+    ax1.axvspan(mask.con_thresh2/con.ld_coeffs[0], mask.con_thresh1/con.ld_coeffs[0], fill=False, ec="tab:orange", hatch="\\", alpha=0.75)
+    x1, bins, patches = ax1.hist(con_flat[con_flat < (mask.con_thresh1/con.ld_coeffs[0])], cumulative=False, bins="auto", lw=2, color="black", histtype="step", density=True, label=r"${\rm Any\ }\left| B_{r}\right|$")
+    x2, bins, patches = ax1.hist(con_flat[(con_flat < (mask.con_thresh1/con.ld_coeffs[0])) & w_active], cumulative=False, bins="auto", lw=2, color="tab:blue", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
+    ax1.set_xscale("log")
+    ax1.set_xlabel(r"${\rm Normalized\ HMI\ Continuum\ Intensity}$")
+    ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    ax1.legend(fontsize=12, loc="upper left")
+    ax1.grid(False)
+    fig.savefig(plotdir + "fig3b.pdf")
+    plt.clf(); plt.close()
 
+    # plot the distribution of aia intensities
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="-.", c="k", label=r"$\hat{I}_{\rm quiet,\ AIA}$")
+    # x1, bins, patches = ax1.hist(aia_flat, bins="fd",  color="tab:purple", histtype="step", density=True, label=r"${\rm Any\ }\left| B_{r,ij}\right|$")
+    # x2, bins, patches = ax1.hist(aia_flat[w_active & mask_dark], bins="fd", color="tab:pink", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| < B_{\rm thresh}\ \&\ I_{ij,\ {\rm HMI}} > I_{\rm thresh,\ HMI}$")
+    # x3, bins, patches = ax1.hist(aia_flat[w_quiet], bins="fd", color="tab:orange", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
+    # ax1.set_xscale("log")
+    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
+    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    # ax1.legend(fontsize=9, loc="upper right")
+    # ax1.grid(False)
+    # fig.savefig(plotdir + "fig3c.pdf")
+    # plt.clf(); plt.close()
+
+    # plot the distribution of magnetic fields
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_dark]), bins="fd", color="black", histtype="step", density=True, label=r"${\rm Penumbrae\ \&\ Umbrae}$")
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_umbra]), bins="fd", color="tab:green", histtype="step", density=True, label=r"${\rm Umbrae}$")
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_penumbra]), bins="fd", color="tab:orange", histtype="step", density=True, label=r"${\rm Penumbrae}$")
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_bright]), bins="fd", color="tab:blue", histtype="step", density=True, label=r"${\rm Network\ \&\ Plage}$")
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_network]), bins="fd", color="tab:purple", histtype="step", density=True, label=r"${\rm Network}$")
+    # _, bins, patches = ax1.hist(np.abs(mag_img[is_plage]), bins="fd", color="tab:pink", histtype="step", density=True, label=r"${\rm Plage}$")
+    # ax1.set_xlim(10, ax1.get_xlim()[1])
+    # ax1.set_xscale("log")
+    # ax1.set_xlabel(r"$\left| B_{r,ij} \right| \ {\rm G}$")
+    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    # ax1.legend(fontsize=12)
+    # fig.savefig(plotdir + "mag_dist.pdf")
+    # plt.clf(); plt.close()
+
+    # plot them
     return None
 
 if __name__ == "__main__":
     main()
+
+
