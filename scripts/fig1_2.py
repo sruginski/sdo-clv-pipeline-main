@@ -43,7 +43,7 @@ def main():
     plot_image(aia, outdir=plotdir, fname="fig1d.pdf")
 
     # get cutout
-    position = (2450, 2250) # in pixels -- origin not lower
+    position = (2460, 2250) # in pixels -- origin not lower
     size = u.Quantity((375, 375), u.arcsec)
     cutout_cont = Cutout2D(con.iflat, position, size, wcs=con.wcs)
     cutout_mask = Cutout2D(mask.regions, position, size, wcs=con.wcs)
@@ -64,7 +64,7 @@ def main():
     cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
     cmap.set_bad(color="black")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
-    ax1.imshow(cutout_mask.data,  cmap=cmap, alpha=0.25, origin="lower", interpolation=None)
+    ax1.imshow(cutout_mask.data,  cmap=cmap, alpha=0.5, origin="lower", interpolation=None)
 
     # axes stuff
     ax1.invert_xaxis()
