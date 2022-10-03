@@ -76,7 +76,7 @@ penumbrae = mask_all_zero_rows(penumbrae)
 umbrae = mask_all_zero_rows(umbrae)
 
 # get stats
-colname = "v_hat"
+colname = "v_conv"
 all_regs_avg, all_regs_std, all_regs_err = calc_region_stats(df_mu, colname=colname)
 umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
 penumbrae_avg, penumbrae_std, penumbrae_err = calc_region_stats(penumbrae, colname=colname)
@@ -128,7 +128,7 @@ plt.clf(); plt.close()
 mu_samps = [0.9, 0.8, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
-def clv_dist_plot(df, color, fname, xlims=None):
+def clv_dist_plot(df, color, fname, colname="v_hat", xlims=None):
     # create figure objects
     fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
     fig.subplots_adjust(wspace=0.175, hspace=0.0)
@@ -139,7 +139,7 @@ def clv_dist_plot(df, color, fname, xlims=None):
     for i in range(n_mu_samps):
         # do all regs
         idx1 = df.lo_mu == mu_samps[i]
-        axs[i].hist(df.v_hat[idx1], bins="auto", density=True, color=color, histtype="step")
+        axs[i].hist(df[colname][idx1], bins="auto", density=True, color=color, histtype="step")
         axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
         xlims0.append(axs[i].get_xlim()[0])
         xlims1.append(axs[i].get_xlim()[1])
@@ -164,9 +164,10 @@ def clv_dist_plot(df, color, fname, xlims=None):
     plt.clf(); plt.close()
     return None
 
-clv_dist_plot(df_mu, "k", "vel_hist_all.pdf", xlims=(-100,250))
-clv_dist_plot(plage, "tab:purple", "vel_hist_plage.pdf", xlims=(-210,450))
-clv_dist_plot(network, "tab:pink", "vel_hist_network.pdf", xlims=(-210, 450))
-clv_dist_plot(quiet_sun, "tab:blue", "vel_hist_quiet.pdf", xlims=(-100, 260))
-clv_dist_plot(penumbrae, "tab:orange", "vel_hist_penumbrae.pdf", xlims=(-1200, 1100))
-clv_dist_plot(umbrae, "tab:green", "vel_hist_umbrae.pdf", xlims=(-1200, 1100))
+colname = "v_hat"
+clv_dist_plot(df_mu, "k", "vel_hist_all.pdf", colname=colname, xlims=(-100,250))
+clv_dist_plot(plage, "tab:purple", "vel_hist_plage.pdf", colname=colname, xlims=(-210,450))
+clv_dist_plot(network, "tab:pink", "vel_hist_network.pdf", colname=colname, xlims=(-210, 450))
+clv_dist_plot(quiet_sun, "tab:blue", "vel_hist_quiet.pdf", colname=colname, xlims=(-100, 260))
+clv_dist_plot(penumbrae, "tab:orange", "vel_hist_penumbrae.pdf", colname=colname, xlims=(-1200, 1100))
+clv_dist_plot(umbrae, "tab:green", "vel_hist_umbrae.pdf", colname=colname, xlims=(-1200, 1100))

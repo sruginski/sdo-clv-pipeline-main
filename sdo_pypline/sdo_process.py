@@ -161,6 +161,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
     for j in range(n_rings-1):
+        print(j)
+
         # mu values for annuli
         lo_mu=mu_grid[j]
         hi_mu=mu_grid[j+1]
@@ -178,7 +180,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
         # get filling factor for annulus
         npix_annulus = np.nansum(region_mask)
-        fracs = [np.nansum(mask.w_active[region_mask])/npix_annulus]
+        fracs = [np.nansum(mask.w_active * region_mask)/npix_annulus]
 
         # loop over unique region identifiers
         for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
