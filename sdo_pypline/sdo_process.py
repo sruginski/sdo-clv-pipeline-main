@@ -161,8 +161,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
     for j in range(n_rings-1):
-        print(j)
-
         # mu values for annuli
         lo_mu=mu_grid[j]
         hi_mu=mu_grid[j+1]
