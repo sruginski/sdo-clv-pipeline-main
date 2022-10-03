@@ -124,20 +124,39 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # write the limb darkening parameters and pixel fractions to disk
     write_results_to_file(fname1, mjd, mask.aia_thresh, *aia.ld_coeffs,
                           mask.con_thresh1, mask.con_thresh2, *con.ld_coeffs)
-    write_results_to_file(fname2, mjd, mask.ff, mask.umb_frac, mask.pen_frac,
-                          mask.quiet_frac, mask.network_frac, mask.plage_frac)
 
-    # create arrays to hold velocity and magnetic field results
+    # create arrays to hold velocity magnetic fiel, and pixel fraction results
     results_vel = []
     results_mag = []
+    results_frac = []
+
+    # append disk fractions
+    results_frac.append([mjd, np.nan, np.nan, mask.ff, mask.umb_frac, mask.pen_frac,
+                        mask.quiet_frac, mask.network_frac, mask.plage_frac])
 
     # calculate disk-integrated velocities
-    vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=None, lo_mu=None)
+    vels = calc_velocities(con, mag, dop, aia, mask)
     results_vel.append([mjd, 0, np.nan, np.nan, *vels])
 
     # calculate disk-integrated unsigned magnetic field
-    mags = calc_mag_stats(con, mag, mask, region=None, lo_mu=None, hi_mu=None)
+    mags = calc_mag_stats(con, mag, mask)
     results_mag.append([mjd, 0, np.nan, np.nan, *mags])
+
+    # allocate for region mask
+    region_mask = np.ones(np.shape(mask.regions)).astype(int)
+
+    # loop over unique region identifiers
+    for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
+        # compute the region mask
+        region_mask[:] = calc_region_mask(mask, region=k, hi_mu=None, lo_mu=None)
+
+        # compute velocity components in each mu annulus by region
+        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
+        results_vel.append([mjd, k, np.nan, np.nan, *vels])
+
+        # compute magnetic field strength within each region
+        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
+        results_mag.append([mjd, k, np.nan, np.nan, *mags])
 
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
@@ -146,25 +165,42 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         lo_mu=mu_grid[j]
         hi_mu=mu_grid[j+1]
 
+        # compute the region mask
+        region_mask[:] = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+
         # compute velocity within mu
-        vels = calc_velocities(con, mag, dop, aia, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
         results_vel.append([mjd, 0, lo_mu, hi_mu, *vels])
 
         # calculate unsigned magnetic field within mu
-        mags = calc_mag_stats(con, mag, mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
         results_mag.append([mjd, 0, lo_mu, hi_mu, *mags])
+
+        # get filling factor for annulus
+        npix_annulus = np.nansum(region_mask)
+        fracs = [np.nansum(mask.w_active[region_mask])/npix_annulus]
 
         # loop over unique region identifiers
         for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
+            # compute the region mask
+            region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+
+            # append stats
+            fracs.append(np.nansum(region_mask)/npix_annulus)
+
             # compute velocity components in each mu annulus by region
-            vels = calc_velocities(con, mag, dop, aia, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+            vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
             results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
 
             # compute magnetic field strength within each region
-            mags = calc_mag_stats(con, mag, mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+            mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
             results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
 
+        # assemble fractions
+        results_frac.append([mjd, lo_mu, hi_mu, *fracs])
+
     # write to disk
+    write_results_to_file(fname2, results_frac)
     write_results_to_file(fname3, results_vel)
     write_results_to_file(fname4, results_mag)
 
@@ -176,9 +212,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del mask
     del vels
     del mags
+    del fracs
     del mu_grid
+    del region_mask
     del results_vel
     del results_mag
+    del results_frac
     gc.collect()
 
     # report success and return

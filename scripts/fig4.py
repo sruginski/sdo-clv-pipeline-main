@@ -52,6 +52,9 @@ def get_areas_for_set(con_file, mag_file, dop_file, aia_file):
     regions[ind3] = 3 # quiet sun
     regions[ind4] = 4 # bright areas (will separate into plage/faculae+network)
 
+    # get number of pixels for area conversion to microhemispheres
+    npix = np.sum(con.mu > 0.0)
+
     # label unique contiguous bright regions and calculate their sizes
     binary_img = regions == 4
     structure = ndimage.generate_binary_structure(2,2)
@@ -59,43 +62,70 @@ def get_areas_for_set(con_file, mag_file, dop_file, aia_file):
 
     # get labeled region properties
     rprops = regionprops(labels)
-    areas = np.array([rprop.area for rprop in rprops])
+    areas = np.array([rprop.area for rprop in rprops]) / npix
     perimeters = np.array([rprop.perimeter for rprop in rprops])
-    return areas, perimeters
+
+    # get the latitude of the centroid
+    centroids = np.zeros(len(areas))
+    for i in range(len(centroids)):
+        cent_row, cent_col = rprops[i].centroid
+        cent_row = int(cent_row)
+        cent_col = int(cent_col)
+        centroids[i] = dop.phi[cent_row, cent_col]
+    return areas, perimeters, centroids
 
 def main():
     # see if the areas have already been saved
     areas_file = datadir + "areas.txt"
     perimeters_file = datadir + "perimeters.txt"
+    centroids_file = datadir + "centroids.txt"
     if (not exists(areas_file)) | (not exists(perimeters_file)):
         # get the data to process (1 week at one day cadence)
-        start = "2014/01/01"
-        end = "2014/01/31"
-        sample = 24
-        files = download_data(outdir=datadir+"fits/", start=start, end=end, sample=24, overwrite=False)
-        con_files, mag_files, dop_files, aia_files = find_data(datadir+"fits/")
+        con_files = glob.glob(datadir + "fits/*cont*.fits")
+        if len(con_files) < 30:
+            start = "2014/01/01"
+            end = "2014/01/31"
+            sample = 24
+            files = download_data(outdir=datadir+"fits/", start=start, end=end, sample=24, overwrite=False)
+            con_files, mag_files, dop_files, aia_files = find_data(datadir+"fits/")
+        else:
+            con_files, mag_files, dop_files, aia_files = find_data(datadir+"fits/")
 
         # get the areas
         areas = []
         perimeters = []
+        centroids = []
         for i in range(len(con_files)):
-            print(i)
-            area, perimeter = get_areas_for_set(con_files[i], mag_files[i], dop_files[i], aia_files[i])
+            if i > 10:
+                break
+            area, perimeter, centroid = get_areas_for_set(con_files[i], mag_files[i], dop_files[i], aia_files[i])
             areas.append(area)
             perimeters.append(perimeter)
+            centroids.append(centroid)
 
         # write the areas to disk
         areas = np.concatenate(areas)
         perimeters = np.concatenate(perimeters)
+        centroids = np.concatenate(centroids)
         np.savetxt(areas_file, areas)
         np.savetxt(perimeters_file, perimeters)
+        np.savetxt(centroids_file, centroids)
     else:
         areas = np.loadtxt(areas_file)
         perimeters = np.loadtxt(perimeters_file)
+        centroids = np.loadtxt(centroids_file)
 
     # calculate ratios
     ratios = perimeters/areas
     mask = (perimeters >= 2)
+
+    pdb.set_trace()
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(areas * 1e6, np.abs(np.sin(centroids - np.pi/2)))
+    ax1.set_xscale("log")
+    plt.show()
 
     # get the bins to use
     # bins = np.logspace(np.log10(np.min(perimeters[mask])), np.log10(np.max(perimeters)), 50)

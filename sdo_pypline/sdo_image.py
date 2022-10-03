@@ -159,6 +159,9 @@ class SDOImage(object):
         hy = y1
         hz = -x1 * sincrln + z1 * coscrln
 
+        # write out latitude of each pixel
+        self.phi = np.arcsin(hy * (self.mu > 0.0))
+
         # differential rotation
         omega = (np.pi/180.) * (1./86400.) * (14.713 - 2.396 * hy**2 - 1.787 * hy**4)
 
@@ -196,7 +199,9 @@ class SDOImage(object):
             # mask section that are big outliers
             ints = self.image[inds]
             ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
-            avg_int[i] = np.nanmean(ints)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                avg_int[i] = np.nanmean(ints)
 
         # take averages in mu annuli to fit to
         mu_avgs = (mu_edge[1:] + mu_edge[0:-1]) / 2.0
@@ -326,16 +331,15 @@ class SunMask(object):
 
         # get labeled region areas and perimeters
         rprops = regionprops(labels)
-        areas = np.array([rprop.area for rprop in rprops])
-        perimeters = np.array([rprop.perimeter for rprop in rprops])
+        areas = np.array([rprop.area for rprop in rprops]).astype(float)
+        areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
 
         # calculate the perimeter to area ratio and apply threshold
-        ratios = perimeters/areas
-        ratio_thresh = 0.5
-        area_thresh = 30
+        # TODO: projection/foreshortening issue?
+        area_thresh = 20
 
         # assign region type to plage for ratios less than ratio thresh
-        ind5 = np.concatenate(([False], (ratios < ratio_thresh) & (areas > area_thresh)))[labels]
+        ind5 = np.concatenate(([False], areas > area_thresh))[labels]
         self.regions[ind5] = 5 # plage
 
         # set isolated bright pixels to quiet sun
