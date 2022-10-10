@@ -17,7 +17,7 @@ def calc_region_mask(mask, region=None, hi_mu=None, lo_mu=None):
 
     return region_mask
 
-def calc_velocities(con, mag, dop, aia, mask, region_mask=True):
+def calc_velocities(con, mag, dop, aia, mask, region_mask=True, weight_denom=True):
     # don't bother doing math if there is nothing in the mask
     if (type(region_mask) is np.ndarray) and (~region_mask.any()):
         return 0.0, 0.0, 0.0, 0.0
@@ -30,21 +30,31 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=True):
     k_hat_con = np.nansum(con.image * con.ldark * w_quiet) / np.nansum(con.ldark**2 * w_quiet)
 
     # calculate velocity terms
-    v_hat = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * region_mask) / np.nansum(con.image * region_mask)
-    v_phot = np.nansum(dop.v_rot * (con.image - k_hat_con * con.ldark) * w_active * region_mask) / np.nansum(con.image * region_mask)
+    v_hat = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * region_mask)
+    v_phot = np.nansum(dop.v_rot * (con.image - k_hat_con * con.ldark) * w_active * region_mask)
 
     # get quiet sun velocity
     if (np.nansum(w_quiet * region_mask) == 0):
         v_quiet = 0.0
     else:
-        v_quiet = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * w_quiet * region_mask) / np.nansum(con.image * w_quiet * region_mask)
+        v_quiet = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * w_quiet * region_mask)
+
+    # divide velocities by the denominator
+    if weight_denom:
+        v_hat /= np.nansum(con.image * region_mask)
+        v_phot /= np.nansum(con.image * region_mask)
+        v_quiet /= np.nansum(con.image * w_quiet * region_mask)
+    else:
+        v_hat /= np.nansum(con.image)
+        v_phot /= np.nansum(con.image)
+        v_quiet /= np.nansum(con.image * w_quiet)
 
     # get convective velocity by subtracting off other terms
     v_conv = v_hat - v_quiet
 
     return v_hat, v_phot, v_quiet, v_conv
 
-def calc_mag_stats(con, mag, mask, region_mask=True):
+def calc_mag_stats(con, mag, mask, region_mask=True, weight_denom=True):
     # don't bother doing math if there is nothing in the mask
     if (type(region_mask) is np.ndarray) and (~region_mask.any()):
         return 0.0, 0.0, 0.0
@@ -55,6 +65,12 @@ def calc_mag_stats(con, mag, mask, region_mask=True):
     mag_std = np.nanstd(abs_mag)
 
     # get intensity weighted unsigned magnetic field strength
-    mag_unsigned = np.nansum(np.abs(mag.image) * con.image * region_mask) / np.nansum(con.image * region_mask)
+    mag_unsigned = np.nansum(np.abs(mag.image) * con.image * region_mask)
+
+    # divide by the denominator
+    if weight_denom:
+        mag_unsigned /= np.nansum(con.image * region_mask)
+    else:
+        mag_unsigned /= np.nansum(con.image)
 
     return mag_avg, mag_std, mag_unsigned

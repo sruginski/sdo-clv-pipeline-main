@@ -67,16 +67,17 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     return con, mag, dop, aia, mask
 
 
-def process_data_set_parallel(con_file, mag_file, dop_file,
-                              aia_file, mu_thresh, n_rings):
+def process_data_set_parallel(con_file, mag_file, dop_file, aia_file,
+                              mu_thresh, n_rings, weight_denom):
     process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=mu_thresh, n_rings=n_rings,
-                     suffix=str(mp.current_process().pid))
+                     suffix=str(mp.current_process().pid),
+                     weight_denom=weight_denom)
     return None
 
 
-def process_data_set(con_file, mag_file, dop_file, aia_file,
-                     mu_thresh=0.1, n_rings=10, suffix=None):
+def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
+                     n_rings=10, suffix=None, weight_denom=False):
     # figure out data directories
     datadir = str(root / "data") + "/"
     if not isdir(datadir):
@@ -151,11 +152,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         region_mask[:] = calc_region_mask(mask, region=k, hi_mu=None, lo_mu=None)
 
         # compute velocity components in each mu annulus by region
-        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
+        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_vel.append([mjd, k, np.nan, np.nan, *vels])
 
         # compute magnetic field strength within each region
-        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
+        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_mag.append([mjd, k, np.nan, np.nan, *mags])
 
     # loop over the mu annuli
@@ -169,11 +170,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         region_mask[:] = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
 
         # compute velocity within mu
-        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
+        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_vel.append([mjd, 0, lo_mu, hi_mu, *vels])
 
         # calculate unsigned magnetic field within mu
-        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
+        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_mag.append([mjd, 0, lo_mu, hi_mu, *mags])
 
         # get filling factor for annulus
@@ -189,11 +190,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             fracs.append(np.nansum(region_mask)/npix_annulus)
 
             # compute velocity components in each mu annulus by region
-            vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
+            vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, weight_denom=weight_denom)
             results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
 
             # compute magnetic field strength within each region
-            mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
+            mags = calc_mag_stats(con, mag, mask, region_mask=region_mask, weight_denom=weight_denom)
             results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
 
         # assemble fractions
