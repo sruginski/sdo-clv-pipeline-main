@@ -4,7 +4,7 @@
 ##SBATCH --qos=burst2x
 #SBATCH --nodes=1
 #SBATCH --ntasks=12
-#SBATCH --mem-per-cpu=8192
+#SBATCH --mem-per-cpu=6144
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_pipe
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
@@ -22,13 +22,13 @@ conda activate solar
 echo "Environment activated"
 
 echo "About to start Python"
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2012*"
+python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --clobber --globexp "*2012*"
 wait
 python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2013*"
 wait
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2014*"
-wait
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2015*"
-wait
+# python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2014*"
+# wait
+# python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2015*"
+# wait
 echo "Python exited"
 date

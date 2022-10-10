@@ -59,7 +59,7 @@ def main():
         # prepare arguments for starmap
         items = []
         for i in range(len(con_files)):
-            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
+            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings, weightd))
 
         # run in parellel
         print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
