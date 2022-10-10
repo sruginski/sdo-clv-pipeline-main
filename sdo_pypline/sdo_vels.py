@@ -43,11 +43,13 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=True, weight_denom=Tru
     if weight_denom:
         v_hat /= np.nansum(con.image * region_mask)
         v_phot /= np.nansum(con.image * region_mask)
-        v_quiet /= np.nansum(con.image * w_quiet * region_mask)
+        if v_quiet != 0.0:
+            v_quiet /= np.nansum(con.image * w_quiet * region_mask)
     else:
         v_hat /= np.nansum(con.image)
         v_phot /= np.nansum(con.image)
-        v_quiet /= np.nansum(con.image * w_quiet)
+        if v_quiet != 0.0:
+            v_quiet /= np.nansum(con.image * w_quiet)
 
     # get convective velocity by subtracting off other terms
     v_conv = v_hat - v_quiet
