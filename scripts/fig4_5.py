@@ -36,6 +36,10 @@ def mask_all_zero_rows(df):
     idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)
     return df[~idx]
 
+def mask_zero_v_conv(df):
+    idx = (df.v_hat == df.v_quiet)
+    return df[~idx]
+
 # sort out paths
 datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
@@ -92,7 +96,7 @@ penumbrae_full = mask_all_zero_rows(penumbrae_full)
 umbrae_full = mask_all_zero_rows(umbrae_full)
 
 # get stats
-def clv_plot(colname):
+def clv_plot(colname, fname=None):
     all_regs_avg, all_regs_std, all_regs_err = calc_region_stats(df_mu, colname=colname)
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
     penumbrae_avg, penumbrae_std, penumbrae_err = calc_region_stats(penumbrae, colname=colname)
@@ -102,14 +106,16 @@ def clv_plot(colname):
 
     # plot the curves
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(6.4,7.75))
+    fig.subplots_adjust(hspace=0.05)
 
     ax1.errorbar(mu_bin, all_regs_avg, yerr=all_regs_err, fmt=".", capsize=3, color="black", label=r"${\rm All\ regions}$")
     ax2.errorbar(mu_bin, all_regs_avg, yerr=all_regs_err, fmt=".", capsize=3, color="black")
     ax1.fill_between(mu_bin, all_regs_avg - all_regs_std, all_regs_avg + all_regs_std, color="black", alpha=0.5)
     ax2.fill_between(mu_bin, all_regs_avg - all_regs_std, all_regs_avg + all_regs_std, color="black", alpha=0.5)
 
-    ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=".", capsize=3, color="tab:blue", label=r"${\rm Quiet\ Sun}$")
-    ax1.fill_between(mu_bin, quiet_sun_avg - quiet_sun_std, quiet_sun_avg + quiet_sun_std, color="tab:blue", alpha=0.5)
+    if colname != "v_conv":
+        ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=".", capsize=3, color="tab:blue", label=r"${\rm Quiet\ Sun}$")
+        ax1.fill_between(mu_bin, quiet_sun_avg - quiet_sun_std, quiet_sun_avg + quiet_sun_std, color="tab:blue", alpha=0.5)
 
     ax1.errorbar(mu_bin, plage_avg, yerr=plage_err, fmt=".", capsize=3, color="tab:purple", label=r"${\rm Plage}$")
     ax1.fill_between(mu_bin, plage_avg - plage_std, plage_avg + plage_std, color="tab:purple", alpha=0.5)
@@ -127,72 +133,91 @@ def clv_plot(colname):
     ax1.set_xticks(np.arange(0.1, 1.1, 0.1))
     ax1.invert_xaxis()
     ax2.set_xlabel(r"$\mu$")
-    ax1.set_ylabel(r"$\hat{v}\ {\rm (m/s)}$")
-    ax2.set_ylabel(r"$\hat{v}\ {\rm (m/s)}$")
+
+    if colname == "v_hat":
+        ylabel = r"$\hat{v}\ {\rm (m/s)}$"
+    elif colname == "v_conv":
+        ylabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
+    else:
+        ylabel = colname
+
+    ax1.set_ylabel(ylabel)
+    ax2.set_ylabel(ylabel)
 
     # stuff for the legend
     lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
     lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
-    ax1.legend(lines, labels, loc="upper center", ncol=3, fontsize=11)
+    if colname == "v_hat":
+        ax1.legend(lines, labels, loc="upper center", ncol=3, fontsize=10)
 
     # save the figure
-    plt.savefig(plotdir + "mu_dist_regions.pdf", bbox_inches="tight")
+    plt.savefig(plotdir + fname, bbox_inches="tight")
     plt.clf(); plt.close()
     return None
 
-clv_plot("v_hat")
-clv_plot("v_conv")
+clv_plot("v_hat", "fig4a.pdf")
+clv_plot("v_conv", "fig4b.pdf")
 
 # get distributions of velocities at different mu positions
 mu_samps = [0.9, 0.8, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
-def clv_dist_plot(df, df_full, color, fname, colname="v_hat", xlims=None):
-    # create figure objects
-    fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
-    fig.subplots_adjust(wspace=0.175, hspace=0.0)
+# create figure objects
+colname = "v_conv"
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
 
-    # loop over valus
-    xlims0 = []
-    xlims1 = []
-    for i in range(n_mu_samps):
-        # do all regs
-        idx1 = df.lo_mu == mu_samps[i]
+# loop over valus
+for i in range(n_mu_samps):
+    # do all regs
+    idx1 = umbrae.lo_mu == mu_samps[i]
+    idx2 = penumbrae.lo_mu == mu_samps[i]
 
-        # plot this mu
-        axs[i].hist(df[colname][idx1], bins="auto", density=True, color=color, histtype="step")
+    # plot this mu
+    axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color="tab:green", histtype="step", label=r"{\rm Umbrae}")
+    axs[i].hist(penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Penumbrae}")
 
-        # plot the full disk
-        axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+    # plot the full disk
+    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
 
-        axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
-        xlims0.append(axs[i].get_xlim()[0])
-        xlims1.append(axs[i].get_xlim()[1])
-        axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i]))
+    # label stuff
+    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
+    axs[i].set_xlim(-1200, 1200)
+    axs[i].set_box_aspect(1.25)
 
-    if xlims == None:
-        xlim0 = np.min(xlims0)
-        xlim1 = np.max(xlims1)
-    else:
-        xlim0 = xlims[0]
-        xlim1 = xlims[1]
+# set axes labels
+axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+axs[-1].legend(fontsize=10)
+fig.savefig(plotdir + "fig5a.pdf")
+plt.clf(); plt.close()
 
-    for i in range(n_mu_samps):
-        axs[i].set_xlim(xlim0, xlim1)
-        axs[i].set_box_aspect(1.25)
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
 
+# loop over valus
+for i in range(n_mu_samps):
+    # do all regs
+    idx1 = plage.lo_mu == mu_samps[i]
+    idx2 = network.lo_mu == mu_samps[i]
+    idx3 = quiet_sun.lo_mu == mu_samps[i]
 
-    # set axes labels
-    axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+    # plot this mu
+    axs[i].hist(plage[colname][idx1], bins="auto", density=True, color="tab:purple", histtype="step", label=r"{\rm Plage}")
+    axs[i].hist(network[colname][idx2], bins="auto", density=True, color="tab:pink", histtype="step", label=r"{\rm Network}")
+    # axs[i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color="tab:blue", histtype="step", label=r"{\rm Quiet Sun}")
 
-    fig.savefig(plotdir + fname)
-    plt.clf(); plt.close()
-    return None
+    # plot the full disk
+    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
 
-colname = "v_hat"
-clv_dist_plot(df_mu, df_full, "k", "vel_hist_all.pdf", colname=colname, xlims=(-100,250))
-clv_dist_plot(plage, plage_full, "tab:purple", "vel_hist_plage.pdf", colname=colname, xlims=(-210,450))
-clv_dist_plot(network, network_full, "tab:pink", "vel_hist_network.pdf", colname=colname, xlims=(-210, 450))
-clv_dist_plot(quiet_sun, quiet_sun_full, "tab:blue", "vel_hist_quiet.pdf", colname=colname, xlims=(-100, 260))
-clv_dist_plot(penumbrae, penumbrae_full, "tab:orange", "vel_hist_penumbrae.pdf", colname=colname, xlims=(-1200, 1100))
-clv_dist_plot(umbrae, umbrae_full, "tab:green", "vel_hist_umbrae.pdf", colname=colname, xlims=(-1200, 1100))
+    # label stuff
+    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
+    axs[i].set_xlim(-210,450)
+    axs[i].set_box_aspect(1.25)
+
+# set axes labels
+axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+axs[-1].legend(fontsize=10)
+fig.savefig(plotdir + "fig5b.pdf")
+plt.clf(); plt.close()

@@ -57,7 +57,7 @@ def main():
     ax1 = plt.gca() # some weird astropy bug with axes, this fixes it
 
     # plot a zoom-in on the mask overlaid on continuum
-    cmap = plt.get_cmap("afmhot").copy()
+    cmap = plt.get_cmap("Greys").copy()
     cmap.set_bad(color="black")
     ax1.imshow(cutout_cont.data,  cmap=cmap, origin="lower", interpolation=None)
 

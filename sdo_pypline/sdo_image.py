@@ -72,8 +72,8 @@ class SDOImage(object):
         self.focal_len = 180. * 3600. / np.pi / self.cdelt1
 
         # mesh of pixels and distances to pixels in pixel units
-        paxis1 = np.arange(self.naxis1) - self.crpix1
-        paxis2 = np.arange(self.naxis2) - self.crpix2
+        paxis1 = np.linspace(1, self.naxis2, self.naxis2) - self.crpix1
+        paxis2 = np.linspace(1, self.naxis2, self.naxis2) - self.crpix2
         self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
         self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
 
@@ -141,14 +141,15 @@ class SDOImage(object):
         # heliographic coordinates
         dw = self.py * sincrota + self.px * coscrota
         dn = self.py * coscrota - self.px * sincrota
+        dr = self.rr_obs - self.dist_sun
 
         # cartesian coordinates
         rw_obs = self.rr * dw/self.pr
         rn_obs = self.rr * dn/self.pr
-        dvel = np.sqrt(rw_obs**2 + rn_obs**2 + (self.rr_obs - self.dist_sun)**2)
+        dvel = np.sqrt(rw_obs**2 + rn_obs**2 + dr**2)
 
         # compute spacecraft velocity relative to each pixel
-        self.v_obs = - (rw_obs * self.obs_vw + rn_obs * self.obs_vn + (self.rr_obs - self.dist_sun) * self.obs_vr) / dvel
+        self.v_obs = - (rw_obs * self.obs_vw + rn_obs * self.obs_vn + dr * self.obs_vr) / dvel
 
         # cartesian coordinates
         x1 = rw_obs
@@ -179,11 +180,7 @@ class SDOImage(object):
         rot_vr = v2 * sincrlt + v3 * coscrlt
 
         # compute differential rotation
-        # TODO minus sign???? ask solaster people
-        self.v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + (self.rr_obs - self.dist_sun) * rot_vr) / dvel
-
-        # correct the dopplergram by subtracting off velocities
-        # self.image = self.image - v_rot - v_obs
+        self.v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + dr * rot_vr) / dvel
         return None
 
     def calc_limb_darkening(self, mu_lim=0.1, num_mu=50):

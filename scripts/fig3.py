@@ -46,48 +46,6 @@ def main():
     idx1 = np.random.choice(len(aia_flat), int(np.floor(len(aia_flat)/50)))
     idx2 = np.random.choice(len(aia_flat[w_active]), int(np.floor(len(aia_flat[w_active])/50)))
 
-    # plot elephant for AIA
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # ax1.axhline(mask.aia_thresh, ls="--", c="k")
-    # ax1.axvline(24.0, ls="--", c="k")
-    # ax1.scatter(np.abs(mag_img), aia_flat, s=1, alpha=0.75, color="black", rasterized=True)
-    # ax1.set_xscale("log")
-    # ax1.set_yscale("log")
-    # ax1.set_xlabel(r"$\left| B_{r,ij} \right| \ {\rm G}$")
-    # ax1.set_ylabel(r"${\rm AIA}\ 1700{\rm \AA}\ I_{{\rm flat}, ij}$")
-    # fig.savefig(plotdir + "aia_flat_vs_mag.pdf", dpi=150)
-    # plt.clf(); plt.close()
-
-    # plot elephant for HMI
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # ax1.axhline(mask.con_thresh, ls="--", c="k")
-    # ax1.axvline(24.0, ls="--", c="k")
-    # ax1.scatter(np.abs(mag_img)[idx1], con_flat[idx1] * con.ld_coeffs[0], s=1, alpha=0.75, color="black", rasterized=True)
-    # ax1.set_xscale("log")
-    # # ax1.set_yscale("log")
-    # ax1.set_xlabel(r"$\left| B_{ij} \right| \ {\rm G}$")
-    # ax1.set_ylabel(r"${\rm HMI}\ I_{{\rm flat}, ij}$")
-    # fig.savefig(plotdir + "hmi_flat_vs_mag.pdf", dpi=150)
-    # plt.clf(); plt.close()
-
-    # plot continuum vs continuum
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # ax1.axhline(mask.con_thresh/con.ld_coeffs[0], ls="--", c="k", label=r"${I_{\rm thresh, HMI}}$")
-    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="dotted", c="k", label=r"${I_{\rm thresh, AIA}}$")
-    # ax1.axvline(1.57 * np.nanmean(aia_flat[w_quiet]), ls="dotted", c="k", label=r"${I_{\rm thresh, AIA}}$")
-    # ax1.scatter(aia_flat[idx1], con_flat[idx1], s=1, alpha=0.75, color="black", rasterized=True, label=r"${\rm Any\ }\left| B_{r,ij}\right|$")
-    # ax1.scatter(aia_flat[w_active][idx2], con_flat[w_active][idx2], s=1, alpha=0.75, color="tab:blue", rasterized=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
-    # # ax1.set_xscale("log")
-    # # ax1.set_yscale("log")
-    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
-    # ax1.set_ylabel(r"${\rm Normalized\ HMI\ Continuum\ Intensity}$")
-    # ax1.legend()
-    # fig.savefig(plotdir + "aia_vs_hmi.pdf", dpi=150)
-    # plt.clf(); plt.close()
-
     # plot the distribution of intensities
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
@@ -121,38 +79,6 @@ def main():
     ax1.grid(False)
     fig.savefig(plotdir + "fig3b.pdf")
     plt.clf(); plt.close()
-
-    # plot the distribution of aia intensities
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="-.", c="k", label=r"$\hat{I}_{\rm quiet,\ AIA}$")
-    # x1, bins, patches = ax1.hist(aia_flat, bins="fd",  color="tab:purple", histtype="step", density=True, label=r"${\rm Any\ }\left| B_{r,ij}\right|$")
-    # x2, bins, patches = ax1.hist(aia_flat[w_active & mask_dark], bins="fd", color="tab:pink", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| < B_{\rm thresh}\ \&\ I_{ij,\ {\rm HMI}} > I_{\rm thresh,\ HMI}$")
-    # x3, bins, patches = ax1.hist(aia_flat[w_quiet], bins="fd", color="tab:orange", histtype="step", density=True, label=r"$\left| B_{r,ij}\right| > B_{\rm thresh}$")
-    # ax1.set_xscale("log")
-    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
-    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    # ax1.legend(fontsize=9, loc="upper right")
-    # ax1.grid(False)
-    # fig.savefig(plotdir + "fig3c.pdf")
-    # plt.clf(); plt.close()
-
-    # plot the distribution of magnetic fields
-    # fig = plt.figure()
-    # ax1 = fig.add_subplot(111)
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_dark]), bins="fd", color="black", histtype="step", density=True, label=r"${\rm Penumbrae\ \&\ Umbrae}$")
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_umbra]), bins="fd", color="tab:green", histtype="step", density=True, label=r"${\rm Umbrae}$")
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_penumbra]), bins="fd", color="tab:orange", histtype="step", density=True, label=r"${\rm Penumbrae}$")
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_bright]), bins="fd", color="tab:blue", histtype="step", density=True, label=r"${\rm Network\ \&\ Plage}$")
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_network]), bins="fd", color="tab:purple", histtype="step", density=True, label=r"${\rm Network}$")
-    # _, bins, patches = ax1.hist(np.abs(mag_img[is_plage]), bins="fd", color="tab:pink", histtype="step", density=True, label=r"${\rm Plage}$")
-    # ax1.set_xlim(10, ax1.get_xlim()[1])
-    # ax1.set_xscale("log")
-    # ax1.set_xlabel(r"$\left| B_{r,ij} \right| \ {\rm G}$")
-    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    # ax1.legend(fontsize=12)
-    # fig.savefig(plotdir + "mag_dist.pdf")
-    # plt.clf(); plt.close()
 
     # plot them
     return None
