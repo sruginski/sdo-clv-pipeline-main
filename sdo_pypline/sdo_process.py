@@ -40,8 +40,8 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     # correct magnetogram for foreshortening
     mag.correct_magnetogram()
 
-    # calculate differential rotation & observer velocity
-    dop.calc_vrot_vobs()
+    # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
+    dop.correct_dopplergram()
 
     # calculate limb darkening/brightening in continuum map and filtergram
     try:

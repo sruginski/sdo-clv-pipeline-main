@@ -52,7 +52,7 @@ def main():
         ncpus = len(sched_getaffinity(0)) - 1
     except:
         # ncpus = np.min([len(con_files), mp.cpu_count()])
-        ncpus = 4
+        ncpus = 1
 
     # process the data either in parallel or serially
     if ncpus > 1:
