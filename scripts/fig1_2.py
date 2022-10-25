@@ -42,6 +42,9 @@ def main():
     # print("\t>>> Plotting AIA continuum...")
     plot_image(aia, outdir=plotdir, fname="fig1d.pdf")
 
+    # merge the penumbra
+    mask.regions[mask.regions >= 3] -= 1
+
     # get cutout
     position = (2460, 2250) # in pixels -- origin not lower
     size = u.Quantity((375, 375), u.arcsec)

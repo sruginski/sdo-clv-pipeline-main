@@ -55,7 +55,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        img = ax1.imshow(sdo_image.image - sdo_image.v_rot - sdo_image.v_obs, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
+        img = ax1.imshow(sdo_image.v_corr, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm LOS\ Velocity\ (m/s)}$")
         ax1.invert_xaxis()
@@ -78,7 +78,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm HMI\ Continuum\ Intensity}$")
         ax1.invert_xaxis()
@@ -101,7 +101,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         cmap.set_bad(color="black")
 
         # plot the sun
-        img = ax1.imshow(sdo_image.iflat, cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm 1700\ \AA \ Continuum\ Intensity}$")
         ax1.invert_xaxis()
@@ -123,6 +123,9 @@ def plot_image(sdo_image, outdir=None, fname=None):
 
 def plot_mask(mask, outdir=None, fname=None):
     assert outdir is not None
+
+    # merge the penumbra
+    mask.regions[mask.regions >= 3] -= 1
 
     # get cmap
     cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])

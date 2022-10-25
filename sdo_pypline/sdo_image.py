@@ -218,7 +218,7 @@ class SDOImage(object):
         self.lp = cos_B0 * sin_phi
 
         # calculate legendre poylnomials
-        print(">>> Generating ~Legendre~ Polynomials")
+        # print(">>> Generating ~Legendre~ Polynomials")
         pl_theta, dt_pl_theta = gen_leg(5, self.lat_mask)
         pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
 
@@ -404,8 +404,8 @@ class SunMask(object):
 
         # get indices for penumbrae (blueshifted and redshifted)
         indp = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
-        ind2 = (dop[indp] <= 0.0)
-        ind3 = (dop[indp] > 0.0)
+        ind2 = indp & (dop.v_corr <= 0)
+        ind3 = indp & (dop.v_corr > 0)
 
         # get indices for quiet sun
         ind4 = (con.iflat > self.con_thresh1) & self.w_quiet
@@ -422,7 +422,7 @@ class SunMask(object):
         # set mask indices
         self.regions[ind1] = 1 # umbrae
         self.regions[ind2] = 2 # blueshifted penumbrae
-        self.regions[ind2] = 3 # redshifted penumbrae
+        self.regions[ind3] = 3 # redshifted penumbrae
         self.regions[ind4] = 4 # quiet sun
         self.regions[ind5] = 5 # bright areas (will separate into plage + network)
 

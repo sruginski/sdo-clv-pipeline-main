@@ -12,11 +12,6 @@ def download_plot_data():
     dop = datadir + "fits/hmi_v_45s_2014_01_07_00_01_30_tai_dopplergram.fits"
     aia = datadir + "fits/aia_lev1_1700a_2014_01_07t00_00_30_71z_image_lev1.fits"
 
-    # con = "/Users/michael/work/sdo-pypline/data/fits/hmi_ic_45s_2019_01_07_00_01_30_tai_continuum.fits"
-    # mag = "/Users/michael/work/sdo-pypline/data/fits/hmi_m_45s_2019_01_07_00_01_30_tai_magnetogram.fits"
-    # dop = "/Users/michael/work/sdo-pypline/data/fits/hmi_v_45s_2019_01_07_00_01_30_tai_dopplergram.fits"
-    # aia = "/Users/michael/work/sdo-pypline/data/fits/aia_lev1_1700a_2019_01_07t00_00_28_72z_image_lev1.fits"
-
     if any(map(lambda x: x not in files, (con, mag, dop, aia))):
         # download the data to plot
         print(">>> Downloading data")
