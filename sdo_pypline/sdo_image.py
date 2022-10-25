@@ -283,59 +283,6 @@ class SDOImage(object):
         self.v_corr[~self.mask_nan] = np.nan
         return None
 
-    def calc_vrot_old(self):
-        assert self.is_dopplergram()
-
-        # pre-compute geometric quantities
-        coscrlt  = np.cos(self.crlt_obs)
-        sincrlt  = np.sin(self.crlt_obs)
-        coscrln  = np.cos(self.crln_obs)
-        sincrln  = np.sin(self.crln_obs)
-        coscrota = np.cos(self.crota2)
-        sincrota = np.sin(self.crota2)
-
-        # heliographic coordinates
-        dw = self.py * sincrota + self.px * coscrota
-        dn = self.py * coscrota - self.px * sincrota
-        dr = self.rr_obs - self.dist_sun
-
-        # cartesian coordinates
-        rw_obs = self.rr * dw/self.pr
-        rn_obs = self.rr * dn/self.pr
-        dvel = np.sqrt(rw_obs**2 + rn_obs**2 + dr**2)
-
-        # cartesian coordinates
-        x1 = rw_obs
-        y1 = rn_obs * coscrlt + self.rr_obs * sincrlt
-        z1 = -rn_obs * sincrlt + self.rr_obs * coscrlt
-
-        hx = x1 * coscrln + z1 * sincrln
-        hy = y1
-        hz = -x1 * sincrln + z1 * coscrln
-
-        # write out latitude of each pixel
-        self.phi = np.arcsin(hy * (self.mu > 0.0))
-
-        # differential rotation
-        omega = (np.pi/180.) * (1./86400.) * (14.713 - 2.396 * hy**2 - 1.787 * hy**4)
-
-        # projection into rotating frame
-        vx_rot = omega * hz * self.rsun_ref
-        vy_rot = 0.0
-        vz_rot = -omega * hx * self.rsun_ref
-
-        v1 = coscrln * vx_rot - sincrln * vz_rot
-        v2 = vy_rot
-        v3 = sincrln * vx_rot + coscrln * vz_rot
-
-        rot_vw = v1
-        rot_vn = v2 * coscrlt - v3 * sincrlt
-        rot_vr = v2 * sincrlt + v3 * coscrlt
-
-        # compute differential rotation
-        self.v_rot = (rw_obs * rot_vw + rn_obs * rot_vn + dr * rot_vr) / dvel
-        return None
-
     def calc_limb_darkening(self, mu_lim=0.1, num_mu=50):
         assert (self.is_continuum() | self.is_filtergram())
 
