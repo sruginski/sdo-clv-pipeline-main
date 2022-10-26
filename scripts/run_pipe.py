@@ -19,15 +19,13 @@ def get_parser_args():
     # initialize argparser
     parser = argparse.ArgumentParser(description="Analyze SDO data")
     parser.add_argument("--clobber", action="store_true", default=False)
-    parser.add_argument("--weightd", action="store_true", default=False)
     parser.add_argument("--globexp", type=str, default="")
 
     # parse the command line arguments
     args = parser.parse_args()
     clobber = args.clobber
-    weightd = args.weightd
     globexp = args.globexp
-    return clobber, weightd, globexp
+    return clobber, globexp
 
 def main():
     # define sdo_data directories
@@ -36,7 +34,7 @@ def main():
         indir = "/storage/home/mlp95/scratch/sdo_data/"
 
     # sort out input/output data files
-    clobber, weightd, globexp = get_parser_args()
+    clobber, globexp = get_parser_args()
     files = organize_input_output(indir, clobber=clobber, globexp=globexp)
     con_files, mag_files, dop_files, aia_files = files
 
@@ -59,7 +57,7 @@ def main():
         # prepare arguments for starmap
         items = []
         for i in range(len(con_files)):
-            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings, weightd))
+            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
 
         # run in parellel
         print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
@@ -95,7 +93,7 @@ def main():
         t0 = time.time()
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
-                             mu_thresh=mu_thresh, n_rings=n_rings, weight_denom=weightd)
+                             mu_thresh=mu_thresh, n_rings=n_rings)
 
         # print run time
         print("Serial: --- %s seconds ---" % (time.time() - t0))
