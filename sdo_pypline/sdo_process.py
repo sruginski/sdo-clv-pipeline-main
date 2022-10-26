@@ -159,8 +159,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         mags = calc_mag_stats(con, mag, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_mag.append([mjd, k, np.nan, np.nan, *mags])
 
-    pdb.set_trace()
-
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
     for j in range(n_rings-1):
