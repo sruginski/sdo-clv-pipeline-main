@@ -27,44 +27,50 @@ class SDOImage(object):
         # set the filename
         self.filename = file
 
-        # set attributes from the heaader
-        self.parse_header(file)
+        # read in the file
+        smap = sun_map(self.filename)
 
-        # read in the data
-        self.image = read_data(file)
+        # get the image and the header
+        self.image = smap.data.astype(float)
+        self.parse_header(smap)
+
+        # do coordinate transforms / calculations
+        # methods adapted from https://arxiv.org/abs/2105.12055
+        # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
+        paxis1 = np.arange(self.naxis1)
+        paxis2 = np.arange(self.naxis2)
+        xx, yy = np.meshgrid(paxis1, paxis2) * u.pix
+        self.hpc = smap.pixel_to_world(xx, yy)    # helioprojective cartesian
+        self.B0 = smap.observer_coordinate.lat
+        self.rsun_solrad = smap.observer_coordinate.radius/smap.rsun_meters
 
         # initialize mu_thresh
         self.mu_thresh = 0.0
         return None
 
-    def parse_header(self, file):
+    def parse_header(self, smap):
         # read the header
-        head = read_header(file)
+        head = smap.fits_header
         self.wcs = WCS(head)
 
         # parse it
         self.naxis1 = head["NAXIS1"]
         self.naxis2 = head["NAXIS2"]
-        self.wavelength = head["WAVELNTH"]
         self.crpix1 = head["CRPIX1"]
         self.crpix2 = head["CRPIX2"]
-        self.crval1 = head["CRVAL1"]
-        self.crval2 = head["CRVAL2"]
         self.cdelt1 = head["CDELT1"]
         self.cdelt2 = head["CDELT2"]
-        self.crota2 = np.deg2rad(head["CROTA2"])
+        self.date_obs = head["DATE-OBS"]
+
         self.dsun_obs = head["DSUN_OBS"]
         self.dsun_ref = head["DSUN_REF"]
         self.rsun_obs = head["RSUN_OBS"]
         self.rsun_ref = head["RSUN_REF"]
-        self.crln_obs = np.deg2rad(head["CRLN_OBS"])
-        self.crlt_obs = np.deg2rad(head["CRLT_OBS"])
-        self.car_rot = head["CAR_ROT"]
+
         self.obs_vr = head["OBS_VR"]
         self.obs_vw = head["OBS_VW"]
         self.obs_vn = head["OBS_VN"]
-        self.rsun_obs = head["RSUN_OBS"]
-        self.date_obs = head["DATE-OBS"]
+
         if "CONTENT" in head.keys():
             self.content = head["CONTENT"]
         else:
@@ -72,38 +78,33 @@ class SDOImage(object):
         return None
 
     def calc_geometry(self):
-        # get distance to sun in solar radii and focal length
-        self.dist_sun = self.dsun_obs/self.rsun_ref
-        self.focal_len = 180. * 3600. / np.pi / self.cdelt1
+        # transform to other coordinate systems
+        hgs = self.hpc.transform_to(frames.HeliographicStonyhurst)
+        hcc = self.hpc.transform_to(frames.Heliocentric)
 
-        # mesh of pixels and distances to pixels in pixel units
-        paxis1 = np.linspace(1, self.naxis1, self.naxis1) - self.crpix1
-        paxis2 = np.linspace(1, self.naxis2, self.naxis2) - self.crpix2
-        self.px, self.py = np.meshgrid(paxis1, paxis2, sparse=True)
-        self.pr = np.sqrt(self.px**2.0 + self.py**2.0)
+        # get cartesian and radial coordinates
+        self.xx = hcc.x
+        self.yy = hcc.y
+        self.rr = np.sqrt(self.hpc.Tx**2 + self.hpc.Ty**2) / (self.rsun_obs * u.arcsec)
 
-        #  distances in solar radii
-        rr_complex = self.focal_len**2 * self.pr**2 + self.pr**4 - self.dist_sun**2 * self.pr**4 + 0j
-        self.rr = np.real(self.dist_sun * self.focal_len * self.pr - np.sqrt(rr_complex)) / (self.focal_len**2 + self.pr**2)
-        self.rr_obs = np.real(np.sqrt(1.0 - self.rr**2 + 0j))
+        # heliocgraphic latitude and longitude
+        self.lat = hgs.lat + 90 * u.deg
+        self.lon = hgs.lon
 
-        # calculate grid of mus
-        cos_alpha = self.rr_obs
-        sin_alpha = self.rr
-        cos_theta = (self.dist_sun - cos_alpha) / np.sqrt(self.rr**2 + (self.dist_sun - cos_alpha)**2)
-        sin_theta = np.sqrt(1.0 - cos_theta**2)
-        self.mu = np.real(cos_alpha * cos_theta - sin_alpha * sin_theta)
+        # get mu
+        mask = self.rr <= 1.0
+        self.mu = np.zeros((4096, 4096))
+        self.mu[mask] = np.sqrt(1.0 - self.rr.value[mask]**2.0)
+        self.mu[~mask] = np.nan
         return None
 
     def inherit_geometry(self, other_image):
-        self.dist_sun = np.copy(other_image.dist_sun)
-        self.focal_len = np.copy(other_image.focal_len)
-        self.px = np.copy(other_image.px)
-        self.py = np.copy(other_image.py)
-        self.pr = np.copy(other_image.pr)
+        self.xx = np.copy(other_image.xx)
+        self.yy = np.copy(other_image.yy)
         self.rr = np.copy(other_image.rr)
-        self.rr_obs = np.copy(other_image.rr_obs)
         self.mu = np.copy(other_image.mu)
+        self.lat = np.copy(other_image.lat)
+        self.lon = np.copy(other_image.lon)
         return None
 
     def is_magnetogram(self):
@@ -135,33 +136,9 @@ class SDOImage(object):
     def correct_dopplergram(self):
         assert self.is_dopplergram()
 
-        # read file in as sunpy map to do coordinate transforms
-        # methods adapted from https://arxiv.org/abs/2105.12055
-        # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
-        smap = sun_map(self.filename)
-
-        # get coordinates
-        paxis1 = np.arange(self.naxis1)
-        paxis2 = np.arange(self.naxis2)
-        xx, yy = np.meshgrid(paxis1, paxis2) * u.pix
-        hpc = smap.pixel_to_world(xx, yy)    # helioprojective cartesian
-        hgs = hpc.transform_to(frames.HeliographicStonyhurst)
-        hcc = hpc.transform_to(frames.Heliocentric) # heliocentric cartiesian
-
-        # get coordinates
-        self.xx = hcc.x
-        self.yy = hcc.y
-        self.rr = np.sqrt(hpc.Tx**2 + hpc.Ty**2) / smap.rsun_obs
-        self.B0 = smap.observer_coordinate.lat
-        self.lat = hgs.lat + 90 * u.deg
-        self.lon = hgs.lon
-
-        # get distance to sun in solar radii
-        self.rsun_solrad = smap.observer_coordinate.radius/smap.rsun_meters
-
         # get mask excluding nans / sqrts of negatives
-        self.rr[self.rr > 0.95] = np.nan
-        self.mask_nan = np.logical_and(~np.isnan(self.rr), ~np.isnan(self.lat))
+        # self.mask_nan = np.logical_and((self.rr <= 0.95), ~np.isnan(self.lat))
+        self.mask_nan = (self.mu >= 0.1)
 
         # velocity components
         self.v_grav = 632 # m/s, constant
@@ -170,6 +147,8 @@ class SDOImage(object):
         return None
 
     def calc_spacecraft_vel(self):
+        # methods adapted from https://arxiv.org/abs/2105.12055
+        # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
         assert self.is_dopplergram()
 
         # pre-compute trigonometric quantities
@@ -179,11 +158,6 @@ class SDOImage(object):
         cos_sig = np.cos(sig)
         sin_chi = np.sin(chi)
         cos_chi = np.cos(chi)
-
-        # get satellite velocities
-        self.obs_vw
-        self.obs_vn
-        self.obs_vr
 
         # project satellite velocity into coordinate frame
         vr1 = self.obs_vr * cos_sig
@@ -256,11 +230,6 @@ class SDOImage(object):
         Ainv = inv_SVD(A, 1e5)
         self.fit_params = Ainv.dot(self.RHS)
 
-        # get total effect
-        self.v_idk = np.zeros((4096, 4096))
-        self.v_idk[self.mask_nan] = self.fit_params.dot(self.im_arr)
-        self.v_idk[~self.mask_nan] = np.nan
-
         # get rotation
         self.v_rot = np.zeros((4096, 4096))
         self.v_rot[self.mask_nan] = self.fit_params[:3].dot(self.im_arr[:3, :])
@@ -324,9 +293,12 @@ class SDOImage(object):
                                       read_header(hmi_image.filename),
                                       return_footprint=False)
 
-        # TODO recalculate the mu???
+        # borrow the geometry now that the images are aligned
+        self.inherit_geometry(hmi_image)
+        self.rsun_solrad = hmi_image.rsun_solrad
         self.wcs = hmi_image.wcs
-        self.mu = hmi_image.mu
+        self.hpc = hmi_image.hpc
+        self.B0 = hmi_image.B0
 
 # for creating pixel mask with thresholded regions
 def calculate_weights(mag):
@@ -381,14 +353,12 @@ class SunMask(object):
         return None
 
     def inherit_geometry(self, other_image):
-        self.dist_sun = other_image.dist_sun
-        self.focal_len = other_image.focal_len
-        self.px = other_image. px
-        self.py = other_image.py
-        self.pr = other_image.pr
-        self.rr = other_image.rr
-        self.rr_obs = other_image.rr_obs
-        self.mu = other_image.mu
+        self.xx = np.copy(other_image.xx)
+        self.yy = np.copy(other_image.yy)
+        self.rr = np.copy(other_image.rr)
+        self.mu = np.copy(other_image.mu)
+        self.lat = np.copy(other_image.lat)
+        self.lon = np.copy(other_image.lon)
         return None
 
     def identify_regions(self, con, mag, dop, aia):

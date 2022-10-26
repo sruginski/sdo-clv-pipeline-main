@@ -30,24 +30,26 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=True, weight_denom=Tru
     k_hat_con = np.nansum(con.image * con.ldark * w_quiet) / np.nansum(con.ldark**2 * w_quiet)
 
     # calculate velocity terms
-    v_hat = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * region_mask)
+    v_hat = np.nansum(dop.v_corr * con.image * region_mask)
     v_phot = np.nansum(dop.v_rot * (con.image - k_hat_con * con.ldark) * w_active * region_mask)
 
     # get quiet sun velocity
     if (np.nansum(w_quiet * region_mask) == 0):
         v_quiet = 0.0
     else:
-        v_quiet = np.nansum((dop.image - dop.v_rot - dop.v_obs) * con.image * w_quiet * region_mask)
+        v_quiet = np.nansum(dop.v_corr * con.image * w_quiet * region_mask)
 
     # divide velocities by the denominator
     if weight_denom:
-        v_hat /= np.nansum(con.image * region_mask)
-        v_phot /= np.nansum(con.image * region_mask)
+        denom = np.nansum(con.image * region_mask)
+        v_hat /= denom
+        v_phot /= denom
         if v_quiet != 0.0:
             v_quiet /= np.nansum(con.image * w_quiet * region_mask)
     else:
-        v_hat /= np.nansum(con.image)
-        v_phot /= np.nansum(con.image)
+        denom = np.nansum(con.image)
+        v_hat /= denom
+        v_phot /= denom
         if v_quiet != 0.0:
             v_quiet /= np.nansum(con.image * w_quiet)
 

@@ -77,7 +77,7 @@ def process_data_set_parallel(con_file, mag_file, dop_file, aia_file,
 
 
 def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
-                     n_rings=10, suffix=None, weight_denom=False):
+                     n_rings=10, suffix=None, weight_denom=True):
     # figure out data directories
     datadir = str(root / "data") + "/"
     if not isdir(datadir):
@@ -158,6 +158,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1,
         # compute magnetic field strength within each region
         mags = calc_mag_stats(con, mag, mask, region_mask=region_mask, weight_denom=weight_denom)
         results_mag.append([mjd, k, np.nan, np.nan, *mags])
+
+    pdb.set_trace()
 
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
