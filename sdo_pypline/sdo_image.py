@@ -121,11 +121,11 @@ class SDOImage(object):
 
     def mask_low_mu(self, mu_thresh):
         self.mu_thresh = mu_thresh
-        self.image[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
+        self.image[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
 
         if self.is_continuum() | self.is_filtergram():
-            self.ldark[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
-            self.iflat[np.logical_or(self.mu <= mu_thresh, np.isnan(self.mu))] = np.nan
+            self.ldark[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+            self.iflat[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
         return None
 
     def correct_magnetogram(self):
@@ -192,9 +192,10 @@ class SDOImage(object):
         self.lp = cos_B0 * sin_phi
 
         # calculate legendre poylnomials
-        # print(">>> Generating ~Legendre~ Polynomials")
+        print(">>> Generating ~Legendre~ Polynomials")
         pl_theta, dt_pl_theta = gen_leg(5, self.lat_mask)
         pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
+        print(">>> Done generating ~Legendre~ Polynomials")
 
         # allocate memory for linalg operations
         n_poly = 11
@@ -311,11 +312,11 @@ def calculate_weights(mag):
     # convolve with boxcar filter to remove isolated pixels
     w_conv = ndimage.convolve(w_active, np.ones([3,3]), mode="constant")
     w_active = np.logical_and(w_conv >= 2., w_active == 1.)
-    w_active[np.logical_or(mag.mu <= mag.mu_thresh, np.isnan(mag.mu))] = False
+    w_active[np.logical_or(mag.mu < mag.mu_thresh, np.isnan(mag.mu))] = False
 
     # make weights array for magnetically quiet areas
     w_quiet = ~w_active
-    w_quiet[np.logical_or(mag.mu <= mag.mu_thresh, np.isnan(mag.mu))] = False
+    w_quiet[np.logical_or(mag.mu < mag.mu_thresh, np.isnan(mag.mu))] = False
     return w_active, w_quiet
 
 class SunMask(object):
@@ -337,15 +338,17 @@ class SunMask(object):
         self.w_active, self.w_quiet = calculate_weights(mag)
 
         # calculate magnetic filling factor
-        npix = np.nansum(con.mu > con.mu_thresh)
-        self.ff = np.nansum(self.w_active[con.mu > con.mu_thresh]) / npix
+        npix = np.nansum(con.mu >= con.mu_thresh)
+        self.ff = np.nansum(self.w_active[con.mu >= con.mu_thresh]) / npix
 
         # identify regions
         self.identify_regions(con, mag, dop, aia)
 
         # get region fracs
-        self.pen_frac = np.nansum(self.is_penumbra()) / npix
         self.umb_frac = np.nansum(self.is_umbra()) / npix
+        self.pen_frac = np.nansum(self.is_penumbra()) / npix
+        self.blu_pen_frac = np.nansum(self.is_blue_penumbra()) / npix
+        self.red_pen_frac = np.nansum(self.is_red_penumbra()) / npix
         self.quiet_frac = np.nansum(self.is_quiet()) / npix
         self.network_frac = np.nansum(self.is_network()) / npix
         self.plage_frac = np.nansum(self.is_plage()) / npix
@@ -419,7 +422,7 @@ class SunMask(object):
         self.regions[ind_iso] = 4 # quiet sun
 
         # make any remaining unclassified pixels quiet sun
-        ind_rem = ((con.mu > con.mu_thresh) & (self.regions == 0))
+        ind_rem = ((con.mu >= con.mu_thresh) & (self.regions == 0))
         self.regions[ind_rem] = 4 # quiet sun
 
         # set values beyond mu_thresh to nan
@@ -427,11 +430,22 @@ class SunMask(object):
 
         return None
 
+    def mask_low_mu(self, mu_thresh):
+        self.mu_thresh = mu_thresh
+        self.regions[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+        return None
+
     def is_umbra(self):
         return self.regions == 1
 
     def is_penumbra(self):
         return np.logical_or(self.regions == 2, self.regions == 3)
+
+    def is_blue_penumbra(self):
+        return self.regions == 2
+
+    def is_red_penumbra(self):
+        return self.regions == 3
 
     def is_quiet(self):
         return self.regions == 4

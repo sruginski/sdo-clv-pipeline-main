@@ -60,6 +60,7 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     # identify regions for thresholding
     try:
         mask = SunMask(con, mag, dop, aia)
+        mask.mask_low_mu(mu_thresh)
     except:
         print("\t >>> Region identification failed, skipping " + iso, flush=True)
         return None
@@ -84,9 +85,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # name output files
     if suffix is None:
         fname1 = datadir + "intensities.csv"
-        fname2 = datadir + "disk_stats.csv"
-        fname3 = datadir + "velocities.csv"
-        fname4 = datadir + "mag_stats.csv"
+        fname2 = datadir + "pixel_stats.csv"
+        fname3 = datadir + "light_stats.csv"
+        fname4 = datadir + "velocities.csv"
+        fname5 = datadir + "mag_stats.csv"
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
@@ -95,19 +97,15 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
         # filenames
         fname1 = tmpdir + "intensities_" + suffix + ".csv"
-        fname2 = tmpdir + "disk_stats_" + suffix + ".csv"
-        fname3 = tmpdir + "velocities_" + suffix + ".csv"
-        fname4 = tmpdir + "mag_stats_" + suffix + ".csv"
+        fname2 = tmpdir + "pixel_stats_" + suffix + ".csv"
+        fname3 = tmpdir + "light_stats_" + suffix + ".csv"
+        fname4 = tmpdir + "velocities_" + suffix + ".csv"
+        fname5 = tmpdir + "mag_stats_" + suffix + ".csv"
 
         # check if the files exist, create otherwise
-        if not exists(fname1):
-            create_file(fname1)
-        if not exists(fname2):
-            create_file(fname2)
-        if not exists(fname3):
-            create_file(fname3)
-        if not exists(fname4):
-            create_file(fname4)
+        for file in (fname1, fname2, fname3, fname4, fname5):
+            if not exists(file):
+                create_file(file)
 
     # reduce the data set
     try:
@@ -116,8 +114,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
                                                       mu_thresh=mu_thresh)
     except:
         return None
-
-    pdb.set_trace()
 
     # get the MJD of the obs
     mjd = Time(con.date_obs).mjd
@@ -129,11 +125,30 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # create arrays to hold velocity magnetic fiel, and pixel fraction results
     results_vel = []
     results_mag = []
-    results_frac = []
+    results_pixel = []
+    results_light = []
 
-    # append disk fractions
-    results_frac.append([mjd, np.nan, np.nan, mask.ff, mask.umb_frac, mask.pen_frac,
-                        mask.quiet_frac, mask.network_frac, mask.plage_frac])
+    # append pixel fractions
+    all_pixels = np.nansum(con.mu >= mu_thresh)
+    results_pixel.append([mjd, np.nan, np.nan, mask.ff, mask.umb_frac,
+                         mask.pen_frac, mask.blu_pen_frac, mask.red_pen_frac,
+                         mask.quiet_frac, mask.network_frac, mask.plage_frac])
+
+    # calculate light fractions
+    all_light = np.nansum(con.image * (con.mu >= mu_thresh))
+    umb_light = np.nansum(mask.is_umbra() * con.image)/all_light
+    pen_light = np.nansum(mask.is_penumbra() * con.image)/all_light
+    blu_pen_light = np.nansum(mask.is_blue_penumbra() * con.image)/all_light
+    red_pen_light = np.nansum(mask.is_red_penumbra() * con.image)/all_light
+    quiet_light = np.nansum(mask.is_quiet() * con.image)/all_light
+    network_light = np.nansum(mask.is_network() * con.image)/all_light
+    plage_light = np.nansum(mask.is_plage() * con.image)/all_light
+
+    # append light fractions
+    results_pixel.append([mjd, np.nan, np.nan, umb_light, pen_light,
+                         blu_pen_light, red_pen_light, quiet_light,
+                         network_light, plage_light])
+
 
     # calculate disk-integrated velocities
     vels = calc_velocities(con, mag, dop, aia, mask)
@@ -183,7 +198,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
         results_mag.append([mjd, 0, lo_mu, hi_mu, *mags])
 
-        # get filling factor for annulus
+        # get filling factor of annulus annulus
+        fracs = [np.nansum(mask.w_active * region_mask)/all_pixels]
+
+        # get fraction
         npix_annulus = np.nansum(region_mask)
         fracs = [np.nansum(mask.w_active * region_mask)/npix_annulus]
 
@@ -204,14 +222,15 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
 
         # assemble fractions
-        results_frac.append([mjd, lo_mu, hi_mu, *fracs])
+        results_pixel.append([mjd, lo_mu, hi_mu, *fracs])
 
     pdb.set_trace()
 
     # write to disk
-    write_results_to_file(fname2, results_frac)
-    write_results_to_file(fname3, results_vel)
-    write_results_to_file(fname4, results_mag)
+    write_results_to_file(fname2, results_pixel)
+    write_results_to_file(fname3, results_light)
+    write_results_to_file(fname4, results_vel)
+    write_results_to_file(fname5, results_mag)
 
     # do some memory cleanup
     del con
@@ -226,7 +245,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del region_mask
     del results_vel
     del results_mag
-    del results_frac
+    del results_pixel
     gc.collect()
 
     # report success and return

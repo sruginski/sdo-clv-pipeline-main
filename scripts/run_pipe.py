@@ -75,15 +75,17 @@ def main():
         datadir = str(root / "data") + "/"
         tmpdir = datadir + "tmp/"
         outfiles1 = glob.glob(tmpdir + "intensities_*")
-        outfiles2 = glob.glob(tmpdir + "disk_stats_*")
-        outfiles3 = glob.glob(tmpdir + "velocities_*")
-        outfiles4 = glob.glob(tmpdir + "mag_stats_*")
+        outfiles2 = glob.glob(tmpdir + "pixel_stats_*")
+        outfiles3 = glob.glob(tmpdir + "light_stats_*")
+        outfiles4 = glob.glob(tmpdir + "velocities_*")
+        outfiles5 = glob.glob(tmpdir + "mag_stats_*")
 
         # stitch them together on the main process
         stitch_output_files(datadir + "intensities.csv", outfiles1, delete=True)
-        stitch_output_files(datadir + "disk_stats.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "pixel_stats_.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "light_stats_.csv", outfiles3, delete=True)
         stitch_output_files(datadir + "velocities.csv", outfiles3, delete=True)
-        stitch_output_files(datadir + "mag_stats.csv", outfiles4, delete=True)
+        stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=True)
 
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
