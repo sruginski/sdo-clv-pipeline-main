@@ -55,6 +55,7 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=None, v_quiet=None):
         v_conv = v_hat - v_quiet # - v_phot
         return v_hat, v_phot, v_quiet, v_conv
     else:
+        # get convective velocity by subtracting off other terms
         v_conv = v_hat - v_quiet # - v_phot
         return v_hat, v_phot, 0.0, v_conv
     return None

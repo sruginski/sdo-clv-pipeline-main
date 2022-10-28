@@ -188,7 +188,14 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             light_fracs.append(np.nansum(region_mask * con.image)/all_light)
 
             # compute velocity components in each mu annulus by region
-            vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
+            if k != 4:
+                # case where region is quiet sun, return zero for v_quiet
+                vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
+            else:
+                # case where region is quiet sun, return nonzero v_quiet
+                vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
+
+            # append the results
             results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
 
             # compute magnetic field strength within each region
@@ -198,7 +205,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         # assemble fractions
         results_pixel.append([mjd, lo_mu, hi_mu, *pixel_fracs])
         results_light.append([mjd, lo_mu, hi_mu, *light_fracs])
-    pdb.set_trace()
 
     # write to disk
     write_results_to_file(fname2, results_pixel)

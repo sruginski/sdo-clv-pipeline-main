@@ -52,17 +52,6 @@ def main():
         # ncpus = np.min([len(con_files), mp.cpu_count()])
         ncpus = 1
 
-
-
-
-    ######
-    ncpus = 1
-    #####
-
-
-
-
-
     # process the data either in parallel or serially
     if ncpus > 1:
         # prepare arguments for starmap
@@ -105,19 +94,6 @@ def main():
         print(">>> Processing %s epochs on a single process" % len(con_files))
         t0 = time.time()
         for i in range(len(con_files)):
-
-
-
-            #####
-            if i > 0:
-                break
-            #####
-
-
-
-
-
-
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                              mu_thresh=mu_thresh, n_rings=n_rings)
 
