@@ -131,8 +131,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # append pixel fractions
     all_pixels = np.nansum(con.mu >= mu_thresh)
     results_pixel.append([mjd, np.nan, np.nan, mask.ff, mask.umb_frac,
-                         mask.pen_frac, mask.blu_pen_frac, mask.red_pen_frac,
-                         mask.quiet_frac, mask.network_frac, mask.plage_frac])
+                          mask.blu_pen_frac, mask.red_pen_frac,
+                          mask.quiet_frac, mask.network_frac, mask.plage_frac])
 
     # calculate light fractions
     all_light = np.nansum(con.image * (con.mu >= mu_thresh))
@@ -145,17 +145,13 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     plage_light = np.nansum(mask.is_plage() * con.image)/all_light
 
     # append light fractions
-    results_pixel.append([mjd, np.nan, np.nan, umb_light, pen_light,
-                         blu_pen_light, red_pen_light, quiet_light,
-                         network_light, plage_light])
+    results_light.append([mjd, np.nan, np.nan, umb_light, blu_pen_light,
+                         red_pen_light, quiet_light, network_light, plage_light])
 
 
     # calculate disk-integrated velocities
     vels = calc_velocities(con, mag, dop, aia, mask)
     results_vel.append([mjd, 0, np.nan, np.nan, *vels])
-
-    # get v_quiet
-    v_quiet = vels[2]
 
     # calculate disk-integrated unsigned magnetic field
     mags = calc_mag_stats(con, mag, mask)
@@ -163,19 +159,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # allocate for region mask
     region_mask = np.ones(np.shape(mask.regions)).astype(int)
-
-    # loop over unique region identifiers
-    for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
-        # compute the region mask
-        region_mask[:] = calc_region_mask(mask, region=k, hi_mu=None, lo_mu=None)
-
-        # compute velocity components in each mu annulus by region
-        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
-        results_vel.append([mjd, k, np.nan, np.nan, *vels])
-
-        # compute magnetic field strength within each region
-        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
-        results_mag.append([mjd, k, np.nan, np.nan, *mags])
 
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
@@ -187,31 +170,22 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         # compute the region mask
         region_mask[:] = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
 
-        # compute velocity within mu
-        vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask)
-        results_vel.append([mjd, 0, lo_mu, hi_mu, *vels])
+        # compute quiet-sun velocity in mu annulus
+        v_quiet = np.nansum(dop.v_corr * con.image * mask.is_quiet() * region_mask)
+        v_quiet /= np.nansum(con.image * mask.is_quiet() * region_mask)
 
-        # get v_quiet for mu annulus
-        v_quiet = vels[2]
-
-        # calculate unsigned magnetic field within mu
-        mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
-        results_mag.append([mjd, 0, lo_mu, hi_mu, *mags])
-
-        # get filling factor of annulus annulus
-        fracs = [np.nansum(mask.w_active * region_mask)/all_pixels]
-
-        # get fraction
-        npix_annulus = np.nansum(region_mask)
-        fracs = [np.nansum(mask.w_active * region_mask)/npix_annulus]
+        # get filling factor of annulus
+        pixel_fracs = [np.nansum(mask.w_active * region_mask)/all_pixels]
+        light_fracs = []
 
         # loop over unique region identifiers
         for k in np.unique(mask.regions[~np.isnan(mask.regions)]):
             # compute the region mask
             region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
 
-            # append stats
-            fracs.append(np.nansum(region_mask)/npix_annulus)
+            # calculate and append pixel and light fractions for region
+            pixel_fracs.append(np.nansum(region_mask)/all_pixels)
+            light_fracs.append(np.nansum(region_mask * con.image)/all_light)
 
             # compute velocity components in each mu annulus by region
             vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
@@ -222,8 +196,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
 
         # assemble fractions
-        results_pixel.append([mjd, lo_mu, hi_mu, *fracs])
-
+        results_pixel.append([mjd, lo_mu, hi_mu, *pixel_fracs])
+        results_light.append([mjd, lo_mu, hi_mu, *light_fracs])
     pdb.set_trace()
 
     # write to disk
@@ -240,12 +214,15 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del mask
     del vels
     del mags
-    del fracs
     del mu_grid
+    del v_quiet
+    del pixel_fracs
+    del light_fracs
     del region_mask
     del results_vel
     del results_mag
     del results_pixel
+    del results_light
     gc.collect()
 
     # report success and return

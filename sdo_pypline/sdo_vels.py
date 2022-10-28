@@ -46,15 +46,18 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=None, v_quiet=None):
     v_hat /= denom
     v_phot /= denom
 
-    # get quiet sun velocity
     if v_quiet is None:
+        # calculate v_quiet
         v_quiet = np.nansum(dop.v_corr * con.image * w_quiet * region_mask)
         v_quiet /= np.nansum(con.image * w_quiet * region_mask)
 
-    # get convective velocity by subtracting off other terms
-    v_conv = v_hat - v_quiet # - v_phot
-
-    return v_hat, v_phot, v_quiet, v_conv
+        # get convective velocity by subtracting off other terms
+        v_conv = v_hat - v_quiet # - v_phot
+        return v_hat, v_phot, v_quiet, v_conv
+    else:
+        v_conv = v_hat - v_quiet # - v_phot
+        return v_hat, v_phot, 0.0, v_conv
+    return None
 
 def calc_mag_stats(con, mag, mask, region_mask=True):
     # don't bother doing math if there is nothing in the mask
