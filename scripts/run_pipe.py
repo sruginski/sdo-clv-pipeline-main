@@ -82,9 +82,9 @@ def main():
 
         # stitch them together on the main process
         stitch_output_files(datadir + "intensities.csv", outfiles1, delete=True)
-        stitch_output_files(datadir + "pixel_stats_.csv", outfiles2, delete=True)
-        stitch_output_files(datadir + "light_stats_.csv", outfiles3, delete=True)
-        stitch_output_files(datadir + "velocities.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + "pixel_stats.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "light_stats.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + "velocities.csv", outfiles4, delete=True)
         stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=True)
 
         # print run time

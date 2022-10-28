@@ -192,10 +192,10 @@ class SDOImage(object):
         self.lp = cos_B0 * sin_phi
 
         # calculate legendre poylnomials
-        print(">>> Generating ~Legendre~ Polynomials")
+        # print(">>> Generating ~Legendre~ Polynomials", flush=True)
         pl_theta, dt_pl_theta = gen_leg(5, self.lat_mask)
         pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
-        print(">>> Done generating ~Legendre~ Polynomials")
+        # print(">>> Done generating ~Legendre~ Polynomials", flush=True)
 
         # allocate memory for linalg operations
         n_poly = 11

@@ -97,7 +97,7 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
 
     # replace/create/modify output files
     fileset = (fname1, fname2, fname3, fname4, fname5)
-    if clobber and all(map(exists, fileset)):
+    if clobber and any(map(exists, fileset)):
         # delete the files
         clean_output_directory(*fileset)
 
