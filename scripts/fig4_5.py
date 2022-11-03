@@ -45,23 +45,38 @@ datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
 
 # read in the data and sort by mjd
-df_all = pd.read_csv(datadir + "velocities.csv")
-df_all.sort_values(by=["mjd"], inplace=True)
+df_vels = pd.read_csv(datadir + "velocities.csv")
+df_vels.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
+df_vels.drop_duplicates()
 
-df_stats = pd.read_csv(datadir + "disk_stats.csv")
-df_stats.sort_values(by=["mjd"], inplace=True)
+df_pixels = pd.read_csv(datadir + "pixel_stats.csv")
+df_pixels.sort_values(by=["mjd", "lo_mu"], inplace=True)
+df_pixels.drop_duplicates()
 
-# get full disk velocities
-df_full = df_all[(np.isnan(df_all.lo_mu)) & (df_all.region == 0.0)]
+df_light = pd.read_csv(datadir + "light_stats.csv")
+df_light.sort_values(by=["mjd", "lo_mu"], inplace=True)
+df_light.drop_duplicates()
 
-# get velocites for full mu annuli
-df_mu = df_all[(~np.isnan(df_all.lo_mu)) & (df_all.region == 0.0)]
+df_intensities = pd.read_csv(datadir + "intensities.csv")
+df_intensities.sort_values(by=["mjd"], inplace=True)
+df_intensities.drop_duplicates()
+
+# get numbers computed for full disk
+df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
+df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
+df_light_full = df_light[np.isnan(df_light.lo_mu)]
+
+# TODO filtering????
+# plt.scatter(df_intensities.mjd, df_intensities.aia_thresh, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.quiet_frac, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.plage_frac, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.network_frac, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.umb_frac, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.blu_pen_frac, s=2)
+# plt.scatter(df_pixels_full.mjd, df_pixels_full.red_pen_frac, s=2)
 
 # get velocities for regions in mu
-df_regs = df_all[(df_all.region > 0.0) & (~np.isnan(df_all.lo_mu))]
-
-# get velocities for regions on fulldisk
-df_regs_full = df_all[(df_all.region > 0.0) & (np.isnan(df_all.lo_mu))]
+df_regs = df_vels[(df_vels.region > 0.0) & (~np.isnan(df_vels.lo_mu))]
 
 # get centers of mu bins
 lo_mus = np.unique(df_regs.lo_mu)
@@ -69,37 +84,34 @@ hi_mus = np.unique(df_regs.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
 # make dfs by mu
-plage = df_regs[df_regs.region == 5.0]
-network = df_regs[df_regs.region == 4.0]
-quiet_sun = df_regs[df_regs.region == 3.0]
-penumbrae = df_regs[df_regs.region == 2.0]
+plage = df_regs[df_regs.region == 6.0]
+network = df_regs[df_regs.region == 5.0]
+quiet_sun = df_regs[df_regs.region == 4.0]
+red_penumbrae = df_regs[df_regs.region == 3.0]
+blu_penumbrae = df_regs[df_regs.region == 2.0]
 umbrae = df_regs[df_regs.region == 1.0]
-
-# same but whole disk by reg
-plage_full = df_regs_full[df_regs_full.region == 5.0]
-network_full = df_regs_full[df_regs_full.region == 4.0]
-quiet_sun_full = df_regs_full[df_regs_full.region == 3.0]
-penumbrae_full = df_regs_full[df_regs_full.region == 2.0]
-umbrae_full = df_regs_full[df_regs_full.region == 1.0]
 
 # mask rows where all vels are 0.0 (i.e., region isn't present in that annulus)
 plage = mask_all_zero_rows(plage)
 network = mask_all_zero_rows(network)
 quiet_sun = mask_all_zero_rows(quiet_sun)
-penumbrae = mask_all_zero_rows(penumbrae)
+red_penumbrae = mask_all_zero_rows(red_penumbrae)
+blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
 umbrae = mask_all_zero_rows(umbrae)
 
-plage_full = mask_all_zero_rows(plage_full)
-network_full = mask_all_zero_rows(network_full)
-quiet_sun_full = mask_all_zero_rows(quiet_sun_full)
-penumbrae_full = mask_all_zero_rows(penumbrae_full)
-umbrae_full = mask_all_zero_rows(umbrae_full)
+
+# pdb.set_trace()
+
+# region = quiet_sun[quiet_sun.hi_mu < 0.3]
+# plt.scatter(region.mjd, region.v_hat)
+# plt.show()
+
 
 # get stats
 def clv_plot(colname, fname=None):
-    all_regs_avg, all_regs_std, all_regs_err = calc_region_stats(df_mu, colname=colname)
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
-    penumbrae_avg, penumbrae_std, penumbrae_err = calc_region_stats(penumbrae, colname=colname)
+    blue_penumbrae_avg, blue_penumbrae_std, blue_penumbrae_err = calc_region_stats(blu_penumbrae, colname=colname)
+    red_penumbrae_avg, red_penumbrae_std, red_penumbrae_err = calc_region_stats(red_penumbrae, colname=colname)
     quiet_sun_avg, quiet_sun_std, quiet_sun_err = calc_region_stats(quiet_sun, colname=colname)
     network_avg, network_std, network_err = calc_region_stats(network, colname=colname)
     plage_avg, plage_std, plage_err = calc_region_stats(plage, colname=colname)
@@ -107,11 +119,6 @@ def clv_plot(colname, fname=None):
     # plot the curves
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(6.4,7.75))
     fig.subplots_adjust(hspace=0.05)
-
-    ax1.errorbar(mu_bin, all_regs_avg, yerr=all_regs_err, fmt=".", capsize=3, color="black", label=r"${\rm All\ regions}$")
-    ax2.errorbar(mu_bin, all_regs_avg, yerr=all_regs_err, fmt=".", capsize=3, color="black")
-    ax1.fill_between(mu_bin, all_regs_avg - all_regs_std, all_regs_avg + all_regs_std, color="black", alpha=0.5)
-    ax2.fill_between(mu_bin, all_regs_avg - all_regs_std, all_regs_avg + all_regs_std, color="black", alpha=0.5)
 
     if colname != "v_conv":
         ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=".", capsize=3, color="tab:blue", label=r"${\rm Quiet\ Sun}$")
@@ -123,8 +130,11 @@ def clv_plot(colname, fname=None):
     ax1.errorbar(mu_bin, network_avg, yerr=network_err, fmt=".", capsize=3, color="tab:pink", label=r"${\rm Network}$")
     ax1.fill_between(mu_bin, network_avg - network_std, network_avg + network_std, color="tab:pink", alpha=0.5)
 
-    ax2.errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=".", capsize=3, color="tab:orange", label=r"${\rm Penumbrae}$")
-    ax2.fill_between(mu_bin, penumbrae_avg - penumbrae_std, penumbrae_avg + penumbrae_std, color="tab:orange", alpha=0.5)
+    ax2.errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=".", capsize=3, color="tab:orange", label=r"${\rm Red\ Penumbrae}$")
+    ax2.fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color="tab:orange", alpha=0.5)
+
+    ax2.errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=".", capsize=3, color="tab:brown", label=r"${\rm Blue\ Penumbrae}$")
+    ax2.fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color="tab:brown", alpha=0.5)
 
     ax2.errorbar(mu_bin, umbrae_avg, yerr=umbrae_err, fmt=".", capsize=3, color="tab:green", label=r"${\rm Umbrae}$")
     ax2.fill_between(mu_bin, umbrae_avg - umbrae_std, umbrae_avg + umbrae_std, color="tab:green", alpha=0.5)
@@ -163,7 +173,7 @@ mu_samps = [0.9, 0.8, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
 # create figure objects
-colname = "v_conv"
+colname = "v_hat"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
 fig.subplots_adjust(wspace=0.075)
 
@@ -171,11 +181,13 @@ fig.subplots_adjust(wspace=0.075)
 for i in range(n_mu_samps):
     # do all regs
     idx1 = umbrae.lo_mu == mu_samps[i]
-    idx2 = penumbrae.lo_mu == mu_samps[i]
+    idx2 = red_penumbrae.lo_mu == mu_samps[i]
+    idx3 = blu_penumbrae.lo_mu == mu_samps[i]
 
     # plot this mu
     axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color="tab:green", histtype="step", label=r"{\rm Umbrae}")
-    axs[i].hist(penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Penumbrae}")
+    axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Red\ Penumbrae}")
+    axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color="tab:brown", histtype="step", label=r"{\rm Blue\ Penumbrae}")
 
     # plot the full disk
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
@@ -200,12 +212,10 @@ for i in range(n_mu_samps):
     # do all regs
     idx1 = plage.lo_mu == mu_samps[i]
     idx2 = network.lo_mu == mu_samps[i]
-    idx3 = quiet_sun.lo_mu == mu_samps[i]
 
     # plot this mu
     axs[i].hist(plage[colname][idx1], bins="auto", density=True, color="tab:purple", histtype="step", label=r"{\rm Plage}")
     axs[i].hist(network[colname][idx2], bins="auto", density=True, color="tab:pink", histtype="step", label=r"{\rm Network}")
-    # axs[i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color="tab:blue", histtype="step", label=r"{\rm Quiet Sun}")
 
     # plot the full disk
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
@@ -220,4 +230,28 @@ for i in range(n_mu_samps):
 axs[0].set_ylabel(r"${\rm Probability\ Density}$")
 axs[-1].legend(fontsize=10)
 fig.savefig(plotdir + "fig5b.pdf")
+plt.clf(); plt.close()
+
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
+
+# loop over valus
+for i in range(n_mu_samps):
+    # do all regs
+    idx3 = quiet_sun.lo_mu == mu_samps[i]
+    axs[i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color="tab:blue", histtype="step", label=r"{\rm Quiet Sun}")
+
+    # plot the full disk
+    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+
+    # label stuff
+    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
+    # axs[i].set_xlim(-210,450)
+    axs[i].set_box_aspect(1.25)
+
+# set axes labels
+axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+axs[-1].legend(fontsize=10)
+fig.savefig(plotdir + "fig5c.pdf")
 plt.clf(); plt.close()

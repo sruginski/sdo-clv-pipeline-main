@@ -22,11 +22,12 @@ def plot_image(sdo_image, outdir=None, fname=None):
     # initialize the figure
     fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=wcs)
+    ax1.set_aspect("equal")
 
     if sdo_image.is_magnetogram():
         # get cmap
         cmap = plt.get_cmap("RdYlBu").copy()
-        cmap.set_bad(color="black")
+        cmap.set_bad(color="white")
 
         # get the norm
         norm = colors.SymLogNorm(1, vmin=-4200, vmax=4200)
@@ -39,7 +40,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
+        # ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="black")
         ax1.grid(False)
 
         # figure out the filename
@@ -52,7 +53,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
     elif sdo_image.is_dopplergram():
         # get cmap
         cmap = plt.get_cmap("seismic").copy()
-        cmap.set_bad(color="black")
+        cmap.set_bad(color="white")
 
         # plot the sun
         img = ax1.imshow(sdo_image.v_corr, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
@@ -62,7 +63,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
+        # ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="black")
         ax1.grid(False)
 
         # figure out the filename
@@ -75,17 +76,24 @@ def plot_image(sdo_image, outdir=None, fname=None):
     elif sdo_image.is_continuum():
         # get cmap
         cmap = plt.get_cmap("afmhot").copy()
-        cmap.set_bad(color="black")
+        cmap.set_bad(color="white")
 
         # plot the sun
         img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+
+        # plot the limb location
+        # limb = ax1.contour(sdo_image.mu >= 0.0, colors="k", linestyles="--")
+
+        # plot the colorbar
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Relative\ HMI\ Continuum\ Intensity}$")
+
+        # axes and stuff
         ax1.invert_xaxis()
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
+        # ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="black")
         ax1.grid(False)
 
         # figure out the filename
@@ -98,7 +106,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
     elif sdo_image.is_filtergram():
         # get cmap
         cmap = plt.get_cmap("Purples_r").copy()
-        cmap.set_bad(color="black")
+        cmap.set_bad(color="white")
 
         # plot the sun
         img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
@@ -108,7 +116,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
         ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-        ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="white")
+        # ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="black")
         ax1.grid(False)
 
         # figure out the filename
@@ -129,7 +137,7 @@ def plot_mask(mask, outdir=None, fname=None):
 
     # get cmap
     cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
-    cmap.set_bad(color="black")
+    cmap.set_bad(color="white")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
 
     # get the WCS
@@ -145,7 +153,7 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.invert_yaxis()
     ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")
     ax1.set_ylabel(r"${\rm Helioprojective\ Latitude}$")
-    ax1.text(1400, 4000, mask.date_obs, fontsize=10, c="white")
+    # ax1.text(1400, 4000, mask.date_obs, fontsize=10, c="black")
     ax1.grid(False)
 
     # figure out the filename

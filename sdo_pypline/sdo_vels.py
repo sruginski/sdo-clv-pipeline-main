@@ -27,10 +27,6 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=None, v_quiet=None):
         region_mask = (con.mu >= con.mu_thresh)
 
     # get weights
-    # w_quiet = mask.w_quiet
-    # w_active = mask.w_active
-
-    # get weights
     w_quiet = mask.is_quiet()
     w_active = ~w_quiet
 
