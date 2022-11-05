@@ -402,7 +402,6 @@ class SunMask(object):
         index = np.arange(1, nlabels+1)
         mean_mus = ndimage.labeled_comprehension(self.mu, labels, index, np.mean, float, np.nan)
 
-
         # allocate memory, get indices for near- and far- penumbrae
         ind2_new = np.zeros(np.shape(self.regions), dtype=bool)
         ind3_new = np.zeros(np.shape(self.regions), dtype=bool)
