@@ -69,7 +69,7 @@ def main():
                 pids.append(child.pid)
 
             # run the analysis
-            pool.starmap(process_data_set_parallel, items, chunksize=8)
+            pool.starmap(process_data_set_parallel, items, chunksize=4)
 
         # find the output data sets
         datadir = str(root / "data") + "/"

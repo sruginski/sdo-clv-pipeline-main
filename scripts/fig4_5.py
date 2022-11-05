@@ -158,7 +158,7 @@ def clv_plot(colname, fname=None):
     lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
     lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
     if colname == "v_hat":
-        ax1.legend(lines, labels, loc="upper center", ncol=3, fontsize=10)
+        ax1.legend(lines, labels, loc="lower center", ncol=3, fontsize=10)
 
     # save the figure
     plt.savefig(plotdir + fname, bbox_inches="tight")
@@ -169,7 +169,7 @@ clv_plot("v_hat", "fig4a.pdf")
 clv_plot("v_conv", "fig4b.pdf")
 
 # get distributions of velocities at different mu positions
-mu_samps = [0.9, 0.8, 0.4, 0.2]
+mu_samps = [0.9, 0.8, 0.6, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
 # create figure objects

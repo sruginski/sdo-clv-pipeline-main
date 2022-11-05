@@ -1,9 +1,10 @@
 import numpy as np
-import pdb, warnings
+import pdb, ipdb, warnings
 import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
+from IPython import embed
 from sunpy.map import Map as sun_map
 from sunpy.coordinates import frames
 
@@ -27,30 +28,17 @@ class SDOImage(object):
         # set the filename
         self.filename = file
 
-        # read in the file
-        smap = sun_map(self.filename)
-
         # get the image and the header
-        self.image = smap.data.astype(float)
-        self.parse_header(smap)
-
-        # do coordinate transforms / calculations
-        # methods adapted from https://arxiv.org/abs/2105.12055
-        # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
-        paxis1 = np.arange(self.naxis1)
-        paxis2 = np.arange(self.naxis2)
-        xx, yy = np.meshgrid(paxis1, paxis2) * u.pix
-        self.hpc = smap.pixel_to_world(xx, yy)    # helioprojective cartesian
-        self.B0 = smap.observer_coordinate.lat
-        self.rsun_solrad = smap.observer_coordinate.radius/smap.rsun_meters
+        self.image = read_data(self.filename)
+        self.parse_header()
 
         # initialize mu_thresh
         self.mu_thresh = 0.0
         return None
 
-    def parse_header(self, smap):
+    def parse_header(self):
         # read the header
-        head = smap.fits_header
+        head = read_header(self.filename)
         self.wcs = WCS(head)
 
         # parse it
@@ -61,6 +49,9 @@ class SDOImage(object):
         self.cdelt1 = head["CDELT1"]
         self.cdelt2 = head["CDELT2"]
         self.date_obs = head["DATE-OBS"]
+
+        self.L0 = head["CRLN_OBS"]
+        self.B0 = head["CRLT_OBS"]
 
         self.dsun_obs = head["DSUN_OBS"]
         self.dsun_ref = head["DSUN_REF"]
@@ -75,9 +66,23 @@ class SDOImage(object):
             self.content = head["CONTENT"]
         else:
             self.content = "FILTERGRAM"
+
+        self.head = head
         return None
 
     def calc_geometry(self):
+        # methods adapted from https://arxiv.org/abs/2105.12055
+        # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
+        # get sun map
+        smap = sun_map(self.image, self.head)
+
+        # do coordinate transforms / calculations
+        paxis1 = np.arange(self.naxis1)
+        paxis2 = np.arange(self.naxis2)
+        xx, yy = np.meshgrid(paxis1, paxis2)
+        self.hpc = smap.pixel_to_world(xx * u.pix, yy * u.pix)   # helioprojective cartesian
+        self.rsun_solrad = self.dsun_obs/self.rsun_ref
+
         # transform to other coordinate systems
         hgs = self.hpc.transform_to(frames.HeliographicStonyhurst)
         hcc = self.hpc.transform_to(frames.Heliocentric)
@@ -99,12 +104,12 @@ class SDOImage(object):
         return None
 
     def inherit_geometry(self, other_image):
-        self.xx = np.copy(other_image.xx)
-        self.yy = np.copy(other_image.yy)
-        self.rr = np.copy(other_image.rr)
+        # self.xx = np.copy(other_image.xx)
+        # self.yy = np.copy(other_image.yy)
+        # self.rr = np.copy(other_image.rr)
         self.mu = np.copy(other_image.mu)
-        self.lat = np.copy(other_image.lat)
-        self.lon = np.copy(other_image.lon)
+        # self.lat = np.copy(other_image.lat)
+        # self.lon = np.copy(other_image.lon)
         return None
 
     def is_magnetogram(self):
@@ -170,7 +175,7 @@ class SDOImage(object):
         self.v_obs[~self.mask_nan] = np.nan
         return None
 
-    def calc_bulk_vel(self):
+    def calc_bulk_vel(self, fit_cbs=False):
         # methods adapted from https://arxiv.org/abs/2105.12055
         # original implementation at https://github.com/samarth-kashyap/hmi-clean-ls
         assert self.is_dopplergram()
@@ -194,13 +199,20 @@ class SDOImage(object):
         # calculate legendre poylnomials
         # print(">>> Generating ~Legendre~ Polynomials", flush=True)
         pl_theta, dt_pl_theta = gen_leg(5, self.lat_mask)
-        pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
+        if fit_cbs:
+            pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
+        else:
+            pl_rho, dt_pl_rho = gen_leg_x(0, self.rho_mask)
         # print(">>> Done generating ~Legendre~ Polynomials", flush=True)
 
-        # allocate memory for linalg operations
-        n_poly = 11
+        # figure out how many polynomials we need
+        if fit_cbs:
+            n_poly = 11
+        else:
+            n_poly = 6
+
+        # allocate memory
         self.im_arr = np.zeros((n_poly, self.lt.shape[0]))
-        A = np.zeros((n_poly, n_poly))
 
         # differential rotation (axisymmetric feature; s = 1, 3, 5)
         self.im_arr[0, :] = dt_pl_theta[1, :] * self.lp
@@ -208,40 +220,45 @@ class SDOImage(object):
         self.im_arr[2, :] = dt_pl_theta[5, :] * self.lp
 
         # meridional circulation (axisymmetric feature; s = 2, 4)
+        # s = 0 is 0
         self.im_arr[3, :] = dt_pl_theta[2, :] * self.lt
         self.im_arr[4, :] = dt_pl_theta[4, :] * self.lt
 
         # axisymmetric feature (frame=pole at disk-center)
         # s = 0-5
         self.im_arr[5, :] = pl_rho[0, :]
-        self.im_arr[6, :] = pl_rho[1, :]
-        self.im_arr[7, :] = pl_rho[2, :]
-        self.im_arr[8, :] = pl_rho[3, :]
-        self.im_arr[9, :] = pl_rho[4, :]
-        self.im_arr[10, :] = pl_rho[5, :]
+        if fit_cbs:
+            self.im_arr[6, :] = pl_rho[1, :]
+            self.im_arr[7, :] = pl_rho[2, :]
+            self.im_arr[8, :] = pl_rho[3, :]
+            self.im_arr[9, :] = pl_rho[4, :]
+            self.im_arr[10, :] = pl_rho[5, :]
 
-        # do the linear algebra
+        # get the data to fit and compute RHS
         self.dat = (self.image - self.v_obs - self.v_grav)[self.mask_nan].copy()
         self.RHS = self.im_arr.dot(self.dat)
 
+        # fill the matrix
+        A = np.zeros((n_poly, n_poly))
         for i in range(n_poly):
             for j in range(n_poly):
                 A[i, j] = self.im_arr[i, :].dot(self.im_arr[j, :])
 
+        # invert and compute fit params
         Ainv = inv_SVD(A, 1e5)
         self.fit_params = Ainv.dot(self.RHS)
 
-        # get rotation
+        # get rotation component
         self.v_rot = np.zeros((4096, 4096))
         self.v_rot[self.mask_nan] = self.fit_params[:3].dot(self.im_arr[:3, :])
         self.v_rot[~self.mask_nan] = np.nan
 
-        # get meridional circulation
+        # get meridional circulation component
         self.v_mer = np.zeros((4096, 4096))
         self.v_mer[self.mask_nan] = self.fit_params[3:5].dot(self.im_arr[3:5, :])
         self.v_mer[~self.mask_nan] = np.nan
 
-        # get convective blueshift w/ limb
+        # get convective blueshift w/ limb component
         self.v_cbs = np.zeros((4096, 4096))
         self.v_cbs[self.mask_nan] = self.fit_params[5:].dot(self.im_arr[5:, :])
         self.v_cbs[~self.mask_nan] = np.nan
@@ -290,16 +307,12 @@ class SDOImage(object):
         assert self.is_filtergram()
 
         # rescale the image
-        self.image = reproject_interp((self.image, read_header(self.filename)),
-                                      read_header(hmi_image.filename),
+        self.image = reproject_interp((self.image, self.head), hmi_image.head,
                                       return_footprint=False)
 
         # borrow the geometry now that the images are aligned
         self.inherit_geometry(hmi_image)
-        self.rsun_solrad = hmi_image.rsun_solrad
         self.wcs = hmi_image.wcs
-        self.hpc = hmi_image.hpc
-        self.B0 = hmi_image.B0
 
 # for creating pixel mask with thresholded regions
 def calculate_weights(mag):
@@ -356,12 +369,12 @@ class SunMask(object):
         return None
 
     def inherit_geometry(self, other_image):
-        self.xx = np.copy(other_image.xx)
-        self.yy = np.copy(other_image.yy)
-        self.rr = np.copy(other_image.rr)
+        # self.xx = np.copy(other_image.xx)
+        # self.yy = np.copy(other_image.yy)
+        # self.rr = np.copy(other_image.rr)
         self.mu = np.copy(other_image.mu)
-        self.lat = np.copy(other_image.lat)
-        self.lon = np.copy(other_image.lon)
+        # self.lat = np.copy(other_image.lat)
+        # self.lon = np.copy(other_image.lon)
         return None
 
     def identify_regions(self, con, mag, dop, aia):
@@ -375,10 +388,28 @@ class SunMask(object):
         # get indices for umbrae
         ind1 = con.iflat <= self.con_thresh2
 
-        # get indices for penumbrae (blueshifted and redshifted)
+        # get indices for penumbrae
         indp = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
         ind2 = indp & (dop.v_corr <= 0)
         ind3 = indp & (dop.v_corr > 0)
+
+        """
+        # find contiguous penumbra regions
+        structure = ndimage.generate_binary_structure(2,2)
+        labels, nlabels = ndimage.label(indp, structure=structure)
+
+        # find the mean mean of each bin
+        index = np.arange(1, nlabels+1)
+        mean_mus = ndimage.labeled_comprehension(self.mu, labels, index, np.mean, float, np.nan)
+
+
+        # allocate memory, get indices for near- and far- penumbrae
+        ind2_new = np.zeros(np.shape(self.regions), dtype=bool)
+        ind3_new = np.zeros(np.shape(self.regions), dtype=bool)
+        for i in index:
+            ind2_new += ((labels == i) & (self.mu < mean_mus[i-1]))
+            ind3_new += ((labels == i) & (self.mu >= mean_mus[i-1]))
+        """
 
         # get indices for quiet sun
         ind4 = (con.iflat > self.con_thresh1) & self.w_quiet

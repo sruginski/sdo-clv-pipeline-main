@@ -25,16 +25,15 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
         print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
         return None
 
-    # calculate geometries
-    con.calc_geometry()
-    mag.inherit_geometry(con)
-    dop.inherit_geometry(con)
-    aia.calc_geometry()
-
     # get time of observations
     iso = Time(con.date_obs).iso
 
-    # interpolate aia image onto hmi image scale
+    # calculate geometries
+    dop.calc_geometry()
+    con.inherit_geometry(dop)
+    mag.inherit_geometry(dop)
+
+    # interpolate aia image onto hmi image scale and inherit geometry
     aia.rescale_to_hmi(con)
 
     # correct magnetogram for foreshortening
