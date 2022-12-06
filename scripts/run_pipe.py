@@ -35,7 +35,7 @@ def main():
 
     # sort out input/output data files
     clobber, globexp = get_parser_args()
-    globdir = globexp.strip("*")
+    globdir = globexp.replace("*","")
     files = organize_IO(indir, clobber=clobber, globexp=globexp)
     con_files, mag_files, dop_files, aia_files = files
 
