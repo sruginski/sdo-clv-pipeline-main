@@ -82,6 +82,9 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
         globdir = globexp.strip("*")
         datadir = str(root / "data") + "/" + globdir + "/"
 
+    if not isdir(datadir):
+        os.mkdir(datadir)
+
     # name output files
     fname1 = datadir + "intensities.csv"
     fname2 = datadir + "pixel_stats.csv"
