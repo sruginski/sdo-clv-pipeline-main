@@ -71,7 +71,7 @@ def round_time(date=None, round_to=3600):
    rounding = (seconds+round_to/2) // round_to * round_to
    return date + dt.timedelta(0,rounding-seconds,-date.microsecond)
 
-def organize_IO(indir, datadir=None, clobber=False, =""):
+def organize_IO(indir, datadir=None, clobber=False, globexp=""):
     # find the input data and check the lengths
     assert isdir(indir)
     con_files, mag_files, dop_files, aia_files = find_data(indir, globexp=globexp)
