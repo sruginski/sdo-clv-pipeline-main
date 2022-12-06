@@ -67,17 +67,17 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     return con, mag, dop, aia, mask
 
 
-def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh, n_rings):
+def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh, n_rings, datadir):
     process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=mu_thresh, n_rings=n_rings,
-                     suffix=str(mp.current_process().pid))
+                     suffix=str(mp.current_process().pid), datadir=datadir)
     return None
 
 
 def process_data_set(con_file, mag_file, dop_file, aia_file,
-                     mu_thresh=0.1, n_rings=10, suffix=None):
+                     mu_thresh=0.1, n_rings=10, suffix=None, datdir=None):
+
     # figure out data directories
-    datadir = str(root / "data") + "/"
     if not isdir(datadir):
         os.mkdir(datadir)
 

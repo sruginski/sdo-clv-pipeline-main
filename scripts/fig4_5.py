@@ -66,6 +66,17 @@ df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
 df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
 df_light_full = df_light[np.isnan(df_light.lo_mu)]
 
+# pdb.set_trace()
+
+# fig, ax1 = plt.subplots()
+# ax1.scatter(df_vels_full.mjd, df_vels_full.v_conv, s=2, c="k")
+# ax1.set_xlabel(r"${\rm MJD}$")
+# ax1.set_ylabel(r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$")
+# ax1.set_ylim(0,20)
+# fig.savefig("/Users/michael/Desktop/v_conv_time_series.pdf")
+# plt.show()
+
+
 # TODO filtering????
 # plt.scatter(df_intensities.mjd, df_intensities.aia_thresh, s=2)
 # plt.scatter(df_pixels_full.mjd, df_pixels_full.quiet_frac, s=2)
@@ -109,6 +120,7 @@ umbrae = mask_all_zero_rows(umbrae)
 
 # get stats
 def clv_plot(colname, fname=None):
+    # whole_avg, whole_std, whole_err = calc_region_stats(df_vels_full, colname=colname)
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
     blue_penumbrae_avg, blue_penumbrae_std, blue_penumbrae_err = calc_region_stats(blu_penumbrae, colname=colname)
     red_penumbrae_avg, red_penumbrae_std, red_penumbrae_err = calc_region_stats(red_penumbrae, colname=colname)
@@ -123,6 +135,9 @@ def clv_plot(colname, fname=None):
     if colname != "v_conv":
         ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=".", capsize=3, color="tab:blue", label=r"${\rm Quiet\ Sun}$")
         ax1.fill_between(mu_bin, quiet_sun_avg - quiet_sun_std, quiet_sun_avg + quiet_sun_std, color="tab:blue", alpha=0.5)
+
+    # ax1.errorbar(mu_bin, whole_avg, yerr=whole_err, fmt=".", capsize=3, color="k", label=r"${\rm Whole\ Sun}$")
+    # ax1.fill_between(mu_bin, whole_avg - whole_std, whole_avg + whole_std, color="k", alpha=0.5)
 
     ax1.errorbar(mu_bin, plage_avg, yerr=plage_err, fmt=".", capsize=3, color="tab:purple", label=r"${\rm Plage}$")
     ax1.fill_between(mu_bin, plage_avg - plage_std, plage_avg + plage_std, color="tab:purple", alpha=0.5)
@@ -157,8 +172,8 @@ def clv_plot(colname, fname=None):
     # stuff for the legend
     lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
     lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
-    if colname == "v_hat":
-        ax1.legend(lines, labels, loc="lower center", ncol=3, fontsize=10)
+    # if colname == "v_hat":
+    ax1.legend(lines, labels, loc="upper center", ncol=3, fontsize=10)
 
     # save the figure
     plt.savefig(plotdir + fname, bbox_inches="tight")
@@ -169,11 +184,15 @@ clv_plot("v_hat", "fig4a.pdf")
 clv_plot("v_conv", "fig4b.pdf")
 
 # get distributions of velocities at different mu positions
-mu_samps = [0.9, 0.8, 0.6, 0.4, 0.2]
+mu_samps = [0.9, 0.8, 0.4, 0.2]
 n_mu_samps = len(mu_samps)
 
 # create figure objects
 colname = "v_hat"
+if colname == "v_hat":
+    xlabel = r"$\hat{v}\ {\rm (m/s)}$"
+elif colname == "v_conv":
+        xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
 fig.subplots_adjust(wspace=0.075)
 
@@ -193,7 +212,7 @@ for i in range(n_mu_samps):
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
 
     # label stuff
-    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_xlabel(xlabel)
     axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
     axs[i].set_xlim(-1200, 1200)
     axs[i].set_box_aspect(1.25)
@@ -221,9 +240,9 @@ for i in range(n_mu_samps):
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
 
     # label stuff
-    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_xlabel(xlabel)
     axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
-    axs[i].set_xlim(-210,450)
+    axs[i].set_xlim(-250,250)
     axs[i].set_box_aspect(1.25)
 
 # set axes labels
@@ -245,10 +264,11 @@ for i in range(n_mu_samps):
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
 
     # label stuff
-    axs[i].set_xlabel(r"$\hat{v}\ {\rm (m/s)}$")
+    axs[i].set_xlabel(xlabel)
     axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
-    # axs[i].set_xlim(-210,450)
+    axs[i].set_xlim(-150,150)
     axs[i].set_box_aspect(1.25)
+    lbls = axs[i].get_xticklabels()
 
 # set axes labels
 axs[0].set_ylabel(r"${\rm Probability\ Density}$")

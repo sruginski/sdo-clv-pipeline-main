@@ -29,14 +29,18 @@ def get_parser_args():
 
 def main():
     # define sdo_data directories
-    indir = "/Users/michael/Desktop/sdo_data/"
+    indir = "/Users/michael/Desktop/sdo-pypline/data/fits/"
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
 
     # sort out input/output data files
     clobber, globexp = get_parser_args()
-    files = organize_input_output(indir, clobber=clobber, globexp=globexp)
+    globdir = globexp.strip("*")
+    files = organize_IO(indir, clobber=clobber, globexp=globexp)
     con_files, mag_files, dop_files, aia_files = files
+
+    # get output datadir
+    datadir = str(root / "data") + "/" + globdir + "/"
 
     # set mu threshold, number of mu rings
     n_rings = 10
@@ -57,7 +61,7 @@ def main():
         # prepare arguments for starmap
         items = []
         for i in range(len(con_files)):
-            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings))
+            items.append((con_files[i], mag_files[i], dop_files[i], aia_files[i], mu_thresh, n_rings, datadir))
 
         # run in parellel
         print(">>> Processing %s epochs with %s processes..." % (len(con_files), ncpus))
@@ -72,7 +76,6 @@ def main():
             pool.starmap(process_data_set_parallel, items, chunksize=4)
 
         # find the output data sets
-        datadir = str(root / "data") + "/"
         tmpdir = datadir + "tmp/"
         outfiles1 = glob.glob(tmpdir + "intensities_*")
         outfiles2 = glob.glob(tmpdir + "pixel_stats_*")
@@ -81,11 +84,11 @@ def main():
         outfiles5 = glob.glob(tmpdir + "mag_stats_*")
 
         # stitch them together on the main process
-        stitch_output_files(datadir + "intensities.csv", outfiles1, delete=True)
-        stitch_output_files(datadir + "pixel_stats.csv", outfiles2, delete=True)
-        stitch_output_files(datadir + "light_stats.csv", outfiles3, delete=True)
-        stitch_output_files(datadir + "velocities.csv", outfiles4, delete=True)
-        stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=True)
+        stitch_output_files(datadir + globdir + "/" + "intensities.csv", outfiles1, delete=True)
+        stitch_output_files(datadir + globdir + "/" + "pixel_stats.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + globdir + "/" + "light_stats.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + globdir + "/" + "velocities.csv", outfiles4, delete=True)
+        stitch_output_files(datadir + globdir + "/" + "mag_stats.csv", outfiles5, delete=True)
 
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
@@ -95,7 +98,7 @@ def main():
         t0 = time.time()
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
-                             mu_thresh=mu_thresh, n_rings=n_rings)
+                             mu_thresh=mu_thresh, n_rings=n_rings, datadir=datadir)
 
         # print run time
         print("Serial: --- %s seconds ---" % (time.time() - t0))

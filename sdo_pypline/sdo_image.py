@@ -147,6 +147,7 @@ class SDOImage(object):
 
         # velocity components
         self.v_grav = 632 # m/s, constant
+        # self.v_grav = 636 # m/s, constant
         self.calc_spacecraft_vel() # spacecraft velocity
         self.calc_bulk_vel() # differential rotation + meridional flows + cbs
         return None
@@ -270,7 +271,7 @@ class SDOImage(object):
         self.v_corr[~self.mask_nan] = np.nan
         return None
 
-    def calc_limb_darkening(self, mu_lim=0.1, num_mu=50):
+    def calc_limb_darkening(self, mu_lim=0.1, num_mu=50, n_sigma=2.0):
         assert (self.is_continuum() | self.is_filtergram())
 
         # get average intensity in evenly spaced rings
@@ -282,7 +283,7 @@ class SDOImage(object):
 
             # mask section that are big outliers
             ints = self.image[inds]
-            ints[np.abs(ints - np.mean(ints)) >= (3.0 * np.std(ints))] = np.nan
+            ints[np.abs(ints - np.mean(ints)) >= (n_sigma * np.std(ints))] = np.nan
             avg_int[i] = np.nanmean(ints)
 
         # take averages in mu annuli to fit to

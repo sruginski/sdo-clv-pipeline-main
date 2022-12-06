@@ -61,11 +61,11 @@ def main():
 
     # plot a zoom-in on the mask overlaid on continuum
     cmap = plt.get_cmap("Greys").copy()
-    cmap.set_bad(color="black")
+    cmap.set_bad(color="white")
     ax1.imshow(cutout_cont.data,  cmap=cmap, origin="lower", interpolation=None)
 
     cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
-    cmap.set_bad(color="black")
+    cmap.set_bad(color="white")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
     ax1.imshow(cutout_mask.data,  cmap=cmap, alpha=0.5, origin="lower", interpolation=None)
 
@@ -81,7 +81,9 @@ def main():
     fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=mask.wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-    cutout_mask.plot_on_original(ax=ax1, color="black", ls=":")
+    sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                             color="k", alpha=0.5, ls="--", lw=0.5)
+    cutout_mask.plot_on_original(ax=ax1, color="black", ls="-")
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
     clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.invert_xaxis()

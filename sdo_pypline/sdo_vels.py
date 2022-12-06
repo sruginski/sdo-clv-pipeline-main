@@ -35,6 +35,8 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=None, v_quiet=None):
 
     # calculate velocity terms
     v_hat = np.nansum(dop.v_corr * con.image * region_mask)
+
+    # TODO add v_mer???
     v_phot = np.nansum(dop.v_rot * (con.image - k_hat_con * con.ldark) * w_active * region_mask)
 
     # divide velocities by the denominator (only calculate it once)
@@ -45,7 +47,10 @@ def calc_velocities(con, mag, dop, aia, mask, region_mask=None, v_quiet=None):
     if v_quiet is None:
         # calculate v_quiet
         v_quiet = np.nansum(dop.v_corr * con.image * w_quiet * region_mask)
-        v_quiet /= np.nansum(con.image * w_quiet * region_mask)
+        v_quiet /= np.nansum(con.image * region_mask)
+
+        # TODO change of definition - divide out quiet light or total light?
+        # v_quiet /= np.nansum(con.image * w_quiet * region_mask)
 
         # get convective velocity by subtracting off other terms
         v_conv = v_hat - v_quiet # - v_phot

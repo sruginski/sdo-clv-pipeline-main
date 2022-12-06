@@ -71,7 +71,7 @@ def round_time(date=None, round_to=3600):
    rounding = (seconds+round_to/2) // round_to * round_to
    return date + dt.timedelta(0,rounding-seconds,-date.microsecond)
 
-def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
+def organize_IO(indir, datadir=None, clobber=False, =""):
     # find the input data and check the lengths
     assert isdir(indir)
     con_files, mag_files, dop_files, aia_files = find_data(indir, globexp=globexp)
@@ -82,11 +82,12 @@ def organize_input_output(indir, datadir=None, clobber=False, globexp=""):
         datadir = str(root / "data") + "/"
 
     # name output files
-    fname1 = datadir + "intensities.csv"
-    fname2 = datadir + "pixel_stats.csv"
-    fname3 = datadir + "light_stats.csv"
-    fname4 = datadir + "velocities.csv"
-    fname5 = datadir + "mag_stats.csv"
+    globdir = globexp.strip("*")
+    fname1 = datadir + globdir * "/" + "intensities.csv"
+    fname2 = datadir + globdir * "/" + "pixel_stats.csv"
+    fname3 = datadir + globdir * "/" + "light_stats.csv"
+    fname4 = datadir + globdir * "/" + "velocities.csv"
+    fname5 = datadir + globdir * "/" + "mag_stats.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]

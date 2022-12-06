@@ -8,6 +8,7 @@ import matplotlib.colors as colors
 
 from astropy.io import fits
 from astropy.wcs import WCS
+import astropy.units as u
 
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
@@ -34,6 +35,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
 
         # plot the sun
         img = ax1.imshow(sdo_image.image, cmap=cmap, origin="lower", norm=norm, interpolation=None)
+        sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                             color="k", alpha=0.5, ls="--", lw=0.5)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Magnetic\ Field\ Strength\ (G)}$")
         ax1.invert_xaxis()
@@ -57,6 +60,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
 
         # plot the sun
         img = ax1.imshow(sdo_image.v_corr, origin="lower", cmap=cmap, vmin=-2000, vmax=2000, interpolation=None)
+        sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                                     color="k", alpha=0.5, ls="--", lw=0.5)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm LOS\ Velocity\ (m/s)}$")
         ax1.invert_xaxis()
@@ -80,6 +85,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
 
         # plot the sun
         img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                                     color="k", alpha=0.5, ls="--", lw=0.5)
 
         # plot the limb location
         # limb = ax1.contour(sdo_image.mu >= 0.0, colors="k", linestyles="--")
@@ -110,6 +117,8 @@ def plot_image(sdo_image, outdir=None, fname=None):
 
         # plot the sun
         img = ax1.imshow(sdo_image.iflat/sdo_image.ld_coeffs[0], cmap=cmap, origin="lower", interpolation=None)#, vmin=20000)
+        sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                                     color="k", alpha=0.5, ls="--", lw=0.5)
         clb = fig.colorbar(img)
         clb.set_label(r"${\rm Relative\ 1700\ \AA \ Continuum\ Intensity}$")
         ax1.invert_xaxis()
@@ -147,6 +156,8 @@ def plot_mask(mask, outdir=None, fname=None):
     fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
+    sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                                 color="k", alpha=0.5, ls="--", lw=0.5)
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
     clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.invert_xaxis()

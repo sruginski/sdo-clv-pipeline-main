@@ -7,20 +7,22 @@ import os, sys, pdb, csv, glob
 import pandas as pd
 
 from sdo_pypline.paths import root
+from IPython import embed
 
 # use style
 plt.style.use("my.mplstyle"); plt.ioff()
 
 def calc_whole_disk_vel(df_vels, df_light):
-    # get whole disk
-    v_hat_whole = df_vels.v_hat[0]
-    v_phot_whole = df_vels.v_phot[0]
-    v_quiet_whole = df_vels.v_quiet[0]
-    v_conv_whole = df_vels.v_conv[0]
+    # pdb.set_trace()
+    # get whole disk velocities and mu slices
+    inds = (np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)
+    df_vels_full = df_vels[inds]
+    df_vels_annuli = df_vels[~inds]
 
-    # get mu slices
-    df_vels_annuli = df_vels.iloc[1:]
-    df_light_annuli = df_light.iloc[1:]
+    # get light fractions
+    inds = (np.isnan(df_light.lo_mu))
+    df_light_full = df_light[inds]
+    df_light_annuli = df_light[~inds]
 
     # lo_mus
     lo_mus = np.unique(df_vels_annuli.lo_mu)
@@ -59,17 +61,14 @@ def calc_whole_disk_vel(df_vels, df_light):
             v_hat_mu[i] += (df_vels_reg.v_hat.item() * fracs[j])
             v_phot_whole2 += (df_vels_reg.v_phot.item() * fracs[j])
             v_phot_mu[i] += (df_vels_reg.v_phot.item() * fracs[j])
-            v_quiet_whole2 += (df_vels_reg.v_quiet.item() * fracs[j])
-            v_quiet_mu[i] += (df_vels_reg.v_quiet.item() * fracs[j])
+            if k == 4:
+                v_quiet_whole2 += (df_vels_reg.v_quiet.item() * fracs[j])
+                v_quiet_mu[i] += (df_vels_reg.v_quiet.item() * fracs[j])
+            if k != 4:
+                v_conv_whole2 += ((df_vels_reg.v_hat.item() -  v_quiet_temp) * (fracs[j]/v_quiet_frac))
+                v_conv_mu[i] += (df_vels_reg.v_conv.item() * fracs[j])
 
-            # pdb.set_trace()
-            # derp = df_vels_reg.v_hat.item() - (v_quiet_temp * v_quiet_frac)
-            derp = df_vels_reg.v_conv.item()
-
-            v_conv_whole2 += derp
-            v_conv_mu[i] += derp
-
-    print(v_conv_whole)
+    print(df_vels_full.v_conv.item())
     print(v_conv_whole2)
     pdb.set_trace()
 
