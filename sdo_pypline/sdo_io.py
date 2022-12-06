@@ -79,15 +79,15 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
 
     # figure out data directories
     if datadir == None:
-        datadir = str(root / "data") + "/"
+        globdir = globexp.strip("*")
+        datadir = str(root / "data") + "/" + globdir + "/"
 
     # name output files
-    globdir = globexp.strip("*")
-    fname1 = datadir + globdir + "/" + "intensities.csv"
-    fname2 = datadir + globdir + "/" + "pixel_stats.csv"
-    fname3 = datadir + globdir + "/" + "light_stats.csv"
-    fname4 = datadir + globdir + "/" + "velocities.csv"
-    fname5 = datadir + globdir + "/" + "mag_stats.csv"
+    fname1 = datadir + "intensities.csv"
+    fname2 = datadir + "pixel_stats.csv"
+    fname3 = datadir + "light_stats.csv"
+    fname4 = datadir + "velocities.csv"
+    fname5 = datadir + "mag_stats.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
