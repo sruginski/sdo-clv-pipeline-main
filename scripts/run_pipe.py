@@ -84,11 +84,11 @@ def main():
         outfiles5 = glob.glob(tmpdir + "mag_stats_*")
 
         # stitch them together on the main process
-        stitch_output_files(datadir + globdir + "/" + "intensities.csv", outfiles1, delete=True)
-        stitch_output_files(datadir + globdir + "/" + "pixel_stats.csv", outfiles2, delete=True)
-        stitch_output_files(datadir + globdir + "/" + "light_stats.csv", outfiles3, delete=True)
-        stitch_output_files(datadir + globdir + "/" + "velocities.csv", outfiles4, delete=True)
-        stitch_output_files(datadir + globdir + "/" + "mag_stats.csv", outfiles5, delete=True)
+        stitch_output_files(datadir + "intensities.csv", outfiles1, delete=True)
+        stitch_output_files(datadir + "pixel_stats.csv", outfiles2, delete=True)
+        stitch_output_files(datadir + "light_stats.csv", outfiles3, delete=True)
+        stitch_output_files(datadir + "velocities.csv", outfiles4, delete=True)
+        stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=True)
 
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
