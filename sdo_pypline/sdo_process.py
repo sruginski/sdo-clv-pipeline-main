@@ -75,7 +75,7 @@ def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh,
 
 
 def process_data_set(con_file, mag_file, dop_file, aia_file,
-                     mu_thresh=0.1, n_rings=10, suffix=None, datdir=None):
+                     mu_thresh=0.1, n_rings=10, suffix=None, datadir=None):
 
     # figure out data directories
     if not isdir(datadir):
