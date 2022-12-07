@@ -185,9 +185,9 @@ class SDOImage(object):
         cos_B0 = np.cos(self.B0)
         sin_B0 = np.sin(self.B0)
 
-        self.lat_mask = self.lat[self.mask_nan].copy()
-        self.lon_mask = self.lon[self.mask_nan].copy()
-        self.rho_mask = self.rr[self.mask_nan].copy()
+        self.lat_mask = self.lat[self.mask_nan]#.copy()
+        self.lon_mask = self.lon[self.mask_nan]#.copy()
+        self.rho_mask = self.rr[self.mask_nan]#.copy()
 
         cos_theta = np.cos(self.lat_mask)
         sin_theta = np.sin(self.lat_mask)

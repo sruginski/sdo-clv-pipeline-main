@@ -83,6 +83,7 @@ def main():
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
     sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
                                                              color="k", alpha=0.5, ls="--", lw=0.5)
+    limb = ax1.contour(mask.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
     cutout_mask.plot_on_original(ax=ax1, color="black", ls="-")
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
     clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])

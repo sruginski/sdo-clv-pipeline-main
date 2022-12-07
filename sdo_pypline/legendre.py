@@ -22,10 +22,8 @@ def gen_leg(lmax, theta):
     leg = np.zeros((maxIndex, theta.size))
     leg_d1 = np.zeros((maxIndex, theta.size))
 
-    count = 0
-    for z in cost:
-        leg[:, count], leg_d1[:, count] = pleg.PlBar_d1(lmax, z)
-        count += 1
+    for i,z in enumerate(cost):
+        leg[:, i], leg_d1[:, i] = pleg.PlBar_d1(lmax, z)
     return leg/np.sqrt(2)/norm, leg_d1 * (-sint)/np.sqrt(2)/norm
 
 
@@ -38,10 +36,8 @@ def gen_leg_x(lmax, x):
     leg = np.zeros((maxIndex, x.size))
     leg_d1 = np.zeros((maxIndex, x.size))
 
-    count = 0
-    for z in x:
-        leg[:, count], leg_d1[:, count] = pleg.PlBar_d1(lmax, z)
-        count += 1
+    for i,z in enumerate(x):
+        leg[:, i], leg_d1[:, i] = pleg.PlBar_d1(lmax, z)
     return leg/np.sqrt(2)/norm, leg_d1/np.sqrt(2)/norm
 
 
