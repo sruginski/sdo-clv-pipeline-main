@@ -67,6 +67,13 @@ class SDOImage(object):
         else:
             self.content = "FILTERGRAM"
 
+        # get data quality flag
+        self.instrument = head["TELESCOP"]
+        if self.instrument == "SDO/AIA":
+            self.quality = head["QUALLEV0"]
+        elif self.instrument == "SDO/HMI":
+            self.quality = head["QUALLEV1"]
+
         self.head = head
         return None
 
@@ -271,7 +278,7 @@ class SDOImage(object):
         self.v_corr[~self.mask_nan] = np.nan
         return None
 
-    def calc_limb_darkening(self, mu_lim=0.1, num_mu=50, n_sigma=2.0):
+    def calc_limb_darkening(self, mu_lim=0.1, num_mu=25, n_sigma=2.0):
         assert (self.is_continuum() | self.is_filtergram())
 
         # get average intensity in evenly spaced rings

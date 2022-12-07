@@ -14,7 +14,13 @@ from .sdo_image import *
 from multiprocessing import get_context
 import multiprocessing as mp
 
+def is_quality_data(sdo_image):
+    return sdo_image.quality == 0
+
 def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
+    # get the datetime
+    iso = get_date(con_file).isoformat()
+
     # make SDOImage instances
     try:
         con = SDOImage(con_file)
@@ -22,11 +28,13 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
         dop = SDOImage(dop_file)
         aia = SDOImage(aia_file)
     except OSError:
-        print("\t >>> Invalid file, skipping " + get_date(con_file).isoformat(), flush=True)
+        print("\t >>> Invalid file, skipping " + iso, flush=True)
         return None
 
-    # get time of observations
-    iso = Time(con.date_obs).iso
+    # check for data quality issue
+    if not all(list(map(is_quality_data, [con, mag, dop, aia]))):
+        print("\t >>> Data quality issue, skipping " + iso, flush=True)
+        return None
 
     # calculate geometries
     dop.calc_geometry()
@@ -36,12 +44,6 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     # interpolate aia image onto hmi image scale and inherit geometry
     aia.rescale_to_hmi(con)
 
-    # correct magnetogram for foreshortening
-    mag.correct_magnetogram()
-
-    # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
-    dop.correct_dopplergram()
-
     # calculate limb darkening/brightening in continuum map and filtergram
     try:
         con.calc_limb_darkening()
@@ -49,6 +51,12 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1):
     except:
         print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
         return None
+
+    # correct magnetogram for foreshortening
+    mag.correct_magnetogram()
+
+    # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
+    dop.correct_dopplergram()
 
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
