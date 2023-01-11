@@ -99,8 +99,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
-        if not isdir(tmpdir):
-            os.mkdir(tmpdir)
 
         # filenames
         fname1 = tmpdir + "intensities_" + suffix + ".csv"
