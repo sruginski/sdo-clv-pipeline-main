@@ -189,10 +189,7 @@ n_mu_samps = len(mu_samps)
 
 # create figure objects
 colname = "v_hat"
-if colname == "v_hat":
-    xlabel = r"$\hat{v}\ {\rm (m/s)}$"
-elif colname == "v_conv":
-        xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
+xlabel = r"$\hat{v}\ {\rm (m/s)}$"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
 fig.subplots_adjust(wspace=0.075)
 
@@ -275,3 +272,68 @@ axs[0].set_ylabel(r"${\rm Probability\ Density}$")
 axs[-1].legend(fontsize=10)
 fig.savefig(plotdir + "fig5c.pdf")
 plt.clf(); plt.close()
+
+
+# create figure objects
+colname = "v_conv"
+xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
+
+# loop over valus
+for i in range(n_mu_samps):
+    # do all regs
+    idx1 = umbrae.lo_mu == mu_samps[i]
+    idx2 = red_penumbrae.lo_mu == mu_samps[i]
+    idx3 = blu_penumbrae.lo_mu == mu_samps[i]
+
+    # plot this mu
+    axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color="tab:green", histtype="step", label=r"{\rm Umbrae}")
+    axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Red\ Penumbrae}")
+    axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color="tab:brown", histtype="step", label=r"{\rm Blue\ Penumbrae}")
+
+    # plot the full disk
+    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+
+    # label stuff
+    axs[i].set_xlabel(xlabel)
+    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
+    axs[i].set_xlim(-1200, 1200)
+    axs[i].set_box_aspect(1.25)
+
+# set axes labels
+axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+axs[-1].legend(fontsize=10)
+fig.savefig(plotdir + "fig6a.pdf")
+plt.clf(); plt.close()
+
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
+
+# loop over valus
+for i in range(n_mu_samps):
+    # do all regs
+    idx1 = plage.lo_mu == mu_samps[i]
+    idx2 = network.lo_mu == mu_samps[i]
+
+    # plot this mu
+    axs[i].hist(plage[colname][idx1], bins="auto", density=True, color="tab:purple", histtype="step", label=r"{\rm Plage}")
+    axs[i].hist(network[colname][idx2], bins="auto", density=True, color="tab:pink", histtype="step", label=r"{\rm Network}")
+
+    # plot the full disk
+    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+
+    # label stuff
+    axs[i].set_xlabel(xlabel)
+    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
+    axs[i].set_xlim(-250,250)
+    axs[i].set_box_aspect(1.25)
+
+# set axes labels
+axs[0].set_ylabel(r"${\rm Probability\ Density}$")
+axs[-1].legend(fontsize=10)
+fig.savefig(plotdir + "fig6b.pdf")
+plt.clf(); plt.close()
+
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
+fig.subplots_adjust(wspace=0.075)
