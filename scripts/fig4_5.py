@@ -32,9 +32,13 @@ def calc_region_stats(region_df, colname="v_hat"):
         reg_err[i] = reg_avg[i]/np.sqrt(len(region_df[colname][idx]))
     return reg_avg, reg_std, reg_err
 
-def mask_all_zero_rows(df):
+def mask_all_zero_rows(df, return_idx=False):
     idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)
-    return df[~idx]
+    if return_idx:
+        return df[~idx], ~(idx.values)
+    else:
+        return df[~idx]
+    return None
 
 def mask_zero_v_conv(df):
     idx = (df.v_hat == df.v_quiet)
@@ -106,12 +110,57 @@ umbrae = df_regs[df_regs.region == 1.0]
 plage = mask_all_zero_rows(plage)
 network = mask_all_zero_rows(network)
 quiet_sun = mask_all_zero_rows(quiet_sun)
-red_penumbrae = mask_all_zero_rows(red_penumbrae)
-blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
+red_penumbrae, red_idx = mask_all_zero_rows(red_penumbrae, return_idx=True)
+blu_penumbrae, blu_idx = mask_all_zero_rows(blu_penumbrae, return_idx=True)
 umbrae = mask_all_zero_rows(umbrae)
 
+# combine red and blue_penumbrae into total penumbrae
+pen_idx = np.logical_or(red_idx, blu_idx)
+pen_light = df_light[~np.isnan(df_light.lo_mu)]
 
-# pdb.set_trace()
+# make data frame to hold vels
+all_penumbrae = pd.DataFrame(columns = red_penumbrae.columns.values)
+
+# loop over dates or something
+for i, mjd in enumerate(np.unique(pen_light.mjd)):
+    for j, mu in enumerate(np.unique(pen_light.lo_mu)):
+        # get light fractions
+        row_light = pen_light[(pen_light.mjd == mjd) & (pen_light.lo_mu == mu)]
+        red_light = row_light.red_pen_frac.values[0]
+        blu_light = row_light.blu_pen_frac.values[0]
+        tot_light = red_light + blu_light
+
+        # get velocities
+        red_vels = red_penumbrae[(red_penumbrae.mjd == mjd) & (red_penumbrae.lo_mu == mu)]
+        blu_vels = blu_penumbrae[(blu_penumbrae.mjd == mjd) & (blu_penumbrae.lo_mu == mu)]
+        if (len(red_vels) == 0) & (len(blu_vels) == 0):
+            v_hat = 0.0
+            v_phot = 0.0
+            v_quiet = 0.0
+            v_conv = 0.0
+        elif (len(red_vels) == 0) & (len(blu_vels) != 0):
+            v_hat = ((blu_vels.v_hat.values * blu_light) / tot_light)[0]
+            v_phot = ((blu_vels.v_phot.values * blu_light) / tot_light)[0]
+            v_quiet = ((blu_vels.v_quiet.values * blu_light) / tot_light)[0]
+            v_conv = ((blu_vels.v_conv.values * blu_light) / tot_light)[0]
+        elif (len(red_vels) != 0) & (len(blu_vels) == 0):
+            v_hat = ((red_vels.v_hat.values * red_light) / tot_light)[0]
+            v_phot = ((red_vels.v_phot.values * red_light) / tot_light)[0]
+            v_quiet = ((red_vels.v_quiet.values * red_light) / tot_light)[0]
+            v_conv = ((red_vels.v_conv.values * red_light) / tot_light)[0]
+        else:
+            v_hat = ((red_vels.v_hat.values * red_light + blu_vels.v_hat.values * blu_light) / tot_light)[0]
+            v_phot = ((red_vels.v_phot.values * red_light + blu_vels.v_phot.values * blu_light) / tot_light)[0]
+            v_quiet = ((red_vels.v_quiet.values * red_light + blu_vels.v_quiet.values * blu_light) / tot_light)[0]
+            v_conv = ((red_vels.v_conv.values * red_light + blu_vels.v_conv.values * blu_light) / tot_light)[0]
+
+        # append to dataframe
+        row = pd.Series({"mjd": mjd, "region": np.nan, "lo_mu": mu, "hi_mu": mu + 0.1,
+                         "v_hat": v_hat, "v_phot": v_phot, "v_quiet": v_quiet, "v_conv": v_conv})
+        all_penumbrae = pd.concat([all_penumbrae, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
+
+
+pdb.set_trace()
 
 # region = quiet_sun[quiet_sun.hi_mu < 0.3]
 # plt.scatter(region.mjd, region.v_hat)
