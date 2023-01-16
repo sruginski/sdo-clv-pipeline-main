@@ -8,8 +8,6 @@ import pandas as pd
 
 from sdo_pypline.paths import root
 
-# use style
-plt.style.use("my.mplstyle"); plt.ioff()
 
 def calc_region_stats(region_df, colname="v_hat"):
     # get number elements
@@ -155,7 +153,7 @@ for i, mjd in enumerate(np.unique(pen_light.mjd)):
             v_conv = ((red_vels.v_conv.values * red_light + blu_vels.v_conv.values * blu_light) / tot_light)[0]
 
         # append to dataframe
-        row = pd.Series({"mjd": mjd, "region": np.nan, "lo_mu": mu, "hi_mu": mu + 0.1,
+        row = pd.Series({"mjd": mjd, "region": 2.5, "lo_mu": mu, "hi_mu": mu + 0.1,
                          "v_hat": v_hat, "v_phot": v_phot, "v_quiet": v_quiet, "v_conv": v_conv})
         all_penumbrae = pd.concat([all_penumbrae, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
 
