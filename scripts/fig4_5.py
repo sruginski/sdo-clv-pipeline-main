@@ -8,7 +8,6 @@ import pandas as pd
 
 from sdo_pypline.paths import root
 
-
 def calc_region_stats(region_df, colname="v_hat"):
     # get number elements
     lo_mus = np.unique(region_df.lo_mu[~np.isnan(region_df.lo_mu)])
@@ -30,140 +29,27 @@ def calc_region_stats(region_df, colname="v_hat"):
         reg_err[i] = reg_avg[i]/np.sqrt(len(region_df[colname][idx]))
     return reg_avg, reg_std, reg_err
 
-def mask_all_zero_rows(df, return_idx=False):
-    idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)
-    if return_idx:
-        return df[~idx], ~(idx.values)
-    else:
-        return df[~idx]
-    return None
-
-def mask_zero_v_conv(df):
-    idx = (df.v_hat == df.v_quiet)
-    return df[~idx]
-
 # sort out paths
 datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
+procdir = datadir + "processed/"
 
-# read in the data and sort by mjd
-df_vels = pd.read_csv(datadir + "velocities.csv")
-df_vels.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
-df_vels.drop_duplicates()
-
-df_pixels = pd.read_csv(datadir + "pixel_stats.csv")
-df_pixels.sort_values(by=["mjd", "lo_mu"], inplace=True)
-df_pixels.drop_duplicates()
-
-df_light = pd.read_csv(datadir + "light_stats.csv")
-df_light.sort_values(by=["mjd", "lo_mu"], inplace=True)
-df_light.drop_duplicates()
-
-df_intensities = pd.read_csv(datadir + "intensities.csv")
-df_intensities.sort_values(by=["mjd"], inplace=True)
-df_intensities.drop_duplicates()
-
-# get numbers computed for full disk
-df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
-df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
-df_light_full = df_light[np.isnan(df_light.lo_mu)]
-
-# pdb.set_trace()
-
-# fig, ax1 = plt.subplots()
-# ax1.scatter(df_vels_full.mjd, df_vels_full.v_conv, s=2, c="k")
-# ax1.set_xlabel(r"${\rm MJD}$")
-# ax1.set_ylabel(r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$")
-# ax1.set_ylim(0,20)
-# fig.savefig("/Users/michael/Desktop/v_conv_time_series.pdf")
-# plt.show()
-
-
-# TODO filtering????
-# plt.scatter(df_intensities.mjd, df_intensities.aia_thresh, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.quiet_frac, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.plage_frac, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.network_frac, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.umb_frac, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.blu_pen_frac, s=2)
-# plt.scatter(df_pixels_full.mjd, df_pixels_full.red_pen_frac, s=2)
-
-# get velocities for regions in mu
-df_regs = df_vels[(df_vels.region > 0.0) & (~np.isnan(df_vels.lo_mu))]
+# read in by region
+df_vels_full = pd.read_csv(procdir + "full_disk_vels.csv")
+plage = pd.read_csv(procdir + "plage_vels.csv")
+network = pd.read_csv(procdir + "network_vels.csv")
+quiet_sun = pd.read_csv(procdir + "quiet_sun_vels.csv")
+penumbrae = pd.read_csv(procdir + "penumbrae_vels.csv")
+red_penumbrae = pd.read_csv(procdir + "red_penumbrae_vels.csv")
+blu_penumbrae = pd.read_csv(procdir + "blu_penumbrae_vels.csv")
+umbrae = pd.read_csv(procdir + "umbrae_vels.csv")
 
 # get centers of mu bins
-lo_mus = np.unique(df_regs.lo_mu)
-hi_mus = np.unique(df_regs.hi_mu)
+lo_mus = np.unique(plage.lo_mu)
+hi_mus = np.unique(plage.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
-# make dfs by mu
-plage = df_regs[df_regs.region == 6.0]
-network = df_regs[df_regs.region == 5.0]
-quiet_sun = df_regs[df_regs.region == 4.0]
-red_penumbrae = df_regs[df_regs.region == 3.0]
-blu_penumbrae = df_regs[df_regs.region == 2.0]
-umbrae = df_regs[df_regs.region == 1.0]
-
-# mask rows where all vels are 0.0 (i.e., region isn't present in that annulus)
-plage = mask_all_zero_rows(plage)
-network = mask_all_zero_rows(network)
-quiet_sun = mask_all_zero_rows(quiet_sun)
-red_penumbrae, red_idx = mask_all_zero_rows(red_penumbrae, return_idx=True)
-blu_penumbrae, blu_idx = mask_all_zero_rows(blu_penumbrae, return_idx=True)
-umbrae = mask_all_zero_rows(umbrae)
-
-# combine red and blue_penumbrae into total penumbrae
-pen_idx = np.logical_or(red_idx, blu_idx)
-pen_light = df_light[~np.isnan(df_light.lo_mu)]
-
-# make data frame to hold vels
-all_penumbrae = pd.DataFrame(columns = red_penumbrae.columns.values)
-
-# loop over dates or something
-for i, mjd in enumerate(np.unique(pen_light.mjd)):
-    for j, mu in enumerate(np.unique(pen_light.lo_mu)):
-        # get light fractions
-        row_light = pen_light[(pen_light.mjd == mjd) & (pen_light.lo_mu == mu)]
-        red_light = row_light.red_pen_frac.values[0]
-        blu_light = row_light.blu_pen_frac.values[0]
-        tot_light = red_light + blu_light
-
-        # get velocities
-        red_vels = red_penumbrae[(red_penumbrae.mjd == mjd) & (red_penumbrae.lo_mu == mu)]
-        blu_vels = blu_penumbrae[(blu_penumbrae.mjd == mjd) & (blu_penumbrae.lo_mu == mu)]
-        if (len(red_vels) == 0) & (len(blu_vels) == 0):
-            v_hat = 0.0
-            v_phot = 0.0
-            v_quiet = 0.0
-            v_conv = 0.0
-        elif (len(red_vels) == 0) & (len(blu_vels) != 0):
-            v_hat = ((blu_vels.v_hat.values * blu_light) / tot_light)[0]
-            v_phot = ((blu_vels.v_phot.values * blu_light) / tot_light)[0]
-            v_quiet = ((blu_vels.v_quiet.values * blu_light) / tot_light)[0]
-            v_conv = ((blu_vels.v_conv.values * blu_light) / tot_light)[0]
-        elif (len(red_vels) != 0) & (len(blu_vels) == 0):
-            v_hat = ((red_vels.v_hat.values * red_light) / tot_light)[0]
-            v_phot = ((red_vels.v_phot.values * red_light) / tot_light)[0]
-            v_quiet = ((red_vels.v_quiet.values * red_light) / tot_light)[0]
-            v_conv = ((red_vels.v_conv.values * red_light) / tot_light)[0]
-        else:
-            v_hat = ((red_vels.v_hat.values * red_light + blu_vels.v_hat.values * blu_light) / tot_light)[0]
-            v_phot = ((red_vels.v_phot.values * red_light + blu_vels.v_phot.values * blu_light) / tot_light)[0]
-            v_quiet = ((red_vels.v_quiet.values * red_light + blu_vels.v_quiet.values * blu_light) / tot_light)[0]
-            v_conv = ((red_vels.v_conv.values * red_light + blu_vels.v_conv.values * blu_light) / tot_light)[0]
-
-        # append to dataframe
-        row = pd.Series({"mjd": mjd, "region": 2.5, "lo_mu": mu, "hi_mu": mu + 0.1,
-                         "v_hat": v_hat, "v_phot": v_phot, "v_quiet": v_quiet, "v_conv": v_conv})
-        all_penumbrae = pd.concat([all_penumbrae, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
-
-
 pdb.set_trace()
-
-# region = quiet_sun[quiet_sun.hi_mu < 0.3]
-# plt.scatter(region.mjd, region.v_hat)
-# plt.show()
-
 
 # get stats
 def clv_plot(colname, fname=None):

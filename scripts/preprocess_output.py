@@ -56,6 +56,7 @@ df_intensities.reset_index(drop=True)
 # get numbers computed for full disk
 df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
 df_vels_full.reset_index(drop=True)
+df_vels_full.to_csv(outdir + "full_disk_vels.csv", index=False)
 
 df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
 df_pixels_full.reset_index(drop=True)
@@ -159,6 +160,3 @@ df_vels_new = pd.concat([all_penumbrae, df_vels]).reset_index(drop=True)
 df_vels_new.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
 df_vels_new.drop_duplicates()
 df_vels_new.reset_index(drop=True)
-
-# write it out
-df_vels_new.to_csv(outdir + "processed_velocities.csv", index=False)
