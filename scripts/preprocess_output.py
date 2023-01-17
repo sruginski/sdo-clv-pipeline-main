@@ -8,9 +8,6 @@ import pandas as pd
 
 from sdo_pypline.paths import root
 
-# use style
-plt.style.use("my.mplstyle"); plt.ioff()
-
 def mask_all_zero_rows(df, return_idx=False):
     idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)
     if return_idx:
@@ -126,10 +123,7 @@ for i, mjd in enumerate(np.unique(pen_light.mjd)):
         red_vels = red_penumbrae[(red_penumbrae.mjd == mjd) & (red_penumbrae.lo_mu == mu)]
         blu_vels = blu_penumbrae[(blu_penumbrae.mjd == mjd) & (blu_penumbrae.lo_mu == mu)]
         if (len(red_vels) == 0) & (len(blu_vels) == 0):
-            v_hat = 0.0
-            v_phot = 0.0
-            v_quiet = 0.0
-            v_conv = 0.0
+            continue
         elif (len(red_vels) == 0) & (len(blu_vels) != 0):
             v_hat = ((blu_vels.v_hat.values * blu_light) / tot_light)[0]
             v_phot = ((blu_vels.v_phot.values * blu_light) / tot_light)[0]

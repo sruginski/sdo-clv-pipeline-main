@@ -8,6 +8,9 @@ import pandas as pd
 
 from sdo_pypline.paths import root
 
+# use style
+plt.style.use("my.mplstyle"); plt.ioff()
+
 def calc_region_stats(region_df, colname="v_hat"):
     # get number elements
     lo_mus = np.unique(region_df.lo_mu[~np.isnan(region_df.lo_mu)])
@@ -36,6 +39,7 @@ procdir = datadir + "processed/"
 
 # read in by region
 df_vels_full = pd.read_csv(procdir + "full_disk_vels.csv")
+pdb.set_trace()
 plage = pd.read_csv(procdir + "plage_vels.csv")
 network = pd.read_csv(procdir + "network_vels.csv")
 quiet_sun = pd.read_csv(procdir + "quiet_sun_vels.csv")
@@ -49,14 +53,13 @@ lo_mus = np.unique(plage.lo_mu)
 hi_mus = np.unique(plage.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
-pdb.set_trace()
-
 # get stats
 def clv_plot(colname, fname=None):
     # whole_avg, whole_std, whole_err = calc_region_stats(df_vels_full, colname=colname)
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
     blue_penumbrae_avg, blue_penumbrae_std, blue_penumbrae_err = calc_region_stats(blu_penumbrae, colname=colname)
     red_penumbrae_avg, red_penumbrae_std, red_penumbrae_err = calc_region_stats(red_penumbrae, colname=colname)
+    penumbrae_avg, penumbrae_std, penumbrae_err = calc_region_stats(penumbrae, colname=colname)
     quiet_sun_avg, quiet_sun_std, quiet_sun_err = calc_region_stats(quiet_sun, colname=colname)
     network_avg, network_std, network_err = calc_region_stats(network, colname=colname)
     plage_avg, plage_std, plage_err = calc_region_stats(plage, colname=colname)
@@ -83,6 +86,9 @@ def clv_plot(colname, fname=None):
 
     ax2.errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=".", capsize=3, color="tab:brown", label=r"${\rm Blue\ Penumbrae}$")
     ax2.fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color="tab:brown", alpha=0.5)
+
+    ax2.errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=".", capsize=3, color="black", label=r"${\rm Penumbrae}$")
+    ax2.fill_between(mu_bin, penumbrae_avg - penumbrae_std, penumbrae_avg + penumbrae_std, color="black", alpha=0.5)
 
     ax2.errorbar(mu_bin, umbrae_avg, yerr=umbrae_err, fmt=".", capsize=3, color="tab:green", label=r"${\rm Umbrae}$")
     ax2.fill_between(mu_bin, umbrae_avg - umbrae_std, umbrae_avg + umbrae_std, color="tab:green", alpha=0.5)
@@ -132,11 +138,13 @@ for i in range(n_mu_samps):
     idx1 = umbrae.lo_mu == mu_samps[i]
     idx2 = red_penumbrae.lo_mu == mu_samps[i]
     idx3 = blu_penumbrae.lo_mu == mu_samps[i]
+    idx4 = penumbrae.lo_mu == mu_samps[i]
 
     # plot this mu
     axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color="tab:green", histtype="step", label=r"{\rm Umbrae}")
     axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Red\ Penumbrae}")
     axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color="tab:brown", histtype="step", label=r"{\rm Blue\ Penumbrae}")
+    axs[i].hist(penumbrae[colname][idx4], bins="auto", density=True, color="black", histtype="step", label=r"{\rm Penumbrae}")
 
     # plot the full disk
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
@@ -219,11 +227,13 @@ for i in range(n_mu_samps):
     idx1 = umbrae.lo_mu == mu_samps[i]
     idx2 = red_penumbrae.lo_mu == mu_samps[i]
     idx3 = blu_penumbrae.lo_mu == mu_samps[i]
+    idx4 = penumbrae.lo_mu == mu_samps[i]
 
     # plot this mu
     axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color="tab:green", histtype="step", label=r"{\rm Umbrae}")
     axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color="tab:orange", histtype="step", label=r"{\rm Red\ Penumbrae}")
     axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color="tab:brown", histtype="step", label=r"{\rm Blue\ Penumbrae}")
+    axs[i].hist(penumbrae[colname][idx4], bins="auto", density=True, color="black", histtype="step", label=r"{\rm Penumbrae}")
 
     # plot the full disk
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")

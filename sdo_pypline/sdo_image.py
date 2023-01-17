@@ -447,9 +447,9 @@ class SunMask(object):
         areas = np.array([rprop.area for rprop in rprops]).astype(float)
         areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
 
-        # calculate the perimeter to area ratio and apply threshold
-        # TODO: need to handle projection/foreshortening, or is pixel count fine
-        area_thresh = 20
+        # area thresh is 20ppm of pixels on hemisphere
+        pix_hem = np.nansum(con.mu > 0.0)
+        area_thresh = 20e-6 * pix_hem
 
         # assign region type to plage for ratios less than ratio thresh
         ind6 = np.concatenate(([False], areas > area_thresh))[labels]
