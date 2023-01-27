@@ -110,7 +110,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname6 = tmpdir + "velocities_unweighted_" + suffix + ".csv"
 
         # check if the files exist, create otherwise
-        for file in (fname1, fname2, fname3, fname4, fname5):
+        for file in (fname1, fname2, fname3, fname4, fname5, fname6):
             if not exists(file):
                 create_file(file)
 
