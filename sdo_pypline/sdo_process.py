@@ -96,6 +96,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname3 = datadir + "light_stats.csv"
         fname4 = datadir + "velocities.csv"
         fname5 = datadir + "mag_stats.csv"
+        fname6 = datadir + "velocities_unweighted.csv"
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
@@ -106,6 +107,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname3 = tmpdir + "light_stats_" + suffix + ".csv"
         fname4 = tmpdir + "velocities_" + suffix + ".csv"
         fname5 = tmpdir + "mag_stats_" + suffix + ".csv"
+        fname6 = tmpdir + "velocities_unweighted_" + suffix + ".csv"
 
         # check if the files exist, create otherwise
         for file in (fname1, fname2, fname3, fname4, fname5):
@@ -129,6 +131,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # create arrays to hold velocity magnetic fiel, and pixel fraction results
     results_vel = []
+    results_vel_unw = []
     results_mag = []
     results_pixel = []
     results_light = []
@@ -156,7 +159,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # calculate disk-integrated velocities
     vels = calc_velocities(con, mag, dop, aia, mask)
+    vels_unw = calc_velocities_unweighted(con, mag, dop, aia, mask)
     results_vel.append([mjd, 0, np.nan, np.nan, *vels])
+    results_vel_unw.append([mjd, 0, np.nan, np.nan, *vels_unw])
 
     # calculate disk-integrated unsigned magnetic field
     mags = calc_mag_stats(con, mag, mask)
@@ -179,6 +184,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         v_quiet = np.nansum(dop.v_corr * con.image * mask.is_quiet() * region_mask)
         v_quiet /= np.nansum(con.image * mask.is_quiet() * region_mask)
 
+        # compute quiet-sun velocity in mu annulus unweigted
+        v_quiet_unw = np.nansum(dop.v_corr * mask.is_quiet() * region_mask)
+        v_quiet_unw /= np.nansum(mask.is_quiet() * region_mask)
+
         # get filling factor of annulus
         pixel_fracs = [np.nansum(mask.w_active * region_mask)/all_pixels]
         light_fracs = []
@@ -196,12 +205,15 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             if k != 4:
                 # case where region is quiet sun, return zero for v_quiet
                 vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
+                vels_unw = calc_velocities_unweighted(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet_unw)
             else:
                 # case where region is quiet sun, return nonzero v_quiet
                 vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
+                vels_unw = calc_velocities_unweighted(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
 
             # append the results
             results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
+            results_vel_unw.append([mjd, k, lo_mu, hi_mu, *vels_unw])
 
             # compute magnetic field strength within each region
             mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
@@ -216,6 +228,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     write_results_to_file(fname3, results_light)
     write_results_to_file(fname4, results_vel)
     write_results_to_file(fname5, results_mag)
+    write_results_to_file(fname6, results_vel_unw)
 
     # do some memory cleanup
     del con
@@ -224,6 +237,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del aia
     del mask
     del vels
+    del vels_unw
     del mags
     del mu_grid
     del v_quiet
@@ -231,6 +245,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del light_fracs
     del region_mask
     del results_vel
+    del results_vel_unw
     del results_mag
     del results_pixel
     del results_light

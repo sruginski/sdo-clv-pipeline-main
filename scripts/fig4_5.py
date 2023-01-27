@@ -39,7 +39,6 @@ procdir = datadir + "processed/"
 
 # read in by region
 df_vels_full = pd.read_csv(procdir + "full_disk_vels.csv")
-pdb.set_trace()
 plage = pd.read_csv(procdir + "plage_vels.csv")
 network = pd.read_csv(procdir + "network_vels.csv")
 quiet_sun = pd.read_csv(procdir + "quiet_sun_vels.csv")
