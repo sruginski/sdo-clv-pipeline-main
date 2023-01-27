@@ -39,7 +39,7 @@ def main():
     header6 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
 
     # delete old files if they exists
-    fileset = (fname1, fname2, fname3, fname4, fname5)
+    fileset = (fname1, fname2, fname3, fname4, fname5, fname6)
     clean_output_directory(*fileset)
 
     # create the files with headers
