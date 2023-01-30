@@ -8,7 +8,7 @@
 #SBATCH --time=1:00:00
 #SBATCH --job-name=SDO_process
 #SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
-#SBATCH --output=/storage/home/mlp95/work/logs/sdo_2013.%j.out
+#SBATCH --output=/storage/home/mlp95/work/logs/sdo_process.%j.out
 
 echo "About to start: $SLURM_JOB_NAME"
 date
