@@ -55,31 +55,31 @@ lo_mus = np.unique(plage.lo_mu)
 hi_mus = np.unique(plage.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
-# get colors
+# make plot object and define color rotation
+fig, ax1 = plt.subplots(nrows=1, ncols=1)
 cs = ['tab:blue','tab:orange','tab:green','tab:red','tab:purple','tab:brown','tab:pink','tab:gray','tab:olive']
 
-# loop over stuff
-for (i, mjd) in enumerate(np.unique(df_light.mjd)):
-    for (j, mu) in enumerate(np.unique(lo_mus)):
-        # get penumbrae velocity
-        df_temp1 = penumbrae[(penumbrae.mjd == mjd) & (penumbrae.lo_mu == mu)]
-        df_temp2 = df_light[(df_light.mjd == mjd) & (df_light.lo_mu == mu)]
+# loop over mu bins
+for (j, mu) in enumerate(np.unique(lo_mus)):
+    # get penumbrae velocity
+    df_temp1 = penumbrae[(penumbrae.lo_mu == mu)]
+    df_temp2 = df_light[(df_light.lo_mu == mu) & ((df_light.blu_pen_frac > 0.0) | (df_light.red_pen_frac > 0.0))]
 
-        # get pen light frac
-        pen_frac = (df_temp2.blu_pen_frac + df_temp2.red_pen_frac).values
-        if all(pen_frac == 0):
-            continue
+    # throw out dates missing from df_temp1
+    common_mjd = pd.merge(df_temp1, df_temp2, how ='inner', on =['mjd']).mjd
+    idx = [mjd in common_mjd.values for mjd in df_temp2.mjd.values]
+    df_temp2 = df_temp2[idx]
 
-        if len(df_temp1.v_conv.values) != len(pen_frac):
-            continue
+    # get pen light frac
+    pen_frac = (df_temp2.blu_pen_frac + df_temp2.red_pen_frac).values# / df_temp2[['umb_frac', 'blu_pen_frac', 'red_pen_frac', 'quiet_frac', 'network_frac', 'plage_frac']].sum(axis=1).values
 
-        # plot it
-        plt.scatter(df_temp1.v_conv.values, pen_frac, color=cs[j], label=str(mu))
+    # plot it
+    # ax1.scatter(df_temp1.v_conv.values, pen_frac, color=cs[j], label=str(mu))
 
 # make the plot pretty
-plt.xlabel("v_conv")
-plt.ylabel("fraction of light")
-plt.legend()
-plt.savefig("/Users/michael/Desktop/pen_light.pdf")
-plt.show()
+# ax1.set_xlabel("v_conv")
+# ax1.set_ylabel("fraction of light")
+# ax1.legend()
+# fig.savefig("/Users/michael/Desktop/pen_light.pdf")
+# plt.show()
 

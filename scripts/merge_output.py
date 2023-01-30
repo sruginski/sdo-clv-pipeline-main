@@ -28,7 +28,7 @@ def main():
     fname3 = datadir + "light_stats.csv"
     fname4 = datadir + "velocities.csv"
     fname5 = datadir + "mag_stats.csv"
-    fname6 = datadir + "velocities_unweighted.csv"
+    fname6 = datadir + "unweighted_velocities.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]

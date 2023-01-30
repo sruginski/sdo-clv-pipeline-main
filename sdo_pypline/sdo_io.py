@@ -91,7 +91,7 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
     fname3 = datadir + "light_stats.csv"
     fname4 = datadir + "velocities.csv"
     fname5 = datadir + "mag_stats.csv"
-    fname6 = datadir + "velocities_unweighted.csv"
+    fname6 = datadir + "unweighted_velocities.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
@@ -202,3 +202,56 @@ def stitch_output_files(fname, files, delete=False):
         for f in files:
             os.remove(f)
     return None
+
+datadir = '/storage/work/mlp95/sdo-pypline/data/2012/'
+fname4 = datadir + "velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+fname4 = datadir + "unweighted_velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+tmpdir = datadir + "tmp/"
+outfiles4 = glob.glob(tmpdir + "velocities_*")
+stitch_output_files(datadir + "velocities.csv", outfiles4, delete=False)
+outfiles4 = glob.glob(tmpdir + "unweighted_*")
+stitch_output_files(datadir + "unweighted_velocities.csv", outfiles4, delete=False)
+
+datadir = '/storage/work/mlp95/sdo-pypline/data/2013/'
+fname4 = datadir + "velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+fname4 = datadir + "unweighted_velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+tmpdir = datadir + "tmp/"
+outfiles4 = glob.glob(tmpdir + "velocities_*")
+stitch_output_files(datadir + "velocities.csv", outfiles4, delete=False)
+outfiles4 = glob.glob(tmpdir + "unweighted_*")
+stitch_output_files(datadir + "unweighted_velocities.csv", outfiles4, delete=False)
+
+datadir = '/storage/work/mlp95/sdo-pypline/data/2014/'
+fname4 = datadir + "velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+fname4 = datadir + "unweighted_velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+tmpdir = datadir + "tmp/"
+outfiles4 = glob.glob(tmpdir + "velocities_*")
+stitch_output_files(datadir + "velocities.csv", outfiles4, delete=False)
+outfiles4 = glob.glob(tmpdir + "unweighted_*")
+stitch_output_files(datadir + "unweighted_velocities.csv", outfiles4, delete=False)
+
+datadir = '/storage/work/mlp95/sdo-pypline/data/2015/'
+fname4 = datadir + "velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+fname4 = datadir + "unweighted_velocities.csv"
+header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+create_file(fname4, header4)
+tmpdir = datadir + "tmp/"
+outfiles4 = glob.glob(tmpdir + "velocities_*")
+stitch_output_files(datadir + "velocities.csv", outfiles4, delete=False)
+outfiles4 = glob.glob(tmpdir + "unweighted_*")
+stitch_output_files(datadir + "unweighted_velocities.csv", outfiles4, delete=False)
+

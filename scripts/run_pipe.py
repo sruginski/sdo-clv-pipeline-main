@@ -86,6 +86,7 @@ def main():
         outfiles3 = glob.glob(tmpdir + "light_stats_*")
         outfiles4 = glob.glob(tmpdir + "velocities_*")
         outfiles5 = glob.glob(tmpdir + "mag_stats_*")
+        outfiles6 = glob.glob(tmpdir + "unweighted_velocities_*")
 
         # stitch them together on the main process
         delete = False
@@ -94,6 +95,7 @@ def main():
         stitch_output_files(datadir + "light_stats.csv", outfiles3, delete=delete)
         stitch_output_files(datadir + "velocities.csv", outfiles4, delete=delete)
         stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=delete)
+        stitch_output_files(datadir + "unweighted_velocities.csv", outfiles6, delete=delete)
 
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))

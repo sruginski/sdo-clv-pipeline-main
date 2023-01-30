@@ -1,13 +1,12 @@
 #!/bin/bash
 
-one=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2012.sh)
-echo $one
 
-two=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2013.sh)
-echo $two
+# queue the analysis jobs
+jid1=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2012.sh)
+jid2=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2013.sh)
+jid3=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2014.sh)
+jid4=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2015.sh)
 
-three=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2014.sh)
-echo $three
-
-four=$(sbatch /storage/home/mlp95/work/sdo-pypline/batch/run2015.sh)
-echo $four
+# merge the output
+jid5=$(sbatch --dependency=afterok:jid1:jid2:jid3:jid4 /storage/home/mlp95/work/sdo-pypline/batch/merge_output.sh)
+jid6=$(sbatch --dependency=afterok:jid1:jid2:jid3:jid4 /storage/home/mlp95/work/sdo-pypline/batch/preprocess_output.sh)
