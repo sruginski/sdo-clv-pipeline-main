@@ -153,8 +153,7 @@ class SDOImage(object):
         self.mask_nan = (self.mu >= 0.1)
 
         # velocity components
-        self.v_grav = 632 # m/s, constant
-        # self.v_grav = 636 # m/s, constant
+        self.v_grav = 633 # m/s, constant
         self.calc_spacecraft_vel() # spacecraft velocity
         self.calc_bulk_vel() # differential rotation + meridional flows + cbs
         return None

@@ -74,7 +74,6 @@ df_light_full.reset_index(drop=True)
 df_regs = df_vels[(df_vels.region > 0.0) & (~np.isnan(df_vels.lo_mu))]
 df_regs.reset_index(drop=True)
 
-# get velocities for regions in mu
 df_regs_unw = df_vels_unw[(df_vels_unw.region > 0.0) & (~np.isnan(df_vels_unw.lo_mu))]
 df_regs_unw.reset_index(drop=True)
 
@@ -103,42 +102,42 @@ umbrae_unw = df_regs_unw[df_regs_unw.region == 1.0]
 plage = mask_all_zero_rows(plage)
 plage.reset_index(drop=True)
 plage.to_csv(outdir + "plage_vels.csv", index=False)
-plage_unw = mask_all_zero_rows(plage)
+plage_unw = mask_all_zero_rows(plage_unw)
 plage_unw.reset_index(drop=True)
 plage_unw.to_csv(outdir + "plage_vels_unw.csv", index=False)
 
 network = mask_all_zero_rows(network)
 network.reset_index(drop=True)
 network.to_csv(outdir + "network_vels.csv", index=False)
-network_unw = mask_all_zero_rows(network)
+network_unw = mask_all_zero_rows(network_unw)
 network_unw.reset_index(drop=True)
 network_unw.to_csv(outdir + "network_vels_unw.csv", index=False)
 
 quiet_sun = mask_all_zero_rows(quiet_sun)
 quiet_sun.reset_index(drop=True)
 quiet_sun.to_csv(outdir + "quiet_sun_vels.csv", index=False)
-quiet_sun_unw = mask_all_zero_rows(quiet_sun)
+quiet_sun_unw = mask_all_zero_rows(quiet_sun_unw)
 quiet_sun_unw.reset_index(drop=True)
 quiet_sun_unw.to_csv(outdir + "quiet_sun_vels_unw.csv", index=False)
 
 red_penumbrae = mask_all_zero_rows(red_penumbrae)
 red_penumbrae.reset_index(drop=True)
 red_penumbrae.to_csv(outdir + "red_penumbrae_vels.csv", index=False)
-red_penumbrae_unw = mask_all_zero_rows(red_penumbrae)
+red_penumbrae_unw = mask_all_zero_rows(red_penumbrae_unw)
 red_penumbrae_unw.reset_index(drop=True)
 red_penumbrae_unw.to_csv(outdir + "red_penumbrae_vels_unw.csv", index=False)
 
 blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
 blu_penumbrae.reset_index(drop=True)
 blu_penumbrae.to_csv(outdir + "blu_penumbrae_vels.csv", index=False)
-blu_penumbrae_unw = mask_all_zero_rows(blu_penumbrae)
+blu_penumbrae_unw = mask_all_zero_rows(blu_penumbrae_unw)
 blu_penumbrae_unw.reset_index(drop=True)
 blu_penumbrae_unw.to_csv(outdir + "blu_penumbrae_vels_unw.csv", index=False)
 
 umbrae = mask_all_zero_rows(umbrae)
 umbrae.reset_index(drop=True)
 umbrae.to_csv(outdir + "umbrae_vels.csv", index=False)
-umbrae_unw = mask_all_zero_rows(umbrae)
+umbrae_unw = mask_all_zero_rows(umbrae_unw)
 umbrae_unw.reset_index(drop=True)
 umbrae_unw.to_csv(outdir + "umbrae_vels_unw.csv", index=False)
 
