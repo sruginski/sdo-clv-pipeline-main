@@ -21,6 +21,14 @@ plotdir = str(root / "figures") + "/"
 # use style
 plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
+pl_color = "tab:purple" # colors[4]
+nw_color = "tab:pink" # colors[6]
+qs_color = "orange" # colors[1]
+rp_color = "tab:red" # colors[3]
+bp_color = "tab:blue" # colors[9]
+pu_color = "sienna" # colors[5]
+um_color = "tab:gray" # colors[7]
+
 def main():
     # get the sdo data to plot
     con, mag, dop, aia = download_plot_data()
@@ -64,7 +72,8 @@ def main():
     cmap.set_bad(color="white")
     ax1.imshow(cutout_cont.data,  cmap=cmap, origin="lower", interpolation=None)
 
-    cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
+    # cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
+    cmap = colors.ListedColormap([um_color, pu_color, qs_color, nw_color, pl_color])
     cmap.set_bad(color="white")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
     ax1.imshow(cutout_mask.data,  cmap=cmap, alpha=0.5, origin="lower", interpolation=None)

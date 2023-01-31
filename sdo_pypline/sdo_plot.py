@@ -65,7 +65,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
                                                                      color="k", alpha=0.5, ls="--", lw=0.5)
         limb = ax1.contour(sdo_image.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
         clb = fig.colorbar(img)
-        clb.set_label(r"${\rm LOS\ Velocity\ (m/s)}$")
+        clb.set_label(r"${\rm LOS\ Velocity\ } {\rm(m\ s}^{-1}{\rm )}$")
         ax1.invert_xaxis()
         ax1.invert_yaxis()
         ax1.set_xlabel(r"${\rm Helioprojective\ Longitude}$")

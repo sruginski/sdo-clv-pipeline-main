@@ -15,13 +15,21 @@ plt.style.use("my.mplstyle"); plt.ioff()
 colors = ['#0173b2', '#de8f05', '#029e73', '#d55e00', '#cc78bc',
           '#ca9161', '#fbafe4', '#949494', '#ece133', '#56b4e9']
 
-pl_color = colors[4]
-nw_color = colors[6]
-qs_color = colors[1]
-rp_color = colors[3]
-bp_color = colors[9]
-pu_color = colors[5]
-um_color = colors[7]
+pl_color = "tab:purple" # colors[4]
+nw_color = "tab:pink" # colors[6]
+qs_color = "tab:orange" # colors[1]
+rp_color = "tab:red" # colors[3]
+bp_color = "tab:blue" # colors[9]
+pu_color = "sienna" # colors[5]
+um_color = "tab:gray" # colors[7]
+
+pl_marker = "s"
+nw_marker = "p"
+qs_marker = "o"
+rp_marker = "v"
+bp_marker = "^"
+pu_marker = "X"
+um_marker = "D"
 
 
 def calc_region_stats(region_df, colname="v_hat"):
@@ -67,6 +75,10 @@ mu_bin = (lo_mus + hi_mus) / 2.0
 
 # get stats
 def clv_plot(colname, fname=None):
+    capsize = 0.0
+    capthick = 0.0
+    elinewidth = 0.0
+
     # whole_avg, whole_std, whole_err = calc_region_stats(df_vels_full, colname=colname)
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname=colname)
     blue_penumbrae_avg, blue_penumbrae_std, blue_penumbrae_err = calc_region_stats(blu_penumbrae, colname=colname)
@@ -81,39 +93,45 @@ def clv_plot(colname, fname=None):
     fig.subplots_adjust(hspace=0.05)
 
     if colname != "v_conv":
-        ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=".", capsize=3, color=qs_color, label=r"${\rm Quiet\ Sun}$")
+        ax1.errorbar(mu_bin, quiet_sun_avg, yerr=quiet_sun_err, fmt=qs_marker, capsize=capsize,
+                     capthick=capthick, elinewidth=elinewidth, color=qs_color, label=r"${\rm Quiet\ Sun}$")
         ax1.fill_between(mu_bin, quiet_sun_avg - quiet_sun_std, quiet_sun_avg + quiet_sun_std, color=qs_color, alpha=0.5)
 
-    # ax1.errorbar(mu_bin, whole_avg, yerr=whole_err, fmt=".", capsize=3, color="k", label=r"${\rm Whole\ Sun}$")
-    # ax1.fill_between(mu_bin, whole_avg - whole_std, whole_avg + whole_std, color="k", alpha=0.5)
+    ax1.errorbar(mu_bin, plage_avg, yerr=plage_err, fmt=pl_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=pl_color, label=r"${\rm Plage}$")
+    ax1.fill_between(mu_bin, plage_avg - plage_std, plage_avg + plage_std, color=pl_color, alpha=0.4)
 
-    ax1.errorbar(mu_bin, plage_avg, yerr=plage_err, fmt=".", capsize=3, color=pl_color, label=r"${\rm Plage}$")
-    ax1.fill_between(mu_bin, plage_avg - plage_std, plage_avg + plage_std, color=pl_color, alpha=0.5)
+    ax1.errorbar(mu_bin, network_avg, yerr=network_err, fmt=nw_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=nw_color, label=r"${\rm Network}$")
+    ax1.fill_between(mu_bin, network_avg - network_std, network_avg + network_std, color=nw_color, alpha=0.4)
 
-    ax1.errorbar(mu_bin, network_avg, yerr=network_err, fmt=".", capsize=3, color=nw_color, label=r"${\rm Network}$")
-    ax1.fill_between(mu_bin, network_avg - network_std, network_avg + network_std, color=nw_color, alpha=0.5)
+    ax2.errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=rp_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+    ax2.fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.4)
 
-    ax2.errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=".", capsize=3, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-    ax2.fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.5)
+    ax2.errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=bp_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+    ax2.fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.4)
 
-    ax2.errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=".", capsize=3, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
-    ax2.fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.5)
+    ax2.errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=pu_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=pu_color, label=r"${\rm Penumbrae}$")
+    ax2.fill_between(mu_bin, penumbrae_avg - penumbrae_std, penumbrae_avg + penumbrae_std, color=pu_color, alpha=0.4)
 
-    ax2.errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=".", capsize=3, color=pu_color, label=r"${\rm Penumbrae}$")
-    ax2.fill_between(mu_bin, penumbrae_avg - penumbrae_std, penumbrae_avg + penumbrae_std, color=pu_color, alpha=0.5)
-
-    ax2.errorbar(mu_bin, umbrae_avg, yerr=umbrae_err, fmt=".", capsize=3, color=um_color, label=r"${\rm Umbrae}$")
-    ax2.fill_between(mu_bin, umbrae_avg - umbrae_std, umbrae_avg + umbrae_std, color=um_color, alpha=0.5)
+    ax2.errorbar(mu_bin, umbrae_avg, yerr=umbrae_err, fmt=um_marker, capsize=capsize,
+                 capthick=capthick, elinewidth=elinewidth, color=um_color, label=r"${\rm Umbrae}$")
+    ax2.fill_between(mu_bin, umbrae_avg - umbrae_std, umbrae_avg + umbrae_std, color=um_color, alpha=0.4)
 
     # annotate axes
+    ax1.set_ylim(-210, 230)
+    ax2.set_ylim(-1000, 1000)
     ax1.set_xticks(np.arange(0.1, 1.1, 0.1))
     ax1.invert_xaxis()
     ax2.set_xlabel(r"$\mu$")
 
     if colname == "v_hat":
-        ylabel = r"$\hat{v}\ {\rm (m/s)}$"
+        ylabel = r"$\hat{v}\ {\rm(m\ s}^{-1}{\rm )}$"
     elif colname == "v_conv":
-        ylabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
+        ylabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm(m\ s}^{-1}{\rm )}$"
     else:
         ylabel = colname
 
@@ -124,7 +142,8 @@ def clv_plot(colname, fname=None):
     lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
     lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
     # if colname == "v_hat":
-    ax1.legend(lines, labels, loc="upper center", ncol=3, fontsize=10)
+    ax1.legend(lines, labels, ncol=4, fontsize=10,
+               loc='upper center', bbox_to_anchor=(0.5, 1.2))
 
     # save the figure
     plt.savefig(plotdir + fname, bbox_inches="tight")
@@ -140,7 +159,7 @@ n_mu_samps = len(mu_samps)
 
 # create figure objects
 colname = "v_hat"
-xlabel = r"$\hat{v}\ {\rm (m/s)}$"
+xlabel = r"$\hat{v}\ {\rm(m\ s}^{-1}{\rm )}$"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
 fig.subplots_adjust(wspace=0.075)
 
@@ -229,7 +248,7 @@ plt.clf(); plt.close()
 
 # create figure objects
 colname = "v_conv"
-xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm (m/s)}$"
+xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm(m\ s}^{-1}{\rm )}$"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
 fig.subplots_adjust(wspace=0.075)
 
@@ -245,7 +264,7 @@ for i in range(n_mu_samps):
     axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Umbrae}")
     axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
     axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
-    axs[i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Penumbrae}")
+    axs[i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=pu_color, histtype="step", label=r"{\rm Penumbrae}")
 
     # plot the full disk
     # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
