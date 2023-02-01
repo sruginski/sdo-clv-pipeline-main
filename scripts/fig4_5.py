@@ -160,10 +160,11 @@ n_mu_samps = len(mu_samps)
 # create figure objects
 colname = "v_hat"
 xlabel = r"$\hat{v}\ {\rm(m\ s}^{-1}{\rm )}$"
-fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
-fig.subplots_adjust(wspace=0.075)
+fig, axs = plt.subplots(figsize=(11, 8.5), nrows=3, ncols=n_mu_samps)
+fig.subplots_adjust(wspace=0.07, hspace=0.15)
 
 # loop over valus
+ylims = np.zeros(n_mu_samps)
 for i in range(n_mu_samps):
     # do all regs
     idx1 = umbrae.lo_mu == mu_samps[i]
@@ -172,77 +173,90 @@ for i in range(n_mu_samps):
     idx4 = penumbrae.lo_mu == mu_samps[i]
 
     # plot this mu
-    axs[i].hist(umbrae[colname][idx1], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Umbrae}")
-    axs[i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
-    axs[i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
-    axs[i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=pu_color, histtype="step", label=r"{\rm Penumbrae}")
-
-    # plot the full disk
-    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+    axs[0,i].hist(umbrae[colname][idx1], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Umbrae}")
+    axs[0,i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
+    axs[0,i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
+    axs[0,i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=pu_color, histtype="step", label=r"{\rm Penumbrae}")
 
     # label stuff
-    axs[i].set_xlabel(xlabel)
-    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
-    axs[i].set_xlim(-1200, 1200)
-    axs[i].set_box_aspect(1.25)
+    axs[0,i].set_title(r"$\mu = " + str(mu_samps[i] + 0.05)[0:4]+ r"$")
+    axs[0,i].set_xlim(-1200, 1200)
 
-# set axes labels
-axs[0].set_ylabel(r"${\rm Probability\ Density}$")
-axs[-1].legend(fontsize=10)
-fig.savefig(plotdir + "fig5a.pdf")
-plt.clf(); plt.close()
+    ylims[i] = axs[0,i].get_ylim()[1]
 
-fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
-fig.subplots_adjust(wspace=0.075)
+    if i > 0:
+        axs[0,i].set_yticklabels([])
+
+    if i == n_mu_samps - 1:
+        axs[0,i].legend(fontsize=10)
+
+# loop again to set yvals
+for i in range(n_mu_samps):
+    axs[0,i].set_ylim(0.0, np.max(ylims))
 
 # loop over valus
+ylims = np.zeros(n_mu_samps)
 for i in range(n_mu_samps):
     # do all regs
     idx1 = plage.lo_mu == mu_samps[i]
     idx2 = network.lo_mu == mu_samps[i]
 
-    # plot this mu
-    axs[i].hist(plage[colname][idx1], bins="auto", density=True, color=pl_color, histtype="step", label=r"{\rm Plage}")
-    axs[i].hist(network[colname][idx2], bins="auto", density=True, color=nw_color, histtype="step", label=r"{\rm Network}")
-
-    # plot the full disk
-    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+    # pl1,ot this mu
+    axs[1,i].hist(plage[colname][idx1], bins="auto", density=True, color=pl_color, histtype="step", label=r"{\rm Plage}")
+    axs[1,i].hist(network[colname][idx2], bins="auto", density=True, color=nw_color, histtype="step", label=r"{\rm Network}")
 
     # label stuff
-    axs[i].set_xlabel(xlabel)
-    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
-    axs[i].set_xlim(-250,250)
-    axs[i].set_box_aspect(1.25)
+    axs[1,i].set_xlim(-250,250)
 
-# set axes labels
-axs[0].set_ylabel(r"${\rm Probability\ Density}$")
-axs[-1].legend(fontsize=10)
-fig.savefig(plotdir + "fig5b.pdf")
-plt.clf(); plt.close()
+    ylims[i] = axs[1,i].get_ylim()[1]
 
-fig, axs = plt.subplots(figsize=(11, 8.5), nrows=1, ncols=n_mu_samps, sharey=True)
-fig.subplots_adjust(wspace=0.075)
+    if i > 0:
+        axs[1,i].set_yticklabels([])
+
+    if i == n_mu_samps - 1:
+        axs[1,i].legend(fontsize=10)
+
+# loop again to set yvals
+for i in range(n_mu_samps):
+    axs[1,i].set_ylim(0.0, np.max(ylims))
 
 # loop over valus
+ylims = np.zeros(n_mu_samps)
 for i in range(n_mu_samps):
     # do all regs
     idx3 = quiet_sun.lo_mu == mu_samps[i]
-    axs[i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color=qs_color, histtype="step", label=r"{\rm Quiet Sun}")
-
-    # plot the full disk
-    # axs[i].hist(df_full[colname], bins="auto", density=True, color="k", histtype="step")
+    axs[2,i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color=qs_color, histtype="step", label=r"{\rm Quiet Sun}")
 
     # label stuff
-    axs[i].set_xlabel(xlabel)
-    axs[i].set_title(r"$\mu =\ $" + str(mu_samps[i] + 0.05)[0:4])
-    axs[i].set_xlim(-150,150)
-    axs[i].set_box_aspect(1.25)
-    lbls = axs[i].get_xticklabels()
+    axs[2,i].set_xlabel(xlabel)
+    axs[2,i].set_xlim(-150,150)
+    # lbls = axs[i].get_xticklabels()
+
+    ylims[i] = axs[2,i].get_ylim()[1]
+
+    if i > 0:
+        axs[2,i].set_yticklabels([])
+
+    if i == n_mu_samps - 1:
+        axs[2,i].legend(fontsize=10)
+
+# loop again to set yvals
+for i in range(n_mu_samps):
+    axs[2,i].set_ylim(0.0, np.max(ylims))
 
 # set axes labels
-axs[0].set_ylabel(r"${\rm Probability\ Density}$")
-axs[-1].legend(fontsize=10)
-fig.savefig(plotdir + "fig5c.pdf")
+for i in range(3):
+    axs[i, 0].set_ylabel(r"${\rm Probability\ Density}$")
+
+# make legend and save figure
+# lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+# lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+# _, idx = np.unique(labels, return_index=True)
+# fig.legend([lines[i] for i in np.sort(idx)[::-1]],
+#            [labels[i] for i in np.sort(idx)[::-1]],
+#            bbox_to_anchor=(0.5, 1.025),
+#            loc="upper center", ncol=4)
+fig.savefig(plotdir + "fig5.pdf")
 plt.clf(); plt.close()
 
 
