@@ -41,6 +41,8 @@ def main():
 
     # get output datadir
     datadir = str(root / "data") + "/" + globdir + "/"
+    if not isdir(datadir):
+        os.mkdir(datadir)
 
     # set mu threshold, number of mu rings
     n_rings = 10
