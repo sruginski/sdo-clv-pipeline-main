@@ -1,4 +1,3 @@
-sdo_pypline/sdo_process.py
 import numpy as np
 import matplotlib.pyplot as plt
 import gc, os, re, pdb, csv, glob, time, argparse
