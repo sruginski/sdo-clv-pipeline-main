@@ -109,7 +109,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         fname4 = tmpdir + "velocities_" + suffix + ".csv"
         fname5 = tmpdir + "mag_stats_" + suffix + ".csv"
         fname6 = tmpdir + "unweighted_velocities_" + suffix + ".csv"
-        fname7 = tmpdir + "intensities" + suffix + ".csv"
+        fname7 = tmpdir + "intensities_" + suffix + ".csv"
 
         # check if the files exist, create otherwise
         for file in (fname1, fname2, fname3, fname4, fname5, fname6, fname7):

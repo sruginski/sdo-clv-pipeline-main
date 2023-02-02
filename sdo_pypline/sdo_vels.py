@@ -124,8 +124,8 @@ def calc_int_stats(con, region_mask=True):
         return 0.0, 0.0, 0.0
 
     # get numerator
-    avg_int = np.nansum(con.image * region_mask) / denom
-    avg_int_flat = np.nansum(con.iflat * region_mask) / denom
+    avg_int = np.nansum(con.image * region_mask)
+    avg_int_flat = np.nansum(con.iflat * region_mask)
 
     # divide by the denominator
     denom = np.nansum(region_mask)
