@@ -82,7 +82,7 @@ def clv_plot(fname=None):
 
     # make figure objects
     fig, axs = plt.subplots(nrows=2, ncols=2, sharex=True, figsize=(12.8, 7.2))
-    fig.subplots_adjust(hspace=0.05, wspace=0.125)
+    fig.subplots_adjust(hspace=0.05, wspace=0.1)
 
     # get stats in v_hat
     umbrae_avg, umbrae_std, umbrae_err = calc_region_stats(umbrae, colname="v_hat")
@@ -174,8 +174,10 @@ def clv_plot(fname=None):
     axs[1,0].set_ylabel(ylabel1)
     axs[0,1].set_ylabel(ylabel2)
     axs[1,1].set_ylabel(ylabel2)
-    axs[0,1].set_yticklabels([])
-    axs[1,1].set_yticklabels([])
+    axs[0,1].yaxis.tick_right()
+    axs[1,1].yaxis.tick_right()
+    # axs[0,1].set_yticklabels([])
+    # axs[1,1].set_yticklabels([])
 
     # make the legend
     lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]

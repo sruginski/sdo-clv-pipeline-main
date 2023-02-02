@@ -99,7 +99,7 @@ def calc_velocities_unweighted(con, mag, dop, aia, mask, region_mask=None, v_qui
         return v_hat, v_phot, 0.0, v_conv
     return None
 
-def calc_mag_stats(con, mag, mask, region_mask=True):
+def calc_mag_stats(con, mag, region_mask=True):
     # don't bother doing math if there is nothing in the mask
     if (type(region_mask) is np.ndarray) and (~region_mask.any()):
         return 0.0, 0.0, 0.0
@@ -116,3 +116,20 @@ def calc_mag_stats(con, mag, mask, region_mask=True):
     mag_unsigned /= np.nansum(con.image * region_mask)
 
     return mag_avg, mag_std, mag_unsigned
+
+
+def calc_int_stats(con, region_mask=True):
+    # don't bother doing math if there is nothing in the mask
+    if (type(region_mask) is np.ndarray) and (~region_mask.any()):
+        return 0.0, 0.0, 0.0
+
+    # get numerator
+    avg_int = np.nansum(con.image * region_mask) / denom
+    avg_int_flat = np.nansum(con.iflat * region_mask) / denom
+
+    # divide by the denominator
+    denom = np.nansum(region_mask)
+    avg_int /= denom
+    avg_int_flat /= denom
+
+    return avg_int, avg_int_flat

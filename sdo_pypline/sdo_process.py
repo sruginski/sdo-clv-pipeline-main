@@ -91,26 +91,28 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # name output files
     if suffix is None:
-        fname1 = datadir + "intensities.csv"
+        fname1 = datadir + "thresholds.csv"
         fname2 = datadir + "pixel_stats.csv"
         fname3 = datadir + "light_stats.csv"
         fname4 = datadir + "velocities.csv"
         fname5 = datadir + "mag_stats.csv"
         fname6 = datadir + "unweighted_velocities.csv"
+        fname7 = datadir + "intensities.csv"
     else:
         # make tmp directory
         tmpdir = datadir + "tmp/"
 
         # filenames
-        fname1 = tmpdir + "intensities_" + suffix + ".csv"
+        fname1 = tmpdir + "thresholds_" + suffix + ".csv"
         fname2 = tmpdir + "pixel_stats_" + suffix + ".csv"
         fname3 = tmpdir + "light_stats_" + suffix + ".csv"
         fname4 = tmpdir + "velocities_" + suffix + ".csv"
         fname5 = tmpdir + "mag_stats_" + suffix + ".csv"
         fname6 = tmpdir + "unweighted_velocities_" + suffix + ".csv"
+        fname7 = tmpdir + "intensities" + suffix + ".csv"
 
         # check if the files exist, create otherwise
-        for file in (fname1, fname2, fname3, fname4, fname5, fname6):
+        for file in (fname1, fname2, fname3, fname4, fname5, fname6, fname7):
             if not exists(file):
                 create_file(file)
 
@@ -131,10 +133,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
     # create arrays to hold velocity magnetic fiel, and pixel fraction results
     results_vel = []
-    results_vel_unw = []
+    results_int = []
     results_mag = []
     results_pixel = []
     results_light = []
+    results_vel_unw = []
 
     # append pixel fractions
     all_pixels = np.nansum(con.mu >= mu_thresh)
@@ -211,13 +214,17 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
                 vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
                 vels_unw = calc_velocities_unweighted(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
 
-            # append the results
+            # append the velocity results
             results_vel.append([mjd, k, lo_mu, hi_mu, *vels])
             results_vel_unw.append([mjd, k, lo_mu, hi_mu, *vels_unw])
 
             # compute magnetic field strength within each region
-            mags = calc_mag_stats(con, mag, mask, region_mask=region_mask)
+            mags = calc_mag_stats(con, mag, region_mask=region_mask)
             results_mag.append([mjd, k, lo_mu, hi_mu, *mags])
+
+            # get the average intensity and flattened intensity
+            ints = calc_int_stats(con, region_mask=region_mask)
+            results_int.append([mjd, k, lo_mu, hi_mu, *ints])
 
         # assemble fractions
         results_pixel.append([mjd, lo_mu, hi_mu, *pixel_fracs])
@@ -229,6 +236,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     write_results_to_file(fname4, results_vel)
     write_results_to_file(fname5, results_mag)
     write_results_to_file(fname6, results_vel_unw)
+    write_results_to_file(fname7, results_int)
 
     # do some memory cleanup
     del con
@@ -237,18 +245,20 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del aia
     del mask
     del vels
-    del vels_unw
     del mags
+    del ints
     del mu_grid
     del v_quiet
+    del vels_unw
     del pixel_fracs
     del light_fracs
     del region_mask
     del results_vel
-    del results_vel_unw
     del results_mag
+    del results_int
     del results_pixel
     del results_light
+    del results_vel_unw
     gc.collect()
 
     # report success and return
