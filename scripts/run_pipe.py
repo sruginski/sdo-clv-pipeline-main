@@ -33,6 +33,10 @@ def main():
     if not isdir(indir):
         indir = "/storage/home/mlp95/scratch/sdo_data/"
 
+    # make raw data dir if it does not exist
+    if not isdir(str(root / "data") + "/"):
+        os.mkdir(str(root / "data") + "/")
+
     # sort out input/output data files
     clobber, globexp = get_parser_args()
     globdir = globexp.replace("*","")
