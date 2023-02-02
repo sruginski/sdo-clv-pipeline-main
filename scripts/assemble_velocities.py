@@ -13,7 +13,6 @@ from IPython import embed
 plt.style.use("my.mplstyle"); plt.ioff()
 
 def calc_whole_disk_vel(df_vels, df_light):
-    # pdb.set_trace()
     # get whole disk velocities and mu slices
     inds = (np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)
     df_vels_full = df_vels[inds]
@@ -80,6 +79,7 @@ def calc_whole_disk_vel(df_vels, df_light):
 # sort out paths
 datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
+procdir = datadir + "processed/"
 
 # read in the data and sort by mjd
 df_all = pd.read_csv(datadir + "velocities.csv")

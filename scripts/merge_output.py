@@ -30,6 +30,7 @@ def main():
     fname5 = datadir + "mag_stats.csv"
     fname6 = datadir + "unweighted_velocities.csv"
     fname7 = datadir + "intensities.csv"
+    fname8 = datadir + "average_velocities.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
@@ -39,9 +40,10 @@ def main():
     header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std", "mag_unsigned"]
     header6 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
     header7 = ["mjd", "region", "lo_mu", "hi_mu", "avg_ing", "avg_int_flat"]
+    header8 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
 
     # delete old files if they exists
-    fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7)
+    fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7, fname8)
     clean_output_directory(*fileset)
 
     # create the files with headers
@@ -52,6 +54,7 @@ def main():
     create_file(fname5, header5)
     create_file(fname6, header6)
     create_file(fname7, header7)
+    create_file(fname8, header8)
 
     # now loop over files to combine
     for file in fileset:

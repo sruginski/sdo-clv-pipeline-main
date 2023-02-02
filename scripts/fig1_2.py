@@ -37,6 +37,8 @@ def main():
     print(">>> Processing and plotting data...")
     con, mag, dop, aia, mask = reduce_sdo_images(con, mag, dop, aia)
 
+    pdb.set_trace()
+
     # plot them
     # print("\t>>> Plotting HMI continuum...")
     plot_image(con, outdir=plotdir, fname="fig1a.pdf")

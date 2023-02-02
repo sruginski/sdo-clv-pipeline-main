@@ -369,7 +369,7 @@ class SunMask(object):
         self.pen_frac = np.nansum(self.is_penumbra()) / npix
         self.blu_pen_frac = np.nansum(self.is_blue_penumbra()) / npix
         self.red_pen_frac = np.nansum(self.is_red_penumbra()) / npix
-        self.quiet_frac = np.nansum(self.is_quiet()) / npix
+        self.quiet_frac = np.nansum(self.is_quiet_sun()) / npix
         self.network_frac = np.nansum(self.is_network()) / npix
         self.plage_frac = np.nansum(self.is_plage()) / npix
 
@@ -484,7 +484,7 @@ class SunMask(object):
     def is_red_penumbra(self):
         return self.regions == 3
 
-    def is_quiet(self):
+    def is_quiet_sun(self):
         return self.regions == 4
 
     def is_network(self):
