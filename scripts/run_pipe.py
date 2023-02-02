@@ -105,7 +105,6 @@ def main():
         stitch_output_files(datadir + "unweighted_velocities.csv", outfiles6, delete=delete)
         stitch_output_files(datadir + "intensities.csv", outfiles7, delete=delete)
 
-
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))
     else:

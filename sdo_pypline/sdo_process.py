@@ -1,3 +1,4 @@
+sdo_pypline/sdo_process.py
 import numpy as np
 import matplotlib.pyplot as plt
 import gc, os, re, pdb, csv, glob, time, argparse
@@ -167,8 +168,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     results_vel_unw.append([mjd, 0, np.nan, np.nan, *vels_unw])
 
     # calculate disk-integrated unsigned magnetic field
-    mags = calc_mag_stats(con, mag, mask)
+    mags = calc_mag_stats(con, mag)
     results_mag.append([mjd, 0, np.nan, np.nan, *mags])
+
+    # get the average intensity and flattened intensity
+    ints = calc_int_stats(con)
+    results_int.append([mjd, 0, np.nan, np.nan, *ints])
 
     # allocate for region mask
     region_mask = np.ones(np.shape(mask.regions)).astype(int)

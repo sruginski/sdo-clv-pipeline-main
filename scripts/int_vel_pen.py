@@ -93,3 +93,5 @@ ax1.set_ylabel(r"${\rm Probability\ Density}$")
 ax1.legend(loc="upper left")
 fig.savefig("/Users/michael/Desktop/flattened_intensity_distribution.pdf")
 plt.clf(); plt.close()
+
+pdb.set_trace()

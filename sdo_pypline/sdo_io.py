@@ -101,7 +101,7 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
     header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
     header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std", "mag_unsigned"]
     header6 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
-    header7 = ["mjd", "region", "lo_mu", "hi_mu", "avg_ing", "avg_int_flat"]
+    header7 = ["mjd", "region", "lo_mu", "hi_mu", "avg_int", "avg_int_flat"]
 
     # replace/create/modify output files
     fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7)
