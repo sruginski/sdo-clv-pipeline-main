@@ -197,12 +197,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         v_quiet = np.nansum(dop.v_corr * con.image * mask.is_quiet_sun() * region_mask)
         v_quiet /= np.nansum(con.image * mask.is_quiet_sun() * region_mask)
 
-        pdb.set_trace()
-
         # compute quiet-sun velocity normalized to avg intensity
-        # TODO FIX THIS
-        pix_ratio = np.nansum(mask.is_quiet_sun() * region_mask) / np.nansum(con.mu >= con.mu_thresh)
-        v_quiet_avg = np.nansum(dop.v_corr * mask.is_quiet_sun() * region_mask)
+        pix_ratio = np.nansum(con.mu >= con.mu_thresh) / np.nansum(mask.is_quiet_sun() * region_mask)
+        v_quiet_avg = np.nansum(dop.v_corr * con.image * mask.is_quiet_sun() * region_mask) * pix_ratio
         v_quiet_avg /= np.nansum(con.image * mask.is_quiet_sun())
 
         # compute quiet-sun velocity in mu annulus unweigted
@@ -215,6 +212,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
 
         # loop over unique region identifiers
         for k in regions:
+            if k != 4:
+                continue
+
+            pdb.set_trace()
             # compute the region mask
             region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
 

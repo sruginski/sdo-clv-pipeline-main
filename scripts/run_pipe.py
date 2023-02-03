@@ -62,6 +62,8 @@ def main():
         # ncpus = np.min([len(con_files), mp.cpu_count()])
         ncpus = 1
 
+    ncpus = 1
+
     # process the data either in parallel or serially
     if ncpus > 1:
         # make tmp directory

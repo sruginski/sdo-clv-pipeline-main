@@ -5,7 +5,7 @@ def calc_region_mask(mask, region=None, hi_mu=None, lo_mu=None):
     # get mask for region type specified
     if region is None:
         region_mask = True
-    elif region == 2.5
+    elif region == 2.5:
         region_mask = mask.is_penumbra()
     elif region in np.unique(mask.regions):
         region_mask = ((region == mask.regions) & (mask.mu >= mask.mu_thresh))
@@ -77,7 +77,7 @@ def calc_velocities_average(con, mag, dop, aia, mask, region_mask=None, v_quiet=
     k_hat_con = np.nansum(con.image * con.ldark * w_quiet) / np.nansum(con.ldark**2 * w_quiet)
 
     # get pixel ratio factor
-    pix_ratio = np.nansum(region_mask) / np.nansum(con.mu >= con.mu_thresh)
+    pix_ratio = np.nansum(con.mu >= con.mu_thresh) / np.nansum(region_mask)
 
     # calculate velocity terms
     v_hat = np.nansum(dop.v_corr * con.image * region_mask) * pix_ratio
