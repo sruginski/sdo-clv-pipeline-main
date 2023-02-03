@@ -99,6 +99,7 @@ plage = df_regs[df_regs.region == 6.0]
 network = df_regs[df_regs.region == 5.0]
 quiet_sun = df_regs[df_regs.region == 4.0]
 red_penumbrae = df_regs[df_regs.region == 3.0]
+all_penumbrae = df_regs[df_regs.region == 2.5]
 blu_penumbrae = df_regs[df_regs.region == 2.0]
 umbrae = df_regs[df_regs.region == 1.0]
 
@@ -107,6 +108,7 @@ plage_unw = df_regs_unw[df_regs_unw.region == 6.0]
 network_unw = df_regs_unw[df_regs_unw.region == 5.0]
 quiet_sun_unw = df_regs_unw[df_regs_unw.region == 4.0]
 red_penumbrae_unw = df_regs_unw[df_regs_unw.region == 3.0]
+all_penumbrae_unw = df_regs_unw[df_regs_unw.region == 2.5]
 blu_penumbrae_unw = df_regs_unw[df_regs_unw.region == 2.0]
 umbrae_unw = df_regs_unw[df_regs_unw.region == 1.0]
 
@@ -115,6 +117,7 @@ plage_avg = df_regs_avg[df_regs_avg.region == 6.0]
 network_avg = df_regs_avg[df_regs_avg.region == 5.0]
 quiet_sun_avg = df_regs_avg[df_regs_avg.region == 4.0]
 red_penumbrae_avg = df_regs_avg[df_regs_avg.region == 3.0]
+all_penumbrae_avg = df_regs_avg[df_regs_avg.region == 2.5]
 blu_penumbrae_avg = df_regs_avg[df_regs_avg.region == 2.0]
 umbrae_avg = df_regs_avg[df_regs_avg.region == 1.0]
 
@@ -159,6 +162,16 @@ red_penumbrae_avg = mask_all_zero_rows(red_penumbrae_avg)
 red_penumbrae_avg.reset_index(drop=True)
 red_penumbrae_avg.to_csv(outdir + "red_penumbrae_vels_avg.csv", index=False)
 
+all_penumbrae = mask_all_zero_rows(all_penumbrae)
+all_penumbrae.reset_index(drop=True)
+all_penumbrae.to_csv(outdir + "all_penumbrae_vels.csv", index=False)
+all_penumbrae_unw = mask_all_zero_rows(all_penumbrae_unw)
+all_penumbrae_unw.reset_index(drop=True)
+all_penumbrae_unw.to_csv(outdir + "all_penumbrae_vels_unw.csv", index=False)
+all_penumbrae_avg = mask_all_zero_rows(all_penumbrae_avg)
+all_penumbrae_avg.reset_index(drop=True)
+all_penumbrae_avg.to_csv(outdir + "all_penumbrae_vels_avg.csv", index=False)
+
 blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
 blu_penumbrae.reset_index(drop=True)
 blu_penumbrae.to_csv(outdir + "blu_penumbrae_vels.csv", index=False)
@@ -178,123 +191,3 @@ umbrae_unw.to_csv(outdir + "umbrae_vels_unw.csv", index=False)
 umbrae_avg = mask_all_zero_rows(umbrae_avg)
 umbrae_avg.reset_index(drop=True)
 umbrae_avg.to_csv(outdir + "umbrae_vels_avg.csv", index=False)
-
-# combine red and blue_penumbrae into total penumbrae
-pen_light = df_light[~np.isnan(df_light.lo_mu)]
-pen_light.reset_index(drop=True)
-
-# make data frame to hold vels
-all_penumbrae = pd.DataFrame(columns = red_penumbrae.columns.values)
-all_penumbrae_unw = pd.DataFrame(columns = red_penumbrae_unw.columns.values)
-all_penumbrae_avg = pd.DataFrame(columns = red_penumbrae_avg.columns.values)
-
-# loop over dates or something
-for i, mjd in enumerate(np.unique(pen_light.mjd)):
-    for j, mu in enumerate(np.unique(pen_light.lo_mu)):
-        # get light fractions
-        row_light = pen_light[(pen_light.mjd == mjd) & (pen_light.lo_mu == mu)]
-        red_light = row_light.red_pen_frac.values[0]
-        blu_light = row_light.blu_pen_frac.values[0]
-        tot_light = red_light + blu_light
-
-        # get velocities
-        red_vels = red_penumbrae[(red_penumbrae.mjd == mjd) & (red_penumbrae.lo_mu == mu)]
-        blu_vels = blu_penumbrae[(blu_penumbrae.mjd == mjd) & (blu_penumbrae.lo_mu == mu)]
-        red_vels_unw = red_penumbrae_unw[(red_penumbrae_unw.mjd == mjd) & (red_penumbrae_unw.lo_mu == mu)]
-        blu_vels_unw = blu_penumbrae_unw[(blu_penumbrae_unw.mjd == mjd) & (blu_penumbrae_unw.lo_mu == mu)]
-        red_vels_avg = red_penumbrae_avg[(red_penumbrae_avg.mjd == mjd) & (red_penumbrae_avg.lo_mu == mu)]
-        blu_vels_avg = blu_penumbrae_avg[(blu_penumbrae_avg.mjd == mjd) & (blu_penumbrae_avg.lo_mu == mu)]
-
-        # calculate
-        if (len(red_vels) == 0) & (len(blu_vels) == 0):
-            continue
-        elif (len(red_vels) == 0) & (len(blu_vels) != 0):
-            v_hat = ((blu_vels.v_hat.values * blu_light) / tot_light)[0]
-            v_phot = ((blu_vels.v_phot.values * blu_light) / tot_light)[0]
-            v_quiet = ((blu_vels.v_quiet.values * blu_light) / tot_light)[0]
-            v_conv = ((blu_vels.v_conv.values * blu_light) / tot_light)[0]
-
-            v_hat_unw = blu_vels_unw.v_hat.values
-            v_phot_unw = blu_vels_unw.v_phot.values
-            v_quiet_unw = blu_vels_unw.v_quiet.values
-            v_conv_unw = blu_vels_unw.v_conv.values
-
-            v_hat_avg = blu_vels_unw.v_hat.values
-            v_phot_avg = blu_vels_unw.v_phot.values
-            v_quiet_avg = blu_vels_unw.v_quiet.values
-            v_conv_avg = blu_vels_unw.v_conv.values
-        elif (len(red_vels) != 0) & (len(blu_vels) == 0):
-            v_hat = ((red_vels.v_hat.values * red_light) / tot_light)[0]
-            v_phot = ((red_vels.v_phot.values * red_light) / tot_light)[0]
-            v_quiet = ((red_vels.v_quiet.values * red_light) / tot_light)[0]
-            v_conv = ((red_vels.v_conv.values * red_light) / tot_light)[0]
-
-            v_hat_unw = red_vels_unw.v_hat.values
-            v_phot_unw = red_vels_unw.v_phot.values
-            v_quiet_unw = red_vels_unw.v_quiet.values
-            v_conv_unw = red_vels_unw.v_conv.values
-
-            v_hat_avg = red_vels_unw.v_hat.values
-            v_phot_avg = red_vels_unw.v_phot.values
-            v_quiet_avg = red_vels_unw.v_quiet.values
-            v_conv_avg = red_vels_unw.v_conv.values
-        else:
-            v_hat = ((red_vels.v_hat.values * red_light + blu_vels.v_hat.values * blu_light) / tot_light)[0]
-            v_phot = ((red_vels.v_phot.values * red_light + blu_vels.v_phot.values * blu_light) / tot_light)[0]
-            v_quiet = ((red_vels.v_quiet.values * red_light + blu_vels.v_quiet.values * blu_light) / tot_light)[0]
-            v_conv = ((red_vels.v_conv.values * red_light + blu_vels.v_conv.values * blu_light) / tot_light)[0]
-
-            v_hat_unw = (red_vels_unw.v_hat.values + blu_vels_unw.v_hat.values)/2.0
-            v_phot_unw = (red_vels_unw.v_phot.values + blu_vels_unw.v_phot.values)/2.0
-            v_quiet_unw = (red_vels_unw.v_quiet.values + blu_vels_unw.v_quiet.values)/2.0
-            v_conv_unw = (red_vels_unw.v_conv.values + blu_vels_unw.v_conv.values)/2.0
-
-            v_hat_avg = (red_vels_unw.v_hat.values + blu_vels_unw.v_hat.values)/2.0
-            v_phot_avg = (red_vels_unw.v_phot.values + blu_vels_unw.v_phot.values)/2.0
-            v_quiet_avg = (red_vels_unw.v_quiet.values + blu_vels_unw.v_quiet.values)/2.0
-            v_conv_avg = (red_vels_unw.v_conv.values + blu_vels_unw.v_conv.values)/2.0
-
-
-        # append to dataframe
-        row = pd.Series({"mjd": mjd, "region": 2.5, "lo_mu": mu, "hi_mu": mu + 0.1,
-                         "v_hat": v_hat, "v_phot": v_phot, "v_quiet": v_quiet, "v_conv": v_conv})
-        row_unw = pd.Series({"mjd": mjd, "region": 2.5, "lo_mu": mu, "hi_mu": mu + 0.1,
-                             "v_hat": v_hat_unw, "v_phot": v_phot_unw,
-                             "v_quiet": v_quiet_unw, "v_conv": v_conv_unw})
-        row_avg = pd.Series({"mjd": mjd, "region": 2.5, "lo_mu": mu, "hi_mu": mu + 0.1,
-                             "v_hat": v_hat_avg, "v_phot": v_phot_avg,
-                             "v_quiet": v_quiet_avg, "v_conv": v_conv_avg})
-        all_penumbrae = pd.concat([all_penumbrae, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
-        all_penumbrae_unw = pd.concat([all_penumbrae_unw, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
-        all_penumbrae_avg = pd.concat([all_penumbrae_avg, pd.DataFrame([row], columns=row.index)]).reset_index(drop=True)
-
-# write to disk
-all_penumbrae.reset_index(drop=True)
-all_penumbrae.to_csv(outdir + "penumbrae_vels.csv", index=False)
-
-all_penumbrae_unw.reset_index(drop=True)
-all_penumbrae_unw.to_csv(outdir + "penumbrae_vels_unw.csv", index=False)
-
-all_penumbrae_avg.reset_index(drop=True)
-all_penumbrae_avg.to_csv(outdir + "penumbrae_vels_avg.csv", index=False)
-
-# concatenate to full data frame
-df_vels_new = pd.concat([all_penumbrae, df_vels]).reset_index(drop=True)
-df_vels_new.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
-df_vels_new.drop_duplicates()
-df_vels_new.reset_index(drop=True)
-df_vels_new.to_csv(outdir + "velocities.csv", index=False)
-
-# concatenate to full data frame
-df_vels_unw_new = pd.concat([all_penumbrae_unw, df_vels_unw]).reset_index(drop=True)
-df_vels_unw_new.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
-df_vels_unw_new.drop_duplicates()
-df_vels_unw_new.reset_index(drop=True)
-df_vels_unw_new.to_csv(outdir + "unweighted_velocities.csv", index=False)
-
-# concatenate to full data frame
-df_vels_avg_new = pd.concat([all_penumbrae_avg, df_vels_avg]).reset_index(drop=True)
-df_vels_avg_new.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
-df_vels_avg_new.drop_duplicates()
-df_vels_avg_new.reset_index(drop=True)
-df_vels_avg_new.to_csv(outdir + "average_velocities.csv", index=False)

@@ -215,7 +215,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             if k != 4:
                 continue
 
-            pdb.set_trace()
             # compute the region mask
             region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
 
