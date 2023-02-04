@@ -134,9 +134,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     ints = calc_int_stats(con)
 
     # append full-disk results
-    results.append([mjd, np.nan, np.nan, np.nan, all_pixels, all_light, *vels, *mags, *ints])
-
-    pdb.set_trace()
+    results.append([mjd, np.nan, np.nan, np.nan, all_pixels, all_light, *vels, mags, *ints])
 
     # allocate for region mask
     region_mask = np.ones(np.shape(mask.regions)).astype(int)
@@ -157,7 +155,11 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         v_quiet /= np.nansum(con.image * mask.is_quiet_sun() * region_mask)
 
         # loop over unique region identifiers
+        pdb.set_trace()
         for k in regions:
+            # compute the region mask
+            region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+
             # get total pix and light
             pixels = np.nansum(region_mask)/all_pixels
             light = np.nansum(region_mask * con.image)/all_light
@@ -165,12 +167,9 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             if ((pixels == 0.0) | (light == 0.0)):
                 vels = [0.0, 0.0, 0.0, 0.0]
                 mags = 0.0
-                ints = 0.0
-                results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, *mags, *ints])
+                ints = [0.0, 0.0]
+                results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, mags, *ints])
                 continue
-
-            # compute the region mask
-            region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
 
             # compute velocity components in each mu annulus by region
             if k != 4:
@@ -185,10 +184,10 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
             ints = calc_int_stats(con, region_mask=region_mask)
 
             # append the velocity results
-            results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, *mags, *ints])
+            results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, mags, *ints])
 
     # write to disk
-    write_results_to_file(fname2, results_pixel)
+    write_results_to_file(fname2, results)
 
     # do some memory cleanup
     del con
@@ -200,6 +199,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del mags
     del ints
     del results
+    del regions
     del mu_grid
     del v_quiet
     del region_mask
