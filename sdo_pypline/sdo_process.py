@@ -155,7 +155,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         v_quiet /= np.nansum(con.image * mask.is_quiet_sun() * region_mask)
 
         # loop over unique region identifiers
-        pdb.set_trace()
         for k in regions:
             # compute the region mask
             region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
