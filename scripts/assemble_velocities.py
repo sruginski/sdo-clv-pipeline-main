@@ -32,11 +32,6 @@ def calc_whole_disk_vel(df_vels, df_light):
     v_phot_whole2 = 0.0
     v_quiet_whole2 = 0.0
     v_conv_whole2 = 0.0
-    v_hat_mu = np.zeros(len(lo_mus))
-    v_phot_mu = np.zeros(len(lo_mus))
-    v_quiet_mu = np.zeros(len(lo_mus))
-    v_conv_mu = np.zeros(len(lo_mus))
-    fracs_mu = np.zeros(len(lo_mus))
     for i in range(len(lo_mus)):
         # get just this mu_annulus
         df_vels_mu = df_vels_annuli[df_vels_annuli.lo_mu == lo_mus[i]]
@@ -55,20 +50,33 @@ def calc_whole_disk_vel(df_vels, df_light):
             v_quiet_frac = fracs[3]#/np.sum(fracs)
 
             # add em up
-            fracs_mu[i] += fracs[j]
             v_hat_whole2 += (df_vels_reg.v_hat.item() * fracs[j])
-            v_hat_mu[i] += (df_vels_reg.v_hat.item() * fracs[j])
             v_phot_whole2 += (df_vels_reg.v_phot.item() * fracs[j])
-            v_phot_mu[i] += (df_vels_reg.v_phot.item() * fracs[j])
             if k == 4:
-                v_quiet_whole2 += (df_vels_reg.v_quiet.item() * fracs[j])
-                v_quiet_mu[i] += (df_vels_reg.v_quiet.item() * fracs[j])
+                v_quiet_whole2 += df_vels_reg.v_quiet.item() * fracs[j]/np.sum(df_light_annuli.quiet_frac)
+                v_conv_whole2 += df_vels_reg.v_quiet.item() * fracs[j] * (1.0 - 1.0/np.sum(df_light_annuli.quiet_frac))
             if k != 4:
-                v_conv_whole2 += ((df_vels_reg.v_hat.item() -  v_quiet_temp) * (fracs[j]/v_quiet_frac))
-                v_conv_mu[i] += (df_vels_reg.v_conv.item() * fracs[j])
+                v_conv_whole2 += df_vels_reg.v_hat.item() * fracs[j]
 
+    print("v_hat")
+    print(df_vels_full.v_hat.item())
+    print(v_hat_whole2)
+    print()
+
+    print("v_quiet")
+    print(df_vels_full.v_quiet.item())
+    print(v_quiet_whole2)
+    print()
+
+    print("v_phot")
+    print(df_vels_full.v_phot.item())
+    print(v_phot_whole2)
+    print()
+
+    print("v_conv")
     print(df_vels_full.v_conv.item())
     print(v_conv_whole2)
+
     pdb.set_trace()
 
 

@@ -60,7 +60,9 @@ def main():
         ncpus = len(sched_getaffinity(0)) - 1
     except:
         # ncpus = np.min([len(con_files), mp.cpu_count()])
-        ncpus = 1
+        ncpus =
+
+    ncpus = 1
 
     # process the data either in parallel or serially
     if ncpus > 1:
@@ -88,24 +90,12 @@ def main():
 
         # find the output data sets
         outfiles1 = glob.glob(tmpdir + "thresholds_*")
-        outfiles2 = glob.glob(tmpdir + "pixel_stats_*")
-        outfiles3 = glob.glob(tmpdir + "light_stats_*")
-        outfiles4 = glob.glob(tmpdir + "velocities_*")
-        outfiles5 = glob.glob(tmpdir + "mag_stats_*")
-        outfiles6 = glob.glob(tmpdir + "unweighted_velocities_*")
-        outfiles7 = glob.glob(tmpdir + "intensities_*")
-        outfiles8 = glob.glob(tmpdir + "average_velocities_*")
+        outfiles2 = glob.glob(tmpdir + "region_output_*")
 
         # stitch them together on the main process
         delete = False
         stitch_output_files(datadir + "thresholds.csv", outfiles1, delete=delete)
-        stitch_output_files(datadir + "pixel_stats.csv", outfiles2, delete=delete)
-        stitch_output_files(datadir + "light_stats.csv", outfiles3, delete=delete)
-        stitch_output_files(datadir + "velocities.csv", outfiles4, delete=delete)
-        stitch_output_files(datadir + "mag_stats.csv", outfiles5, delete=delete)
-        stitch_output_files(datadir + "unweighted_velocities.csv", outfiles6, delete=delete)
-        stitch_output_files(datadir + "intensities.csv", outfiles7, delete=delete)
-        stitch_output_files(datadir + "average_velocities.csv", outfiles8, delete=delete)
+        stitch_output_files(datadir + "region_output.csv", outfiles2, delete=delete)
 
         # print run time
         print("Parallel: --- %s seconds ---" % (time.time() - t0))

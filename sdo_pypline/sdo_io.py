@@ -87,26 +87,14 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
 
     # name output files
     fname1 = datadir + "thresholds.csv"
-    fname2 = datadir + "pixel_stats.csv"
-    fname3 = datadir + "light_stats.csv"
-    fname4 = datadir + "velocities.csv"
-    fname5 = datadir + "mag_stats.csv"
-    fname6 = datadir + "unweighted_velocities.csv"
-    fname7 = datadir + "intensities.csv"
-    fname8 = datadir + "average_velocities.csv"
+    fname2 = datadir + "region_output.csv"
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
-    header2 = ["mjd", "lo_mu", "hi_mu", "ffactor", "umb_frac", "blu_pen_frac", "red_pen_frac", "quiet_frac", "network_frac", "plage_frac"]
-    header3 = ["mjd", "lo_mu", "hi_mu", "umb_frac", "blu_pen_frac", "red_pen_frac", "quiet_frac", "network_frac", "plage_frac"]
-    header4 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
-    header5 = ["mjd", "region", "lo_mu", "hi_mu", "mag_avg", "mag_std", "mag_unsigned"]
-    header6 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
-    header7 = ["mjd", "region", "lo_mu", "hi_mu", "avg_int", "avg_int_flat"]
-    header8 = ["mjd", "region", "lo_mu", "hi_mu", "v_hat", "v_phot", "v_quiet", "v_conv"]
+    header2 = ["mjd", "region", "lo_mu", "hi_mu", "pixel_frac", "light_frac", "v_hat", "v_phot", "v_quiet", "v_conv", "mag_unsigned", "avg_int", "avg_int_flat"]
 
     # replace/create/modify output files
-    fileset = (fname1, fname2, fname3, fname4, fname5, fname6, fname7, fname8)
+    fileset = (fname1, fname2)
     if clobber and any(map(exists, fileset)):
         # delete the files
         clean_output_directory(*fileset)
@@ -114,12 +102,6 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
         # create the files with headers
         create_file(fname1, header1)
         create_file(fname2, header2)
-        create_file(fname3, header3)
-        create_file(fname4, header4)
-        create_file(fname5, header5)
-        create_file(fname6, header6)
-        create_file(fname7, header7)
-        create_file(fname8, header8)
     elif all(map(exists, fileset)) and all(map(lambda x: getsize(x) > 0, fileset)):
         # get list of dates from file
         mjd_list = find_all_dates(fname1)
@@ -139,12 +121,6 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
     else:
         create_file(fname1, header1)
         create_file(fname2, header2)
-        create_file(fname3, header3)
-        create_file(fname4, header4)
-        create_file(fname5, header5)
-        create_file(fname6, header6)
-        create_file(fname7, header7)
-        create_file(fname8, header8)
 
     return con_files, mag_files, dop_files, aia_files
 

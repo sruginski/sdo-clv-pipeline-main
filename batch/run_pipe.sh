@@ -8,4 +8,4 @@ jid4=$(sbatch --parsable /storage/home/mlp95/work/sdo-pypline/batch/run2015.sh)
 
 # merge the output
 jid5=$(sbatch --parsable --dependency=afterok:${jid1}:${jid2}:${jid3}:${jid4} /storage/home/mlp95/work/sdo-pypline/batch/merge_output.sh)
-jid6=$(sbatch --parsable --dependency=afterok:${jid5} /storage/home/mlp95/work/sdo-pypline/batch/preprocess_output.sh)
+# jid6=$(sbatch --parsable --dependency=afterok:${jid5} /storage/home/mlp95/work/sdo-pypline/batch/preprocess_output.sh)
