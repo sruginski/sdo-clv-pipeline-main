@@ -59,14 +59,14 @@ plotdir = str(root / "figures") + "/"
 procdir = datadir + "processed/"
 
 # read in by region
-df_vels_full = pd.read_csv(procdir + "full_disk_vels.csv")
-plage = pd.read_csv(procdir + "plage_vels.csv")
-network = pd.read_csv(procdir + "network_vels.csv")
-quiet_sun = pd.read_csv(procdir + "quiet_sun_vels.csv")
-penumbrae = pd.read_csv(procdir + "penumbrae_vels.csv")
-red_penumbrae = pd.read_csv(procdir + "red_penumbrae_vels.csv")
-blu_penumbrae = pd.read_csv(procdir + "blu_penumbrae_vels.csv")
-umbrae = pd.read_csv(procdir + "umbrae_vels.csv")
+df_vels_full = pd.read_csv(procdir + "full_disk.csv")
+plage = pd.read_csv(procdir + "plage.csv")
+network = pd.read_csv(procdir + "network.csv")
+quiet_sun = pd.read_csv(procdir + "quiet_sun.csv")
+penumbrae = pd.read_csv(procdir + "penumbrae.csv")
+red_penumbrae = pd.read_csv(procdir + "red_penumbrae.csv")
+blu_penumbrae = pd.read_csv(procdir + "blu_penumbrae.csv")
+umbrae = pd.read_csv(procdir + "umbrae.csv")
 
 # get centers of mu bins
 lo_mus = np.unique(plage.lo_mu)

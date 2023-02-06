@@ -33,12 +33,22 @@ outdir = datadir + "processed/"
 df_all = pd.read_csv(datadir + "region_output.csv")
 df_all.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
 df_all.drop_duplicates()
-df_all.reset_index(drop=True)
+df_all.reset_index(drop=True, inplace=True)
 
 # get full disk only
 df_full_disk = df_all[(np.isnan(df_all.lo_mu)) & np.isnan(df_all.region)]
-df_full_disk.reset_index(drop=True)
+df_full_disk.reset_index(drop=True, inplace=True)
 df_full_disk.to_csv(outdir + "full_disk.csv", index=False)
+
+"""
+# find dates with extreme outliers
+v_conv_rolling_avg = df_full_disk.v_conv.rolling(30).mean()
+v_conv_rolling_std = df_full_disk.v_conv.rolling(30).std()
+
+# find distance from rolling avergge
+dist = np.abs(df_full_disk.v_conv - v_conv_rolling_avg)
+idx = dist[dist > 2.0 * v_conv_rolling_std].index
+"""
 
 # make dfs by mu
 plage = df_all[df_all.region == 6.0]
@@ -51,29 +61,29 @@ umbrae = df_all[df_all.region == 1.0]
 
 # mask rows where all vels are 0.0 (i.e., region isn't present in that annulus)
 plage = mask_all_zero_rows(plage)
-plage.reset_index(drop=True)
+plage.reset_index(drop=True, inplace=True)
 plage.to_csv(outdir + "plage.csv", index=False)
 
 network = mask_all_zero_rows(network)
-network.reset_index(drop=True)
+network.reset_index(drop=True, inplace=True)
 network.to_csv(outdir + "network.csv", index=False)
 
 quiet_sun = mask_all_zero_rows(quiet_sun)
-quiet_sun.reset_index(drop=True)
+quiet_sun.reset_index(drop=True, inplace=True)
 quiet_sun.to_csv(outdir + "quiet_sun.csv", index=False)
 
 red_penumbrae = mask_all_zero_rows(red_penumbrae)
-red_penumbrae.reset_index(drop=True)
+red_penumbrae.reset_index(drop=True, inplace=True)
 red_penumbrae.to_csv(outdir + "red_penumbrae.csv", index=False)
 
 all_penumbrae = mask_all_zero_rows(all_penumbrae)
-all_penumbrae.reset_index(drop=True)
+all_penumbrae.reset_index(drop=True, inplace=True)
 all_penumbrae.to_csv(outdir + "penumbrae.csv", index=False)
 
 blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
-blu_penumbrae.reset_index(drop=True)
+blu_penumbrae.reset_index(drop=True, inplace=True)
 blu_penumbrae.to_csv(outdir + "blu_penumbrae.csv", index=False)
 
 umbrae = mask_all_zero_rows(umbrae)
-umbrae.reset_index(drop=True)
+umbrae.reset_index(drop=True, inplace=True)
 umbrae.to_csv(outdir + "umbrae.csv", index=False)
