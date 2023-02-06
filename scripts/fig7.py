@@ -52,21 +52,27 @@ mu_bin = (lo_mus + hi_mus) / 2.0
 ap_ints = np.zeros(len(penumbrae.avg_int))
 rp_ints = np.zeros(len(red_penumbrae.avg_int))
 bp_ints = np.zeros(len(blu_penumbrae.avg_int))
+ap_ints_flat = np.zeros(len(penumbrae.avg_int))
+rp_ints_flat = np.zeros(len(red_penumbrae.avg_int))
+bp_ints_flat = np.zeros(len(blu_penumbrae.avg_int))
 
 # loop over mjd and divide out 0th LD parameter
 for (i, mjd) in enumerate(thresholds.mjd):
     idx1 = penumbrae.mjd == mjd
     idx2 = red_penumbrae.mjd == mjd
     idx3 = blu_penumbrae.mjd == mjd
-    ap_ints[np.where(idx1)] = penumbrae.avg_int_flat[idx1].values/thresholds.a_hmi[thresholds.mjd == mjd].values
-    rp_ints[np.where(idx2)] = red_penumbrae.avg_int_flat[idx2].values/thresholds.a_hmi[thresholds.mjd == mjd].values
-    bp_ints[np.where(idx3)] = blu_penumbrae.avg_int_flat[idx3].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    ap_ints[np.where(idx1)] = penumbrae.avg_int[idx1].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    rp_ints[np.where(idx2)] = red_penumbrae.avg_int[idx2].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    bp_ints[np.where(idx3)] = blu_penumbrae.avg_int[idx3].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    ap_ints_flat[np.where(idx1)] = penumbrae.avg_int_flat[idx1].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    rp_ints_flat[np.where(idx2)] = red_penumbrae.avg_int_flat[idx2].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    bp_ints_flat[np.where(idx3)] = blu_penumbrae.avg_int_flat[idx3].values/thresholds.a_hmi[thresholds.mjd == mjd].values
 
 # plot it
 fig, ax1 = plt.subplots()
-ax1.hist(ap_ints, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
-ax1.hist(rp_ints, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-ax1.hist(bp_ints, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+ax1.hist(ap_ints_flat, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
+ax1.hist(rp_ints_flat, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+ax1.hist(bp_ints_flat, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
 ax1.set_xlabel(r"{\rm Relative\ Flattened\ Intensity}")
 ax1.set_ylabel(r"{\rm Probability\ Density}")
 ax1.set_xlim(0.59, 0.91)
@@ -101,5 +107,35 @@ fig.supylabel(r"{\rm Probability\ Density}")
 handles = [axn.get_legend_handles_labels()[0] for axn in fig.axes][0]
 labels = [axn.get_legend_handles_labels()[1] for axn in fig.axes][0]
 fig.legend(handles, labels, ncol=3, loc='upper center', handletextpad=0.15, bbox_to_anchor=(0.51, 1.0))
-fig.savefig(plotdir + "fig7b.pdf")
+fig.savefig(plotdir + "fig7b.pdf", bbox_inches="tight")
+plt.clf(); plt.close()
+
+# plot by mu
+fig, axs = plt.subplots(figsize=(8.75, 7), nrows=3, ncols=3, sharey=True, sharex=True)
+# fig, axs = plt.subplots(nrows=3, ncols=3, sharey=True, sharex=True)
+fig.subplots_adjust(wspace=0.05)
+for (i, mu) in enumerate(lo_mus):
+    # get indices for data
+    idx1 = np.where(penumbrae.lo_mu == mu)
+    idx2 = np.where(red_penumbrae.lo_mu == mu)
+    idx3 = np.where(blu_penumbrae.lo_mu == mu)
+
+    # plot it
+    axn = fig.axes[i]
+    axn.hist(ap_ints_flat[idx1], density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
+    axn.hist(rp_ints_flat[idx2], density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+    axn.hist(bp_ints_flat[idx3], density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+
+    # set the title
+    axn.set_title(r"$\mu = " + str(mu + 0.05)[0:4]+ r"$")
+
+# label the axes
+fig.supxlabel(r"{\rm Relative\ Flattened\ Intensity}")
+fig.supylabel(r"{\rm Probability\ Density}")
+
+# prepare the legend
+handles = [axn.get_legend_handles_labels()[0] for axn in fig.axes][0]
+labels = [axn.get_legend_handles_labels()[1] for axn in fig.axes][0]
+fig.legend(handles, labels, ncol=3, loc='upper center', handletextpad=0.15, bbox_to_anchor=(0.51, 1.0))
+fig.savefig(plotdir + "fig7c.pdf", bbox_inches="tight")
 plt.clf(); plt.close()
