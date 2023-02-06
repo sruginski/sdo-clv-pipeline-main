@@ -38,29 +38,38 @@ procdir = datadir + "processed/"
 penumbrae = pd.read_csv(procdir + "penumbrae.csv")
 red_penumbrae = pd.read_csv(procdir + "red_penumbrae.csv")
 blu_penumbrae = pd.read_csv(procdir + "blu_penumbrae.csv")
-quiet_sun = pd.read_csv(procdir + "quiet_sun.csv")
 
 # get the LD coeffs by day
 thresholds = pd.read_csv(datadir + "thresholds.csv")
+thresholds.sort_values(by=["mjd"], inplace=True)
 
 # get centers of mu bins
 lo_mus = np.unique(penumbrae.lo_mu)
 hi_mus = np.unique(penumbrae.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
-# get avg ints aggregated by mu
-ap = penumbrae.avg_int_flat
-rp = red_penumbrae.avg_int_flat
-bp = blu_penumbrae.avg_int_flat
-qs = quiet_sun.avg_int_flat
+# get avg ints
+ap_ints = np.zeros(len(penumbrae.avg_int))
+rp_ints = np.zeros(len(red_penumbrae.avg_int))
+bp_ints = np.zeros(len(blu_penumbrae.avg_int))
+
+# loop over mjd and divide out 0th LD parameter
+for (i, mjd) in enumerate(thresholds.mjd):
+    idx1 = penumbrae.mjd == mjd
+    idx2 = red_penumbrae.mjd == mjd
+    idx3 = blu_penumbrae.mjd == mjd
+    ap_ints[np.where(idx1)] = penumbrae.avg_int_flat[idx1].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    rp_ints[np.where(idx2)] = red_penumbrae.avg_int_flat[idx2].values/thresholds.a_hmi[thresholds.mjd == mjd].values
+    bp_ints[np.where(idx3)] = blu_penumbrae.avg_int_flat[idx3].values/thresholds.a_hmi[thresholds.mjd == mjd].values
 
 # plot it
 fig, ax1 = plt.subplots()
-ax1.hist(ap, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
-ax1.hist(rp, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-ax1.hist(bp, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
-ax1.set_xlabel(r"{\rm Flattened\ Intensity}")
+ax1.hist(ap_ints, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
+ax1.hist(rp_ints, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+ax1.hist(bp_ints, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+ax1.set_xlabel(r"{\rm Relative Flattened\ Intensity}")
 ax1.set_ylabel(r"{\rm Probability\ Density}")
+ax1.set_xlim(0.59, 0.91)
 ax1.legend(loc="upper left")
 fig.savefig(plotdir + "fig7a.pdf")
 plt.clf(); plt.close()
@@ -70,16 +79,16 @@ fig, axs = plt.subplots(figsize=(8.75, 7), nrows=3, ncols=3, sharey=True, sharex
 # fig, axs = plt.subplots(nrows=3, ncols=3, sharey=True, sharex=True)
 fig.subplots_adjust(wspace=0.05)
 for (i, mu) in enumerate(lo_mus):
-    # get temp data frames
-    ap = penumbrae[penumbrae.lo_mu == mu].avg_int_flat
-    rp = red_penumbrae[red_penumbrae.lo_mu == mu].avg_int_flat
-    bp = blu_penumbrae[blu_penumbrae.lo_mu == mu].avg_int_flat
+    # get indices for data
+    idx1 = np.where(penumbrae.lo_mu == mu)
+    idx2 = np.where(red_penumbrae.lo_mu == mu)
+    idx3 = np.where(blu_penumbrae.lo_mu == mu)
 
     # plot it
     axn = fig.axes[i]
-    axn.hist(ap, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
-    axn.hist(rp, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-    axn.hist(bp, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+    axn.hist(ap_ints[idx1], density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
+    axn.hist(rp_ints[idx2], density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+    axn.hist(bp_ints[idx3], density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
 
     # set the title
     axn.set_title(r"$\mu = " + str(mu + 0.05)[0:4]+ r"$")
