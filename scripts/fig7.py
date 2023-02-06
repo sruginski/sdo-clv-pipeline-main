@@ -67,7 +67,7 @@ fig, ax1 = plt.subplots()
 ax1.hist(ap_ints, density=True, bins="auto", histtype="step", color=pu_color, label=r"${\rm All\ Penumbrae}$")
 ax1.hist(rp_ints, density=True, bins="auto", histtype="step", color=rp_color, label=r"${\rm Red\ Penumbrae}$")
 ax1.hist(bp_ints, density=True, bins="auto", histtype="step", color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
-ax1.set_xlabel(r"{\rm Relative Flattened\ Intensity}")
+ax1.set_xlabel(r"{\rm Relative\ Flattened\ Intensity}")
 ax1.set_ylabel(r"{\rm Probability\ Density}")
 ax1.set_xlim(0.59, 0.91)
 ax1.legend(loc="upper left")
@@ -94,7 +94,7 @@ for (i, mu) in enumerate(lo_mus):
     axn.set_title(r"$\mu = " + str(mu + 0.05)[0:4]+ r"$")
 
 # label the axes
-fig.supxlabel(r"{\rm Flattened\ Intensity}")
+fig.supxlabel(r"{\rm Relative\ Flattened\ Intensity}")
 fig.supylabel(r"{\rm Probability\ Density}")
 
 # prepare the legend
