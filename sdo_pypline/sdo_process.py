@@ -148,7 +148,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         hi_mu=mu_grid[j+1]
 
         # compute the region mask
-        region_mask[:] = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
+        region_mask = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
 
         # compute quiet-sun velocity in mu annulus
         v_quiet = np.nansum(dop.v_corr * con.image * mask.is_quiet_sun() * region_mask)
@@ -157,7 +157,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
         # loop over unique region identifiers
         for k in regions:
             # compute the region mask
-            region_mask[:] = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
+            region_mask = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
 
             # get total pix and light
             pixels = np.nansum(region_mask)/all_pixels

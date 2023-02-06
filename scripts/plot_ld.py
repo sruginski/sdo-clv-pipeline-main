@@ -21,10 +21,9 @@ plotdir = str(root / "figures") + "/"
 # use style
 plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 
-def plot_ld(img):
+def plot_ld(img, num_mu=25):
     # params for LD
     mu_lim=0.1
-    num_mu=25
 
     # get average intensity in evenly spaced rings
     mu_edge = np.linspace(1.0, mu_lim, num=num_mu)
@@ -55,6 +54,9 @@ def plot_ld(img):
     ld_coeffs = popt
     ld_fit = popt[0] * quad_darkening_two(mu_avgs, *popt[1:])
 
+    # calculate resids
+    resids = ld_fit - avg_int
+
     plt.plot(mu_avgs, ld_fit)
     plt.show()
     return None
@@ -71,10 +73,8 @@ def main():
 
     pdb.set_trace()
 
-    plot_ld(con)
-    plot_ld(aia)
-
-
+    plot_ld(con, num_mu=25)
+    plot_ld(aia, num_mu=25)
 
 if __name__ == "__main__":
     main()

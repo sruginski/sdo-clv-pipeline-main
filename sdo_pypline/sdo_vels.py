@@ -7,7 +7,7 @@ def calc_region_mask(mask, region=None, hi_mu=None, lo_mu=None):
         region_mask = True
     elif region == 2.5:
         region_mask = mask.is_penumbra()
-    elif region in np.unique(mask.regions):
+    else:
         region_mask = ((region == mask.regions) & (mask.mu >= mask.mu_thresh))
 
     # get masks for mu annuli
