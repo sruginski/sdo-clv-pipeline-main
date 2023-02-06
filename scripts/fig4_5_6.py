@@ -162,18 +162,18 @@ def clv_plot(fname=None):
     axs[1,1].set_ylim(-1000, 1000)
 
     # deal with xlabels
-    axs[1,0].set_xlabel(r"$\mu$")
-    axs[1,1].set_xlabel(r"$\mu$")
+    axs[1,0].set_xlabel(r"$\mu$", fontsize=18)
+    axs[1,1].set_xlabel(r"$\mu$", fontsize=18)
     axs[0,0].set_xticks(np.arange(0.1, 1.1, 0.1))
     axs[0,0].invert_xaxis()
 
     # deal with ylabels
-    ylabel1 = r"$\hat{v}\ {\rm(m\ s}^{-1}{\rm )}$"
-    ylabel2 = r"$\Delta \hat{v}_{\rm conv}\ {\rm(m\ s}^{-1}{\rm )}$"
-    axs[0,0].set_ylabel(ylabel1)
-    axs[1,0].set_ylabel(ylabel1)
-    axs[0,1].set_ylabel(ylabel2)
-    axs[1,1].set_ylabel(ylabel2)
+    ylabel1 = r"$\hat{v}_{k, \mu}\ {\rm(m\ s}^{-1}{\rm )}$"
+    ylabel2 = r"$\Delta \hat{v}_{{\rm conv},k,\mu}\ {\rm(m\ s}^{-1}{\rm )}$"
+    axs[0,0].set_ylabel(ylabel1, fontsize=18)
+    axs[1,0].set_ylabel(ylabel1, fontsize=18)
+    axs[0,1].set_ylabel(ylabel2, fontsize=18)
+    axs[1,1].set_ylabel(ylabel2, fontsize=18)
     axs[0,1].yaxis.tick_right()
     axs[1,1].yaxis.tick_right()
     # axs[0,1].set_yticklabels([])
@@ -185,8 +185,8 @@ def clv_plot(fname=None):
     _, idx = np.unique(labels, return_index=True)
     fig.legend([lines[i] for i in np.sort(idx)],
                [labels[i] for i in np.sort(idx)],
-               ncol=7, fontsize=11.5, loc='upper center',
-               handletextpad=0.15, bbox_to_anchor=(0.51, 0.94))
+               ncol=7, fontsize=14, loc='upper center',
+               handletextpad=0.15, bbox_to_anchor=(0.51, 0.95))
 
     # save the figure
     plt.savefig(plotdir + fname, bbox_inches="tight")
@@ -201,7 +201,7 @@ n_mu_samps = len(mu_samps)
 
 # create figure objects
 colname = "v_hat"
-xlabel = r"$\hat{v}\ {\rm(m\ s}^{-1}{\rm )}$"
+xlabel =  r"$\hat{v}_{k, \mu}\ {\rm(m\ s}^{-1}{\rm )}$"
 fig, axs = plt.subplots(figsize=(11, 8.5), nrows=3, ncols=n_mu_samps)
 fig.subplots_adjust(wspace=0.07, hspace=0.15)
 
@@ -270,7 +270,7 @@ for i in range(n_mu_samps):
     axs[2,i].hist(quiet_sun[colname][idx3], bins="auto", density=True, color=qs_color, histtype="step", label=r"{\rm Quiet Sun}")
 
     # label stuff
-    axs[2,i].set_xlabel(xlabel)
+    # axs[2,i].set_xlabel(xlabel)
     axs[2,i].set_xlim(-150,150)
 
     ylims[i] = axs[2,i].get_ylim()[1]
@@ -285,17 +285,16 @@ for i in range(n_mu_samps):
 for i in range(n_mu_samps):
     axs[2,i].set_ylim(0.0, np.max(ylims))
 
-# set axes labels
-for i in range(3):
-    axs[i, 0].set_ylabel(r"${\rm Probability\ Density}$")
 
 # save the figure
-fig.savefig(plotdir + "fig5.pdf")
+fig.supxlabel(xlabel, fontsize=16, y=0.04)
+fig.supylabel(r"${\rm Probability\ Density}$", fontsize=16, x=0.05)
+fig.savefig(plotdir + "fig5.pdf", bbox_inches="tight")
 plt.clf(); plt.close()
 
 # create figure objects
 colname = "v_conv"
-xlabel = r"$\Delta \hat{v}_{\rm conv}\ {\rm(m\ s}^{-1}{\rm )}$"
+xlabel = r"$\Delta \hat{v}_{{\rm conv},k,\mu}\ {\rm(m\ s}^{-1}{\rm )}$"
 fig, axs = plt.subplots(figsize=(11, 5.8), nrows=2, ncols=n_mu_samps)
 fig.subplots_adjust(wspace=0.07, hspace=0.15)
 
@@ -339,7 +338,7 @@ for i in range(n_mu_samps):
     axs[1,i].hist(network[colname][idx2], bins="auto", density=True, color=nw_color, histtype="step", label=r"{\rm Network}")
 
     # label stuff
-    axs[1,i].set_xlabel(xlabel)
+    # axs[1,i].set_xlabel(xlabel)
     axs[1,i].set_xlim(-250,250)
 
     ylims[i] = axs[1,i].get_ylim()[1]
@@ -352,8 +351,7 @@ for i in range(n_mu_samps):
     axs[1,i].set_ylim(0.0, np.max(ylims))
 
 # set axes labels
-axs[0,0].set_ylabel(r"${\rm Probability\ Density}$")
-axs[1,0].set_ylabel(r"${\rm Probability\ Density}$")
-# axs[-1].legend(fontsize=10)
-fig.savefig(plotdir + "fig6.pdf")
+fig.supxlabel(xlabel, fontsize=16)
+fig.supylabel(r"${\rm Probability\ Density}$", fontsize=16, x=0.05)
+fig.savefig(plotdir + "fig6.pdf", bbox_inches="tight")
 plt.clf(); plt.close()
