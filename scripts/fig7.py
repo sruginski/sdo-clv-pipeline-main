@@ -82,7 +82,6 @@ plt.clf(); plt.close()
 
 # plot by mu
 fig, axs = plt.subplots(figsize=(8.75, 7), nrows=3, ncols=3, sharey=True, sharex=True)
-# fig, axs = plt.subplots(nrows=3, ncols=3, sharey=True, sharex=True)
 fig.subplots_adjust(wspace=0.05)
 for (i, mu) in enumerate(lo_mus):
     # get indices for data
@@ -100,7 +99,7 @@ for (i, mu) in enumerate(lo_mus):
     axn.set_title(r"$\mu = " + str(mu + 0.05)[0:4]+ r"$")
 
 # label the axes
-fig.supxlabel(r"{\rm Relative\ Flattened\ Intensity}")
+fig.supxlabel(r"{\rm Relative\ Intensity}")
 fig.supylabel(r"{\rm Probability\ Density}")
 
 # prepare the legend
@@ -110,9 +109,9 @@ fig.legend(handles, labels, ncol=3, loc='upper center', handletextpad=0.15, bbox
 fig.savefig(plotdir + "fig7b.pdf", bbox_inches="tight")
 plt.clf(); plt.close()
 
+
 # plot by mu
 fig, axs = plt.subplots(figsize=(8.75, 7), nrows=3, ncols=3, sharey=True, sharex=True)
-# fig, axs = plt.subplots(nrows=3, ncols=3, sharey=True, sharex=True)
 fig.subplots_adjust(wspace=0.05)
 for (i, mu) in enumerate(lo_mus):
     # get indices for data
