@@ -10,7 +10,7 @@ setuptools.setup(
     author_email="palumbo@psu.edu",
     description="Reduce SDO images.",
     install_requires=[
-        'numpy'
+        'numpy',
         'pandas',
         'matplotlib==3.5.1',
         'PyQt5==5.15.6',
