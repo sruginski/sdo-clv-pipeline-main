@@ -9,9 +9,18 @@ setuptools.setup(
     author="Michael L. Palumbo",
     author_email="palumbo@psu.edu",
     description="Reduce SDO images.",
-    # long_description=long_description,
-    # long_description_content_type="text/markdown",
-    # url="https://github.com/pypa/sampleproject",
+    install_requires=[
+        'numpy'
+        'pandas',
+        'matplotlib==3.5.1',
+        'PyQt5==5.15.6',
+        'pyshtools==4.10.1',
+        'sunpy==4.0.4',
+        'astropy==5.1',
+        'scipy==1.9.2',
+        'reproject==0.8',
+        'scikit-image==0.19.3'
+    ],
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

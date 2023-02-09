@@ -4,7 +4,6 @@ import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
-from IPython import embed
 from sunpy.map import Map as sun_map
 from sunpy.coordinates import frames
 
