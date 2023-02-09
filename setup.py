@@ -12,9 +12,9 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'pandas',
+        'pyshtools @ git+https://github.com/SHTOOLS/SHTOOLS@v4.10.1#egg=pyshtools',
         'matplotlib==3.5.1',
         'PyQt5==5.15.6',
-        'pyshtools==4.10.1',
         'sunpy==4.0.4',
         'astropy==5.1',
         'scipy==1.9.2',
