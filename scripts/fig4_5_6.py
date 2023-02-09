@@ -319,6 +319,9 @@ for i in range(n_mu_samps):
 
     ylims[i] = axs[0,i].get_ylim()[1]
 
+    if i == n_mu_samps - 1:
+        axs[0,i].legend(fontsize=10)
+
     if i > 0:
         axs[0,i].set_yticklabels([])
 
@@ -340,6 +343,9 @@ for i in range(n_mu_samps):
     # label stuff
     # axs[1,i].set_xlabel(xlabel)
     axs[1,i].set_xlim(-250,250)
+
+    if i == n_mu_samps - 1:
+        axs[1,i].legend(fontsize=10)
 
     ylims[i] = axs[1,i].get_ylim()[1]
 
