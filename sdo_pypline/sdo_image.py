@@ -1,5 +1,5 @@
 import numpy as np
-import pdb, ipdb, warnings
+import pdb, warnings
 import astropy.units as u
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
