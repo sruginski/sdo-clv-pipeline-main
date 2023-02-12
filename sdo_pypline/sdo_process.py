@@ -136,9 +136,6 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # append full-disk results
     results.append([mjd, np.nan, np.nan, np.nan, all_pixels, all_light, *vels, mags, *ints])
 
-    # allocate for region mask
-    region_mask = np.ones(np.shape(mask.regions)).astype(int)
-
     # loop over the mu annuli
     mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
     regions = [1, 2, 2.5, 3, 4, 5, 6]
