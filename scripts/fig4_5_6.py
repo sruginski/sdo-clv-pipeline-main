@@ -73,6 +73,9 @@ lo_mus = np.unique(plage.lo_mu)
 hi_mus = np.unique(plage.hi_mu)
 mu_bin = (lo_mus + hi_mus) / 2.0
 
+# plot red/blue
+plot_rb = False
+
 # get stats
 def clv_plot(fname=None):
     # set error bar props
@@ -106,13 +109,14 @@ def clv_plot(fname=None):
                       capthick=capthick, elinewidth=elinewidth, color=nw_color, label=r"${\rm Network}$")
     axs[0,0].fill_between(mu_bin, network_avg - network_std, network_avg + network_std, color=nw_color, alpha=0.4)
 
-    axs[1,0].errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=rp_marker, capsize=capsize,
-                      capthick=capthick, elinewidth=elinewidth, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-    axs[1,0].fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.4)
+    if plot_rb:
+        axs[1,0].errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=rp_marker, capsize=capsize,
+                          capthick=capthick, elinewidth=elinewidth, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+        axs[1,0].fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.4)
 
-    axs[1,0].errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=bp_marker, capsize=capsize,
-                      capthick=capthick, elinewidth=elinewidth, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
-    axs[1,0].fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.4)
+        axs[1,0].errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=bp_marker, capsize=capsize,
+                          capthick=capthick, elinewidth=elinewidth, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+        axs[1,0].fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.4)
 
     axs[1,0].errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=pu_marker, capsize=capsize,
                       capthick=capthick, elinewidth=elinewidth, color=pu_color, label=r"${\rm Penumbrae}$")
@@ -139,13 +143,14 @@ def clv_plot(fname=None):
                  capthick=capthick, elinewidth=elinewidth, color=nw_color, label=r"${\rm Network}$")
     axs[0,1].fill_between(mu_bin, network_avg - network_std, network_avg + network_std, color=nw_color, alpha=0.4)
 
-    axs[1,1].errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=rp_marker, capsize=capsize,
-                 capthick=capthick, elinewidth=elinewidth, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
-    axs[1,1].fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.4)
+    if plot_rb:
+        axs[1,1].errorbar(mu_bin, red_penumbrae_avg, yerr=red_penumbrae_err, fmt=rp_marker, capsize=capsize,
+                     capthick=capthick, elinewidth=elinewidth, color=rp_color, label=r"${\rm Red\ Penumbrae}$")
+        axs[1,1].fill_between(mu_bin, red_penumbrae_avg - red_penumbrae_std, red_penumbrae_avg + red_penumbrae_std, color=rp_color, alpha=0.4)
 
-    axs[1,1].errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=bp_marker, capsize=capsize,
-                 capthick=capthick, elinewidth=elinewidth, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
-    axs[1,1].fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.4)
+        axs[1,1].errorbar(mu_bin, blue_penumbrae_avg, yerr=blue_penumbrae_err, fmt=bp_marker, capsize=capsize,
+                     capthick=capthick, elinewidth=elinewidth, color=bp_color, label=r"${\rm Blue\ Penumbrae}$")
+        axs[1,1].fill_between(mu_bin, blue_penumbrae_avg - blue_penumbrae_std, blue_penumbrae_avg + blue_penumbrae_std, color=bp_color, alpha=0.4)
 
     axs[1,1].errorbar(mu_bin, penumbrae_avg, yerr=penumbrae_err, fmt=pu_marker, capsize=capsize,
                  capthick=capthick, elinewidth=elinewidth, color=pu_color, label=r"${\rm Penumbrae}$")
@@ -216,8 +221,9 @@ for i in range(n_mu_samps):
 
     # plot this mu
     axs[0,i].hist(umbrae[colname][idx1], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Umbrae}")
-    axs[0,i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
-    axs[0,i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
+    if plot_rb:
+        axs[0,i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
+        axs[0,i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
     axs[0,i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=pu_color, histtype="step", label=r"{\rm Penumbrae}")
 
     # label stuff
@@ -249,6 +255,7 @@ for i in range(n_mu_samps):
 
     # label stuff
     axs[1,i].set_xlim(-250,250)
+    # axs[1,i].set_xlim(0,500)
 
     ylims[i] = axs[1,i].get_ylim()[1]
 
@@ -272,6 +279,7 @@ for i in range(n_mu_samps):
     # label stuff
     # axs[2,i].set_xlabel(xlabel)
     axs[2,i].set_xlim(-150,150)
+    # axs[2,i].set_xlim(0,50)
 
     ylims[i] = axs[2,i].get_ylim()[1]
 
@@ -309,13 +317,14 @@ for i in range(n_mu_samps):
 
     # plot this mu
     axs[0,i].hist(umbrae[colname][idx1], bins="auto", density=True, color=um_color, histtype="step", label=r"{\rm Umbrae}")
-    axs[0,i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
-    axs[0,i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
+    if plot_rb:
+        axs[0,i].hist(red_penumbrae[colname][idx2], bins="auto", density=True, color=rp_color, histtype="step", label=r"{\rm Red\ Penumbrae}")
+        axs[0,i].hist(blu_penumbrae[colname][idx3], bins="auto", density=True, color=bp_color, histtype="step", label=r"{\rm Blue\ Penumbrae}")
     axs[0,i].hist(penumbrae[colname][idx4], bins="auto", density=True, color=pu_color, histtype="step", label=r"{\rm Penumbrae}")
 
     # label stuff
     axs[0,i].set_title(r"$\mu = " + str(mu_samps[i] + 0.05)[0:4]+ r"$")
-    axs[0,i].set_xlim(-1200, 1200)
+    # axs[0,i].set_xlim(-1200, 1200)
 
     ylims[i] = axs[0,i].get_ylim()[1]
 

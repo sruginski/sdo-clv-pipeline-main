@@ -20,6 +20,40 @@ def mask_zero_v_conv(df):
     idx = (df.v_hat == df.v_quiet)
     return df[~idx]
 
+def daily_bin(df):
+    # create output df
+    df_out = pd.DataFrame(columns=df.columns)
+
+    # do a daily binning
+    mjds, idx = np.unique(np.round(df.mjd), return_index=True)
+    mus = np.unique(df.lo_mu)
+
+
+    if np.all(np.isnan(mus)):
+        # loop over unique dates and mus
+        for i in range(len(mjds)-1):
+            rows = df[idx[i]:idx[i+1]]
+            to_append = rows.mean().to_frame(1).T
+            df_out = pd.concat([df_out, to_append], ignore_index=True)
+    else:
+        # loop over unique dates and mus
+        for i in range(len(mjds)-1):
+            rows = df[idx[i]:idx[i+1]]
+            for j in range(len(mus)):
+                # select the rows
+                to_append = (rows[rows.lo_mu == mus[j]]).mean().to_frame(1).T
+                if np.all(np.isnan(to_append)):
+                    continue
+
+                # append to the output data frame
+                df_out = pd.concat([df_out, to_append], ignore_index=True)
+
+    # deal with inexact errors in mu values
+    df_out.lo_mu = np.round(df_out.lo_mu.to_numpy(), decimals=1)
+    df_out.hi_mu = np.round(df_out.hi_mu.to_numpy(), decimals=1)
+
+    return df_out
+
 # sort out paths
 datadir = str(root / "data") + "/"
 
@@ -39,6 +73,8 @@ df_all.reset_index(drop=True, inplace=True)
 df_full_disk = df_all[(np.isnan(df_all.lo_mu)) & np.isnan(df_all.region)]
 df_full_disk.reset_index(drop=True, inplace=True)
 df_full_disk.to_csv(outdir + "full_disk.csv", index=False)
+full_disk_daily = daily_bin(df_full_disk)
+full_disk_daily.to_csv(outdir + "full_disk_daily.csv", index=False)
 
 """
 # find dates with extreme outliers
@@ -63,27 +99,41 @@ umbrae = df_all[df_all.region == 1.0]
 plage = mask_all_zero_rows(plage)
 plage.reset_index(drop=True, inplace=True)
 plage.to_csv(outdir + "plage.csv", index=False)
+plage_daily = daily_bin(plage)
+plage_daily.to_csv(outdir + "plage_daily.csv", index=False)
 
 network = mask_all_zero_rows(network)
 network.reset_index(drop=True, inplace=True)
 network.to_csv(outdir + "network.csv", index=False)
+network_daily = daily_bin(network)
+network_daily.to_csv(outdir + "network_daily.csv", index=False)
 
 quiet_sun = mask_all_zero_rows(quiet_sun)
 quiet_sun.reset_index(drop=True, inplace=True)
 quiet_sun.to_csv(outdir + "quiet_sun.csv", index=False)
+quiet_sun_daily = daily_bin(quiet_sun)
+quiet_sun_daily.to_csv(outdir + "quiet_sun_daily.csv", index=False)
 
 red_penumbrae = mask_all_zero_rows(red_penumbrae)
 red_penumbrae.reset_index(drop=True, inplace=True)
 red_penumbrae.to_csv(outdir + "red_penumbrae.csv", index=False)
+red_penumbrae_daily = daily_bin(red_penumbrae)
+red_penumbrae_daily.to_csv(outdir + "red_penumbrae_daily.csv", index=False)
 
 all_penumbrae = mask_all_zero_rows(all_penumbrae)
 all_penumbrae.reset_index(drop=True, inplace=True)
 all_penumbrae.to_csv(outdir + "penumbrae.csv", index=False)
+all_penumbrae_daily = daily_bin(all_penumbrae)
+all_penumbrae_daily.to_csv(outdir + "penumbrae_daily.csv", index=False)
 
 blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
 blu_penumbrae.reset_index(drop=True, inplace=True)
 blu_penumbrae.to_csv(outdir + "blu_penumbrae.csv", index=False)
+blu_penumbrae_daily = daily_bin(blu_penumbrae)
+blu_penumbrae_daily.to_csv(outdir + "blu_penumbrae_daily.csv", index=False)
 
 umbrae = mask_all_zero_rows(umbrae)
 umbrae.reset_index(drop=True, inplace=True)
 umbrae.to_csv(outdir + "umbrae.csv", index=False)
+umbrae_daily = daily_bin(umbrae)
+umbrae_daily.to_csv(outdir + "umbrae_daily.csv", index=False)

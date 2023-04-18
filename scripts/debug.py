@@ -64,6 +64,18 @@ def main():
     v_hat_whole1 = calc_velocities(con1, mag1, dop1, aia1, mask1)[0]
     v_hat1, v_phot1, _, v_conv1 = calc_velocities(con1, mag1, dop1, aia1, mask1, region_mask=region_mask1, v_quiet=v_quiet1)
     light1 = np.nansum(region_mask1 * con1.image)/np.nansum(con1.image)
+    nred1 = np.nansum(mask1.is_red_penumbra())
+    nblu1 = np.nansum(mask1.is_blue_penumbra())
+    nall1 = np.nansum(mask1.is_penumbra())
+    v_hat1_red = calc_velocities(con1, mag1, dop1, aia1, mask1, region_mask=mask1.is_red_penumbra(), v_quiet=v_quiet1)[0]
+    v_hat1_blu = calc_velocities(con1, mag1, dop1, aia1, mask1, region_mask=mask1.is_blue_penumbra(), v_quiet=v_quiet1)[0]
+
+    all_light1 = np.nansum(con1.image * mask1.is_penumbra()) / np.nansum(mask1.is_penumbra())
+    blu_light1 = np.nansum(con1.image * mask1.is_blue_penumbra()) / np.nansum(mask1.is_penumbra())
+    red_light1 = np.nansum(con1.image * mask1.is_red_penumbra()) / np.nansum(mask1.is_penumbra())
+
+    test = (v_hat1_red * nred1 + v_hat1_blu * nblu1) / nall1
+    test2 = (v_hat1_red * red_light1 + v_hat1_blu * blu_light1) / all_light1
 
     # get quietsun velocity
     v_quiet2 = np.nansum(dop2.v_corr * con2.image * mask2.is_quiet_sun())
@@ -85,7 +97,7 @@ def main():
     v_hat3, v_phot3, _, v_conv3 = calc_velocities(con3, mag3, dop3, aia3, mask3, region_mask=region_mask3, v_quiet=v_quiet3)
     light3 = np.nansum(region_mask2 * con3.image)/np.nansum(con3.image)
 
-
+    pdb.set_trace()
 
     cmap = plt.get_cmap("seismic").copy()
     cmap.set_bad(color="none")

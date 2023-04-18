@@ -144,7 +144,7 @@ class SDOImage(object):
         self.image /= self.mu
         return None
 
-    def correct_dopplergram(self):
+    def correct_dopplergram(self, fit_cbs=False):
         assert self.is_dopplergram()
 
         # get mask excluding nans / sqrts of negatives
@@ -154,7 +154,7 @@ class SDOImage(object):
         # velocity components
         self.v_grav = 633 # m/s, constant
         self.calc_spacecraft_vel() # spacecraft velocity
-        self.calc_bulk_vel() # differential rotation + meridional flows + cbs
+        self.calc_bulk_vel(fit_cbs=fit_cbs) # differential rotation + meridional flows + cbs
         return None
 
     def calc_spacecraft_vel(self):

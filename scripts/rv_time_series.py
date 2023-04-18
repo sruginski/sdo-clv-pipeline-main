@@ -16,39 +16,43 @@ datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
 
 # read in the data and sort by mjd
-df_vels = pd.read_csv(datadir + "velocities.csv")
-df_vels.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
-df_vels.drop_duplicates()
+df_vels = pd.read_csv(datadir + "processed/full_disk.csv")
 
-df_pixels = pd.read_csv(datadir + "pixel_stats.csv")
-df_pixels.sort_values(by=["mjd", "lo_mu"], inplace=True)
-df_pixels.drop_duplicates()
+# df_pixels = pd.read_csv(datadir + "pixel_stats.csv")
+# df_pixels.sort_values(by=["mjd", "lo_mu"], inplace=True)
+# df_pixels.drop_duplicates()
 
-df_light = pd.read_csv(datadir + "light_stats.csv")
-df_light.sort_values(by=["mjd", "lo_mu"], inplace=True)
-df_light.drop_duplicates()
+# df_light = pd.read_csv(datadir + "light_stats.csv")
+# df_light.sort_values(by=["mjd", "lo_mu"], inplace=True)
+# df_light.drop_duplicates()
 
-df_intensities = pd.read_csv(datadir + "intensities.csv")
-df_intensities.sort_values(by=["mjd"], inplace=True)
-df_intensities.drop_duplicates()
+# df_intensities = pd.read_csv(datadir + "intensities.csv")
+# df_intensities.sort_values(by=["mjd"], inplace=True)
+# df_intensities.drop_duplicates()
 
 # get numbers computed for full disk
-df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
-df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
-df_light_full = df_light[np.isnan(df_light.lo_mu)]
+# df_vels_full = df_vels[(np.isnan(df_vels.lo_mu)) & (df_vels.region == 0.0)]
+# df_pixels_full = df_pixels[np.isnan(df_pixels.lo_mu)]
+# df_light_full = df_light[np.isnan(df_light.lo_mu)]
+
+
+derp, idx = np.unique(np.round(df_vels.mjd), return_index=True)
 
 # plot full disk time series
 fig = plt.figure()
 ax1 = fig.add_subplot()
-ax1.scatter(df_vels_full.mjd, df_vels_full.v_hat, s=2, label="v_hat")
-ax1.scatter(df_vels_full.mjd, df_vels_full.v_phot, s=2, label="v_phot")
-ax1.scatter(df_vels_full.mjd, df_vels_full.v_conv, s=2, label="v_conv")
-ax1.scatter(df_vels_full.mjd, df_vels_full.v_quiet, s=2, label="v_quiet")
+ax1.scatter(df_vels.mjd[idx], df_vels.v_hat[idx], s=2, label="v_hat")
+ax1.scatter(df_vels.mjd[idx], df_vels.v_phot[idx], s=2, label="v_phot")
+ax1.scatter(df_vels.mjd[idx], df_vels.v_conv[idx], s=2, label="v_conv")
+ax1.scatter(df_vels.mjd[idx], df_vels.v_quiet[idx], s=2, label="v_quiet")
 ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"${\rm Velocity\ (m/s)}$")
 ax1.legend(ncol=2, fontsize=9)
 fig.savefig(plotdir + "full_disk_series.pdf")
+plt.show()
 plt.clf(); plt.close()
+
+exit()
 
 # get regions only
 df_vels_regs = df_vels[df_vels.region > 0.0]

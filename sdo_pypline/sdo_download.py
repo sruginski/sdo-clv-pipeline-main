@@ -8,17 +8,21 @@ from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
 
-def download_data(outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
+def download_data(series="45", outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
     # set time attributes for search
-    start += 'T00:00:00'
-    end += 'T24:00:00'
+    start += "T00:00:00"
+    end += "24:00:00"
     trange = a.Time(start, end)
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
+    notify = a.jsoc.Notify("mlp95@psu.edu")
 
     # set attributes for HMI query
     instr1 = a.Instrument.hmi
-    physobs = (a.Physobs.intensity | a.Physobs.los_magnetic_field | a.Physobs.los_velocity)
+    if series == "45":
+        physobs = (a.Physobs.intensity | a.Physobs.los_magnetic_field | a.Physobs.los_velocity)
+    else:
+        physobs = (a.jsoc.Series("hmi.M_720s") | a.jsoc.Series("hmi.V_720s") | a.jsoc.Series("hmi.Ic_720s"))
 
     # set attributes for AIA query
     level = a.Level(1)
@@ -26,7 +30,10 @@ def download_data(outdir=None, start=None, end=None, sample=None, overwrite=Fals
     wavelength = a.Wavelength(1700. * u.AA)
 
     # get query for HMI and download data, retry failed downloads
-    con, mag, vel = Fido.search(trange, instr1, physobs, provider, sample)
+    if series == "45":
+        con, mag, vel = Fido.search(trange, instr1, physobs, sample)
+    else:
+        con, mag, vel = Fido.search(trange, physobs2, sample, notify)
     print("About to fetch HMI files starting at date %s" % start)
     hmi_files = Fido.fetch(con, mag, vel, path=outdir, overwrite=overwrite, progress=progress)
     while len(hmi_files.errors) > 0:
