@@ -11,8 +11,7 @@ from astropy.units.quantity import AstropyDeprecationWarning
 def download_data(series="45", outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
     # set time attributes for search
     start += "T00:00:00"
-    end += "24:00:00"
-    pdb.set_trace()
+    end += "T24:00:00"
     trange = a.Time(start, end)
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
