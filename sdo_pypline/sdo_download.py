@@ -57,7 +57,7 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     mag_files = [s for s in hmi_files if "magn" in s]
     dop_files = [s for s in hmi_files if "dopp" in s]
     aia_files = list(map(str, aia_files))
-    return *con_files, *mag_files, *dop_files, *aia_files
+    return con_files, mag_files, dop_files, aia_files
 
 def main():
     # supress warnings

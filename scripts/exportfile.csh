@@ -16,6 +16,11 @@
 # will get you the most recent SDO/HMI line-of-sight magnetogram if you replace the XXX@YYY.ZZZ with your
 # registered email address (see below)
 
+# exportfile.csh 'hmi.M_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# exportfile.csh 'hmi.V_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+
+
 set noglob
 
 if ($#argv != 2) then

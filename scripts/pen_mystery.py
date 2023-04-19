@@ -19,12 +19,31 @@ datadir = str(root / "data") + "/"
 plotdir = str(root / "figures") + "/"
 
 def main():
-    # get the data
-    start = "2014/01/05"
-    end = "2014/01/09"
-    sample = 24
-    con, mag, dop, aia = download_data(outdir=datadir + "fits/", start=start, end=end, sample=sample)
+    # # get the data
+    # start = "2014/01/05"
+    # end = "2014/01/11"
+    # sample = 24
+    # con, mag, dop, aia = download_data(outdir=datadir + "fits/", start=start, end=end, sample=sample)
 
+    # get file names
+    con_file1 = datadir + "fits/hmi_ic_45s_2014_01_05_00_01_30_tai_continuum.fits"
+    dop_file1 = datadir + "fits/hmi_v_45s_2014_01_05_00_01_30_tai_dopplergram.fits"
+    mag_file1 = datadir + "fits/hmi_m_45s_2014_01_05_00_01_30_tai_magnetogram.fits"
+    aia_file1 = datadir + "fits/aia_lev1_1700a_2014_01_05t00_00_30_74z_image_lev1.fits"
+
+    con_file2 = datadir + "fits/hmi_ic_45s_2014_01_08_00_47_15_tai_continuum.fits"
+    dop_file2 = datadir + "fits/hmi_v_45s_2014_01_08_00_47_15_tai_dopplergram.fits"
+    mag_file2 = datadir + "fits/hmi_m_45s_2014_01_08_00_47_15_tai_magnetogram.fits"
+    aia_file2 = datadir + "fits/aia_lev1_1700a_2014_01_08t00_00_30_71z_image_lev1.fits"
+
+    con_file3 = datadir + "fits/hmi_ic_45s_2014_01_11_00_01_30_tai_continuum.fits"
+    dop_file3 = datadir + "fits/hmi_v_45s_2014_01_11_00_01_30_tai_dopplergram.fits"
+    mag_file3 = datadir + "fits/hmi_m_45s_2014_01_11_00_01_30_tai_magnetogram.fits"
+    aia_file3 = datadir + "fits/aia_lev1_1700a_2014_01_11t00_00_30_71z_image_lev1.fits"
+
+    con1, mag1, dop1, aia1, mask1 = reduce_sdo_images(con_file1, mag_file1, dop_file1, aia_file1)
+    con2, mag2, dop2, aia2, mask2 = reduce_sdo_images(con_file2, mag_file2, dop_file2, aia_file2)
+    con3, mag3, dop3, aia3, mask3 = reduce_sdo_images(con_file3, mag_file3, dop_file3, aia_file3)
 
     pdb.set_trace()
 
