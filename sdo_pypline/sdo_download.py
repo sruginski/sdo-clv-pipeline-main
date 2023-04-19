@@ -16,6 +16,7 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
     notify = a.jsoc.Notify("mlp95@psu.edu")
+    quality = a.jsoc.Keyword("QUALLEV1") == 0
 
     # set attributes for HMI query
     instr1 = a.Instrument.hmi
@@ -37,7 +38,7 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
     elif series == "720":
-        con, mag, vel = Fido.search(trange, physobs, sample, notify)
+        con, mag, vel = Fido.search(trange, physobs, sample, notify, quality)
     else:
         return None
 
