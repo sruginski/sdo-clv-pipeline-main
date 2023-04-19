@@ -32,8 +32,6 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     instr2 = a.Instrument.aia
     wavelength = a.Wavelength(1700. * u.AA)
 
-    pdb.set_trace()
-
     # get query for HMI and download data, retry failed downloads
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
@@ -44,15 +42,15 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
 
     print("About to fetch HMI files starting at date %s" % start)
     hmi_files = Fido.fetch(con, mag, vel, path=outdir, overwrite=overwrite, progress=progress)
-    while len(hmi_files.errors) > 0:
-        hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=overwrite, progress=progress)
+    # while len(hmi_files.errors) > 0:
+    #     hmi_files = Fido.fetch(hmi_files, path=outdir, overwrite=overwrite, progress=progress)
 
     # get query for AIA and download data
     aia = Fido.search(trange, instr2, wavelength, level, provider, sample)
     print("About to fetch AIA files starting at date %s" % start)
     aia_files = Fido.fetch(aia, path=outdir, overwrite=overwrite, progress=progress)
-    while len(aia_files.errors) > 0:
-        aia_files = Fido.fetch(aia_files, path=outdir, overwrite=overwrite, progress=progress)
+    # while len(aia_files.errors) > 0:
+    #     aia_files = Fido.fetch(aia_files, path=outdir, overwrite=overwrite, progress=progress)
 
     # sort out filenames into categories for output
     con_files = [s for s in hmi_files if "cont" in s]
