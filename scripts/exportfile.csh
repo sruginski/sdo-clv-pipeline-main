@@ -16,12 +16,9 @@
 # will get you the most recent SDO/HMI line-of-sight magnetogram if you replace the XXX@YYY.ZZZ with your
 # registered email address (see below)
 
-# csh exportfile.csh 'hmi.M_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
-# csh exportfile.csh 'hmi.V_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
-# csh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
-
-
-# csh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2012.01.01_10:00_TAI@4h]' mlp95@psu.edu
+# tcsh exportfile.csh 'hmi.M_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# tcsh exportfile.csh 'hmi.V_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# tcsh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2012.12.31_24:00_TAI@4h]' mlp95@psu.edu
 
 
 set noglob
@@ -41,7 +38,7 @@ set ds=`perl ./url_escape.pl "$1"`
 # or just make one via http://jsoc.stanford.edu/ajax/register_email.html
 # Change the '$2' in the line below to your notify address if you want the script to not need a second argument.
 
-set notify = `perl ./url_escape.pl "$2"`
+set notify=`perl ./url_escape.pl "$2"`
 
 # for FITS without full headers use fastest method use the next 2 lines:
 
@@ -58,26 +55,25 @@ set protocol="FITS"
 # to specify filename formats add the "filenamefmt" command to the cmd line below.
 # you will need to url_escape the filenamefmt. 
 
-set ffmt = `perl ./url_escape.pl '{seriesname}.{T_REC:A}.{segment}'`
+set ffmt=`perl ./url_escape.pl '{seriesname}.{T_REC:A}.{segment}'`
 
 set op=exp_request
 
-set cmd = "op=$op&ds=$ds&process=n=0|no_op&method=$method&format=txt&protocol=$protocol&filenamefmt=$ffmt&notify=$notify&requestor=none&sizeratio=1"
+set cmd="op=$op&ds=$ds&process=n=0|no_op&method=$method&format=txt&protocol=$protocol&filenamefmt=$ffmt&notify=$notify&requestor=none&sizeratio=1"
 
 set JSOC="http://jsoc.stanford.edu"
 set FETCH="$JSOC/cgi-bin/ajax/jsoc_fetch"
 
 # Make a place to put the handshake information
-set RESP = /tmp/jsoc_export.$$
-
+set RESP=/tmp/jsoc_export.$$
 wget -S -nv -O $RESP  $FETCH?"$cmd"
-if ($status) then
+if ($?) then
   wget failed, response was: $RESP
   exit
 endif
 
 if ($method == "url") then
-  set Status = "`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
+  set Status="`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
   set $Status
   if ($Status == 4) then
     echo "Export request failed, status=" $Status
@@ -102,11 +98,11 @@ if ($method == "url") then
   while (1)
     sleep 3
     wget  -S -O $RESP $FETCH?"$qry"
-    if ($status) then
+    if ($?) then
       wget failed, response was: $RESP
       exit
     endif
-    set Status = "`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
+    set Status="`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
     set $Status
     if ($Status == 0) break
     if ($Status == 6) then
@@ -120,7 +116,7 @@ if ($method == "url") then
   end
 
 else if ($method == "url_quick") then
-  set Status = "`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
+  set Status="`grep status $RESP | sed -e 's/[{}]//g' -e 's/: / = /' -e 's/"status"/Status/' -e 's/,.*//'`"
   set $Status
   if ($Status == 4) then
     echo "Export request failed, status=" $Status
@@ -143,13 +139,13 @@ set $count
 # loop through files and fetch them.
 
 while ($count > 0)
-  set REC = `tail --lines=$count $RESP | head -1`
-  set QUERY = $REC[1]
-  set FILE = $REC[2]
-  set URL = $JSOC$dir/$FILE
+  set REC=`tail --lines=$count $RESP | head -1`
+  set QUERY=$REC[1]
+  set FILE=$REC[2]
+  set URL=$JSOC$dir/$FILE
   echo Fetching $QUERY as `basename $FILE`
   wget -S -nv $URL
-  if ($status) then
+  if ($?) then
     wget failed, response was: $RESP
     exit
   endif
