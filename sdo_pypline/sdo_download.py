@@ -12,6 +12,7 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     # set time attributes for search
     start += "T00:00:00"
     end += "24:00:00"
+    pdb.set_trace()
     trange = a.Time(start, end)
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
