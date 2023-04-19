@@ -35,7 +35,7 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
     elif series == "720":
-        con, mag, vel = Fido.search(trange, physobs2, sample, notify)
+        con, mag, vel = Fido.search(trange, physobs, sample, notify)
     else:
         return None
 
