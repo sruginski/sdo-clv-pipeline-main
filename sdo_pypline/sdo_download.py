@@ -31,6 +31,8 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     instr2 = a.Instrument.aia
     wavelength = a.Wavelength(1700. * u.AA)
 
+    pdb.set_trace()
+
     # get query for HMI and download data, retry failed downloads
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
