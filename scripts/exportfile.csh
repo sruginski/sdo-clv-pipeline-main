@@ -16,9 +16,9 @@
 # will get you the most recent SDO/HMI line-of-sight magnetogram if you replace the XXX@YYY.ZZZ with your
 # registered email address (see below)
 
-# exportfile.csh 'hmi.M_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
-# exportfile.csh 'hmi.V_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
-# exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# csh exportfile.csh 'hmi.M_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# csh exportfile.csh 'hmi.V_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
+# csh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
 
 
 set noglob
@@ -32,13 +32,13 @@ endif
 # get desired recordset and encode for transmitting
 # you can get the following url_escape script at http://jsoc.stanford.edu/ajax/
 
-set ds=`url_escape.pl "$1"`
+set ds=`perl ./url_escape.pl "$1"`
 
 # You MUST now include a valid registered email address.  You can use a prior exportdata "notify" email address
 # or just make one via http://jsoc.stanford.edu/ajax/register_email.html
 # Change the '$2' in the line below to your notify address if you want the script to not need a second argument.
 
-set notify = `url_escape.pl "$2"`
+set notify = `perl ./url_escape.pl "$2"`
 
 # for FITS without full headers use fastest method use the next 2 lines:
 
@@ -55,7 +55,7 @@ set protocol="FITS"
 # to specify filename formats add the "filenamefmt" command to the cmd line below.
 # you will need to url_escape the filenamefmt. 
 
-set ffmt = `url_escape.pl '{seriesname}.{T_REC:A}.{segment}'`
+set ffmt = `perl ./url_escape.pl '{seriesname}.{T_REC:A}.{segment}'`
 
 set op=exp_request
 
