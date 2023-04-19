@@ -21,6 +21,9 @@
 # csh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2015.12.31_24:00_TAI@4h]' mlp95@psu.edu
 
 
+# csh exportfile.csh 'hmi.Ic_720s[2012.01.01_00:00_TAI-2012.01.01_10:00_TAI@4h]' mlp95@psu.edu
+
+
 set noglob
 
 if ($#argv != 2) then
@@ -68,7 +71,7 @@ set FETCH="$JSOC/cgi-bin/ajax/jsoc_fetch"
 set RESP = /tmp/jsoc_export.$$
 
 wget -S -nv -O $RESP  $FETCH?"$cmd"
-if ($?) then
+if ($status) then
   wget failed, response was: $RESP
   exit
 endif
@@ -99,7 +102,7 @@ if ($method == "url") then
   while (1)
     sleep 3
     wget  -S -O $RESP $FETCH?"$qry"
-    if ($?) then
+    if ($status) then
       wget failed, response was: $RESP
       exit
     endif
@@ -146,7 +149,7 @@ while ($count > 0)
   set URL = $JSOC$dir/$FILE
   echo Fetching $QUERY as `basename $FILE`
   wget -S -nv $URL
-  if ($?) then
+  if ($status) then
     wget failed, response was: $RESP
     exit
   endif
