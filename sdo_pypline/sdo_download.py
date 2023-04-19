@@ -21,8 +21,10 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     instr1 = a.Instrument.hmi
     if series == "45":
         physobs = (a.Physobs.intensity | a.Physobs.los_magnetic_field | a.Physobs.los_velocity)
-    else:
+    elif series == "720":
         physobs = (a.jsoc.Series("hmi.M_720s") | a.jsoc.Series("hmi.V_720s") | a.jsoc.Series("hmi.Ic_720s"))
+    else:
+        return None
 
     # set attributes for AIA query
     level = a.Level(1)
@@ -32,8 +34,11 @@ def download_data(series="45", outdir=None, start=None, end=None, sample=None, o
     # get query for HMI and download data, retry failed downloads
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
-    else:
+    elif series == "720":
         con, mag, vel = Fido.search(trange, physobs2, sample, notify)
+    else:
+        return None
+
     print("About to fetch HMI files starting at date %s" % start)
     hmi_files = Fido.fetch(con, mag, vel, path=outdir, overwrite=overwrite, progress=progress)
     while len(hmi_files.errors) > 0:
