@@ -28,7 +28,7 @@ def find_data(indir, globexp=""):
     # find the data
     con_files, con_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*con*.fits"))
     mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*mag*.fits"))
-    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*dop*.fits"))
+    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*op*.fits"))
     aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*" + globexp + ".fits"))
 
     # find datetimes that are in *all* lists
