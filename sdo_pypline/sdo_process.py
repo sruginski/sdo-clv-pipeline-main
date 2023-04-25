@@ -18,6 +18,11 @@ def is_quality_data(sdo_image):
     return sdo_image.quality == 0
 
 def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit_cbs=False):
+    assert exists(con_file)
+    assert exists(mag_file)
+    assert exists(dop_file)
+    assert exists(aia_file)
+
     # get the datetime
     iso = get_date(con_file).isoformat()
 

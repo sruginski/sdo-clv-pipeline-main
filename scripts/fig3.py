@@ -27,11 +27,15 @@ um_color = "tab:gray" # colors[7]
 
 def main():
     # get the sdo data to plot
-    con, mag, dop, aia = download_plot_data()
+    # conf, magf, dopf, aiaf = download_plot_data()
+    conf = datadir + "fits/" + "hmi.Ic_720s.20140107_040000_TAI.continuum.fits"
+    magf = datadir + "fits/" + "hmi.M_720s.20140107_040000_TAI.magnetogram.fits"
+    dopf = datadir + "fits/" + "hmi.V_720s.20140107_040000_TAI.Dopplergram.fits"
+    aiaf = datadir + "fits/" + "aia_lev1_1700a_2014_01_07t04_00_30_71z_image_lev1.fits"
 
     # reduce the data
     print(">>> Processing and plotting data...")
-    con, mag, dop, aia, mask = reduce_sdo_images(con, mag, dop, aia, mu_thresh=0.1)
+    con, mag, dop, aia, mask = reduce_sdo_images(conf, magf, dopf, aiaf)
 
     con_flat = con.iflat[~np.isnan(con.iflat)] / con.ld_coeffs[0]
     mag_img = mag.image[~np.isnan(mag.image)]
@@ -88,34 +92,34 @@ def main():
     fig.savefig(plotdir + "fig3b.pdf")
     plt.clf(); plt.close()
 
-    # plot the distribution of bright AIA intensities
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="--", c="k")
-    ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=pl_color, hatch="/", alpha=0.75)
-    ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=nw_color, hatch="\\", alpha=0.75)
-    x1, bins, patches = ax1.hist(aia_not_dark, cumulative=False, bins="auto", lw=2, color="black", histtype="step", density=True)
-    ax1.set_xscale("log")
-    ax1.set_xlim(ax1.get_xlim()[0], np.max(aia_not_dark))
-    ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
-    ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    fig.savefig(plotdir + "bright_derp.pdf")
-    plt.show()
-    plt.clf(); plt.close()
+    # # plot the distribution of bright AIA intensities
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="--", c="k")
+    # ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=pl_color, hatch="/", alpha=0.75)
+    # ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=nw_color, hatch="\\", alpha=0.75)
+    # x1, bins, patches = ax1.hist(aia_not_dark, cumulative=False, bins="auto", lw=2, color="black", histtype="step", density=True)
+    # ax1.set_xscale("log")
+    # ax1.set_xlim(ax1.get_xlim()[0], np.max(aia_not_dark))
+    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
+    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    # fig.savefig(plotdir + "bright_derp.pdf")
+    # plt.show()
+    # plt.clf(); plt.close()
 
-    # plot the distribution of bright AIA intensities
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-    ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="--", c="k")
-    ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=pl_color, hatch="/", alpha=0.75)
-    ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=nw_color, hatch="\\", alpha=0.75)
-    x1, bins, patches = ax1.hist(aia_not_dark[aia_not_dark >= mask.aia_thresh/aia.ld_coeffs[0]], cumulative=False, bins="auto", lw=2, color="black", histtype="step", density=True)
-    ax1.set_xscale("log")
-    ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
-    ax1.set_ylabel(r"${\rm Probability\ Density}$")
-    fig.savefig(plotdir + "bright_derp2.pdf")
-    plt.show()
-    plt.clf(); plt.close()
+    # # plot the distribution of bright AIA intensities
+    # fig = plt.figure()
+    # ax1 = fig.add_subplot(111)
+    # ax1.axvline(mask.aia_thresh/aia.ld_coeffs[0], ls="--", c="k")
+    # ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=pl_color, hatch="/", alpha=0.75)
+    # ax1.axvspan(mask.aia_thresh/aia.ld_coeffs[0], np.max(aia_not_dark), fill=False, ec=nw_color, hatch="\\", alpha=0.75)
+    # x1, bins, patches = ax1.hist(aia_not_dark[aia_not_dark >= mask.aia_thresh/aia.ld_coeffs[0]], cumulative=False, bins="auto", lw=2, color="black", histtype="step", density=True)
+    # ax1.set_xscale("log")
+    # ax1.set_xlabel(r"${\rm Normalized\ AIA\ 1700\ \AA\ Continuum\ Intensity}$")
+    # ax1.set_ylabel(r"${\rm Probability\ Density}$")
+    # fig.savefig(plotdir + "bright_derp2.pdf")
+    # plt.show()
+    # plt.clf(); plt.close()
 
     # plot them
     return None

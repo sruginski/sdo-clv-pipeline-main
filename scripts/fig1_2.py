@@ -31,48 +31,15 @@ um_color = "tab:gray" # colors[7]
 
 def main():
     # get the sdo data to plot
-    conf, magf, dopf, aiaf = download_plot_data()
+    # conf, magf, dopf, aiaf = download_plot_data()
+    conf = datadir + "fits/" + "hmi.Ic_720s.20140107_040000_TAI.continuum.fits"
+    magf = datadir + "fits/" + "hmi.M_720s.20140107_040000_TAI.magnetogram.fits"
+    dopf = datadir + "fits/" + "hmi.V_720s.20140107_040000_TAI.Dopplergram.fits"
+    aiaf = datadir + "fits/" + "aia_lev1_1700a_2014_01_07t04_00_30_71z_image_lev1.fits"
 
     # reduce the data
     print(">>> Processing and plotting data...")
     con, mag, dop, aia, mask = reduce_sdo_images(conf, magf, dopf, aiaf)
-
-    con2, mag2, dop2, aia2, mask2 = reduce_sdo_images(conf, magf, dopf, aiaf, fit_cbs=True)
-
-    pdb.set_trace()
-
-    idx = mask.is_penumbra()
-    idx2 = np.abs(mag.image) < 50
-
-    plt.hist(dop.image[idx], bins="auto", histtype="step", label="all")
-    plt.hist(dop.image[idx * idx2], bins="auto", histtype="step", label="weak")
-    plt.legend()
-    plt.show()
-
-    plt.imshow(mag.image * idx * idx2)
-    plt.show()
-
-    derp = dop.v_corr
-    derp[~idx] = np.nan
-    plt.imshow(con.mu, cmap="Greys")
-    plt.imshow(derp, alpha=0.75, cmap="seismic", vmin=-2000, vmax=2000)
-    plt.colorbar()
-    plt.show()
-
-    plt.imshow(dop.v_rot, vmin=-2500, vmax=2500, cmap="seismic")
-    plt.show()
-
-    plt.imshow(dop.v_obs)
-    plt.colorbar()
-    plt.show()
-
-    plt.imshow(dop.v_mer, vmin=-50, vmax=50, cmap="seismic", origin="lower")
-    plt.colorbar()
-    plt.show()
-
-    plt.imshow(dop.image - dop.v_obs - dop.v_rot - dop.v_mer - dop.v_grav - dop.v_cbs, vmin=-2000, vmax=2000, cmap="seismic")
-    plt.colorbar()
-    plt.show()
 
     # plot them
     # print("\t>>> Plotting HMI continuum...")
@@ -91,7 +58,7 @@ def main():
     mask.regions[mask.regions >= 3] -= 1
 
     # get cutout
-    position = (2460, 2250) # in pixels -- origin not lower
+    position = (2390, 2250) # in pixels -- origin not lower
     size = u.Quantity((375, 375), u.arcsec)
     cutout_cont = Cutout2D(con.iflat, position, size, wcs=con.wcs)
     cutout_mask = Cutout2D(mask.regions, position, size, wcs=con.wcs)
@@ -109,7 +76,6 @@ def main():
     cmap.set_bad(color="white")
     ax1.imshow(cutout_cont.data,  cmap=cmap, origin="lower", interpolation=None)
 
-    # cmap = colors.ListedColormap(["black", "saddlebrown", "orange", "yellow", "white"])
     cmap = colors.ListedColormap([um_color, pu_color, qs_color, nw_color, pl_color])
     cmap.set_bad(color="white")
     norm = colors.BoundaryNorm([0, 1, 2, 3, 4, 5], ncolors=cmap.N, clip=True)
@@ -127,10 +93,10 @@ def main():
     fig = plt.figure(figsize=(6.4, 4.8))
     ax1 = fig.add_subplot(111, projection=mask.wcs)
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
-    # sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
-    #                                                          color="k", alpha=0.5, ls="--", lw=0.5)
-    # limb = ax1.contour(mask.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
-    # cutout_mask.plot_on_original(ax=ax1, color="black", ls="-")
+    sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
+                                                             color="k", alpha=0.5, ls="--", lw=0.5)
+    limb = ax1.contour(mask.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
+    cutout_mask.plot_on_original(ax=ax1, color="black", ls="-")
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
     clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.invert_xaxis()

@@ -49,13 +49,20 @@ def sort_data(f_list):
 def get_date(f):
     if "aia" in f:
         s = re.search(r'\d{4}_\d{2}_\d{2}t\d{2}_\d{2}_\d{2}', f)
+    elif "720s" in f:
+        s = re.search(r'\d{4}\d{2}\d{2}_\d{2}\d{2}\d{2}', f)
     else:
         s = re.search(r'\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', f)
 
     # standardize time formats
     s = s.group()
     s = s.replace("t", "_")
-    return round_time(date=dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
+
+    if "720s" in f:
+        return round_time(date=dt.datetime.strptime(s, "%Y%m%d_%H%M%S"))
+    else:
+        return round_time(date=dt.datetime.strptime(s, "%Y_%m_%d_%H_%M_%S"))
+    return None
 
 def get_dates(files):
     return list(map(get_date, files))
