@@ -5,7 +5,7 @@ variability of the solar radial velocity. v1.0.x is described in Palumbo et al.
 (in prep.). The results of this paper can be reproduced using the [showyourwork workflow](https://github.com/showyourwork/showyourwork) from [this repo](https://github.com/palumbom/sdo-clv).
 
 ## Citation
-If you use this code in your research, please cite the relevant [software release]() and []().
+If you use this code in your research, please cite the relevant [software release]() and [paper]().
 
 ## Author & Contact
 [![Twitter Follow](https://img.shields.io/twitter/follow/michael_palumbo?style=social)](https://twitter.com/michael_palumbo) [![GitHub followers](https://img.shields.io/github/followers/palumbom?label=Follow&style=social)](https://github.com/palumbom)
