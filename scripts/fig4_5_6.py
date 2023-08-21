@@ -278,7 +278,7 @@ for i in range(n_mu_samps):
 
     # label stuff
     # axs[2,i].set_xlabel(xlabel)
-    axs[2,i].set_xlim(-150,150)
+    axs[2,i].set_xlim(-165,165)
     # axs[2,i].set_xlim(0,50)
 
     ylims[i] = axs[2,i].get_ylim()[1]
