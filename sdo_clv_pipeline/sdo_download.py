@@ -8,14 +8,14 @@ from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
 from astropy.units.quantity import AstropyDeprecationWarning
 
-def download_data(series="45", outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
+def download_data(series="720", email=None, outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
     # set time attributes for search
     start += "T00:00:00"
     end += "T24:00:00"
     trange = a.Time(start, end)
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
-    notify = a.jsoc.Notify("mlp95@psu.edu")
+    notify = a.jsoc.Notify(email)
     quality = a.jsoc.Keyword("QUALLEV1") == 0
 
     # set attributes for HMI query
@@ -71,6 +71,7 @@ def main():
     parser.add_argument('--start', type=str, help='starting date formatted as YYYY/MM/DD')
     parser.add_argument('--end', type=str, help='ending date formatted as YYYY/MM/DD')
     parser.add_argument('--sample', type=int, help='cadence of sampling in hours')
+    parser.add_argument('--email', type=str, help="email registered with JSOC")
 
     # parse the command line arguments
     args = parser.parse_args()
@@ -78,9 +79,10 @@ def main():
     start = args.start
     end = args.end
     sample = args.sample
+    email = args.email
 
     # now download the data
-    files = download_data(outdir=outdir, start=start, end=end, sample=sample, overwrite=False)
+    files = download_data(outdir=outdir, email=email, start=start, end=end, sample=sample, overwrite=False)
     return None
 
 if __name__ == "__main__":

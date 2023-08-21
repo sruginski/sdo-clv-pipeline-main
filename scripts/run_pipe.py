@@ -18,29 +18,26 @@ plt.style.use(str(root) + "/" + "my.mplstyle"); plt.ioff()
 def get_parser_args():
     # initialize argparser
     parser = argparse.ArgumentParser(description="Analyze SDO data")
+    parser.add_argument("--fitsdir",type=string, default="/storage/home/mlp95/scratch/sdo_data/")
     parser.add_argument("--clobber", action="store_true", default=False)
     parser.add_argument("--globexp", type=str, default="")
 
     # parse the command line arguments
     args = parser.parse_args()
+    fitsdir = args.fitsdir
     clobber = args.clobber
     globexp = args.globexp
-    return clobber, globexp
+    return fitsdir, clobber, globexp
 
 def main():
-    # define sdo_data directories
-    indir = "/Users/michael/Desktop/sdo-pypline/data/fits/"
-    if not isdir(indir):
-        indir = "/storage/home/mlp95/scratch/sdo_data/"
-
     # make raw data dir if it does not exist
     if not isdir(str(root / "data") + "/"):
         os.mkdir(str(root / "data") + "/")
 
     # sort out input/output data files
-    clobber, globexp = get_parser_args()
+    fitsdir, clobber, globexp = get_parser_args()
     globdir = globexp.replace("*","")
-    files = organize_IO(indir, clobber=clobber, globexp=globexp)
+    files = organize_IO(fitsdir, clobber=clobber, globexp=globexp)
     con_files, mag_files, dop_files, aia_files = files
 
     # get output datadir

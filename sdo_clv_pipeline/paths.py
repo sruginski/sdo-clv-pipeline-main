@@ -4,7 +4,7 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1].absolute()
 
 # Absolute path to the `src` folder
-src = root / "sdo_pypline"
+src = root / "sdo_clv_pipeline"
 
 # Absolute path to the `src/data` folder (contains datasets)
 data = root / "data"

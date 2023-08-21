@@ -89,6 +89,9 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
         globdir = globexp.replace("*","")
         datadir = str(root / "data") + "/" + globdir + "/"
 
+    if not isdir(str(root / "data") + "/"):
+        os.mkdir(str(root / "data") + "/")
+
     if not isdir(datadir):
         os.mkdir(datadir)
 

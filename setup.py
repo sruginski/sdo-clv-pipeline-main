@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="sdo-pypline",
+    name="sdo_clv_pipeline",
     version="0.0.1",
     author="Michael L. Palumbo",
     author_email="palumbo@psu.edu",
-    description="Reduce SDO images.",
+    description="SDO data reduction for center-to-limb variability",
     install_requires=[
         'numpy',
         'pandas',
