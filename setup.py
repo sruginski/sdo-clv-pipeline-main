@@ -12,6 +12,7 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'pandas',
+        'PyQt5',
         'matplotlib==3.5.3',
         'sunpy==4.0.5',
         'astropy==5.2',
