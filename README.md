@@ -1,5 +1,6 @@
 # SDO Center-to-Limb Variability (CLV) Pipeline
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8273623.svg)](https://doi.org/10.5281/zenodo.8273622)
+
 This package processes SDO data to recover trends in the center-to-limb
 variability of the solar radial velocity. v1.0.x is described in Palumbo et al.
 (in prep.). The results of this paper can be reproduced using the [showyourwork workflow](https://github.com/showyourwork/showyourwork) from [this repo](https://github.com/palumbom/sdo-clv).
