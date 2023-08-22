@@ -18,7 +18,8 @@ setuptools.setup(
         'astropy==5.1',
         'scipy==1.9.2',
         'reproject==0.8',
-        'scikit-image==0.19.3'
+        'scikit-image==0.19.3',
+        'pyshtools==4.10.3'
     ],
     packages=setuptools.find_packages(),
     classifiers=[
