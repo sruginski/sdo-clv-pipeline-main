@@ -4,9 +4,9 @@ import os, pdb, glob, time, argparse
 from os.path import exists, split, isdir, getsize
 
 # bring functions into scope
-from sdo_pypline.paths import root
-from sdo_pypline.sdo_io import *
-from sdo_pypline.sdo_process import *
+from sdo_clv_pipeline.paths import root
+from sdo_clv_pipeline.sdo_io import *
+from sdo_clv_pipeline.sdo_process import *
 
 # multiprocessing imports
 from multiprocessing import get_context

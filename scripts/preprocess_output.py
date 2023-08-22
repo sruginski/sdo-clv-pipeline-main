@@ -6,7 +6,7 @@ import matplotlib.cm as cm
 import os, sys, pdb, csv, glob
 import pandas as pd
 
-from sdo_pypline.paths import root
+from sdo_clv_pipeline.paths import root
 
 def mask_all_zero_rows(df, return_idx=False):
     idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)

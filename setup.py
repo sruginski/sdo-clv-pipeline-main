@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sdo_clv_pipeline",
-    version="0.0.1",
+    version="0.1.0",
     author="Michael L. Palumbo",
     author_email="palumbo@psu.edu",
     description="SDO data reduction for center-to-limb variability",
