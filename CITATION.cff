@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: sdo-clv-pipeline
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Michael Louis
+    family-names: Palumbo
+    name-suffix: III
+    email: palumbo@psu.edu
+    affiliation: Pennsylvania State University
+    orcid: 'https://orcid.org/0000-0002-4677-8796'
+  - affiliation: Center for Astrophysics | Harvard & Smithsonian
+    orcid: 'https://orcid.org/0000-0001-7032-8480'
+    given-names: Steve H.
+    family-names: Saar
+    email: ssaar@cfa.harvard.edu
+  - given-names: Haywood
+    family-names: Raphaëlle D.
+    email: R.D.Haywood@exeter.ac.uk
+    affiliation: 'Astrophysics Group, University of Exeter'
+    orcid: 'https://orcid.org/0000-0001-9140-3574'
+repository-code: 'https://github.com/palumbom/sdo-clv'
+license: MIT
+version: v0.1.0
