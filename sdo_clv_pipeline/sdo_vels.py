@@ -66,7 +66,7 @@ def calc_mag_stats(con, mag, region_mask=True):
         return 0.0, 0.0, 0.0
 
     # get intensity weighted unsigned magnetic field strength
-    mag_unsigned = np.nansum(np.abs(mag.image) * con.image * region_mask)
+    mag_unsigned = np.nansum(np.abs(mag.B_obs) * con.image * region_mask)
 
     # divide by the denominator
     mag_unsigned /= np.nansum(con.image * region_mask)

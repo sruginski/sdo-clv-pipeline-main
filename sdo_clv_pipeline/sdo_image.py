@@ -141,6 +141,7 @@ class SDOImage(object):
 
     def correct_magnetogram(self):
         assert self.is_magnetogram()
+        self.B_obs = self.image.copy()
         self.image /= self.mu
         return None
 

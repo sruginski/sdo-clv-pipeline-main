@@ -27,7 +27,12 @@ def main():
     fname2 = datadir + "region_output.csv"
 
     # headers for output files
-    header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia", "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi"]
+    header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia",
+               "hmi_thresh1", "hmi_thresh2", "a_hmi", "b_hmi", "c_hmi",
+               "vel_cbs_off",
+               "min_vel_sat", "max_vel_sat", "avg_vel_sat",
+               "min_vel_rot", "max_vel_rot", "avg_vel_rot",
+               "min_vel_mer", "max_vel_mer", "avg_vel_mer"]
     header2 = ["mjd", "region", "lo_mu", "hi_mu", "pixel_frac", "light_frac", "v_hat", "v_phot", "v_quiet", "v_conv", "mag_unsigned", "avg_int", "avg_int_flat"]
 
     # delete old files if they exists

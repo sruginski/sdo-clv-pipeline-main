@@ -127,9 +127,13 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # get the MJD of the obs
     mjd = Time(con.date_obs).mjd
 
-    # write the limb darkening parameters and pixel fractions to disk
+    # write the limb darkening parameters, velocities, etc. to disk
     write_results_to_file(fname1, mjd, mask.aia_thresh, *aia.ld_coeffs,
-                          mask.con_thresh1, mask.con_thresh2, *con.ld_coeffs)
+                          mask.con_thresh1, mask.con_thresh2, *con.ld_coeffs,
+                          np.nanmax(dop.v_cbs),
+                          np.nanmin(dop.v_obs), np.nanmax(dop.v_obs), np.nanmean(dop.v_obs),
+                          np.nanmin(dop.v_rot), np.nanmax(dop.v_rot), np.nanmean(dop.v_rot),
+                          np.nanmin(dop.v_mer), np.nanmax(dop.v_mer), np.nanmean(dop.v_mer))
 
     # create arrays to hold velocity magnetic fiel, and pixel fraction results
     results = []
