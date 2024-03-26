@@ -7,7 +7,7 @@
 #SBATCH --mem-per-cpu=8192
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_2014
-#SBATCH --chdir=/storage/home/mlp95/work/sdo-pypline
+#SBATCH --chdir=/storage/home/mlp95/work/sdo-clv-pipeline
 #SBATCH --output=/storage/home/mlp95/work/logs/sdo_2014.%j.out
 
 echo "About to start: $SLURM_JOB_NAME"
@@ -22,6 +22,6 @@ conda activate solar
 echo "Environment activated"
 
 echo "About to start Python"
-python /storage/home/mlp95/work/sdo-pypline/scripts/run_pipe.py --globexp "*2014*"
+python /storage/home/mlp95/work/sdo-clv-pipeline/scripts/run_pipe.py --globexp "*2014*"
 echo "Python exited"
 date
