@@ -63,6 +63,11 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
     # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
     dop.correct_dopplergram(fit_cbs=fit_cbs)
 
+    # check that the dopplergram correction went well
+    if np.nanmax(np.abs(dop.v_rot)) < 1000.0:
+        print("\t >>> Dopplergram correction failed, skipping " + iso, flush=True)
+        return None
+
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
     dop.mask_low_mu(mu_thresh)
