@@ -84,6 +84,64 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
 
     return con, mag, dop, aia, mask
 
+def reduce_sdo_images_fast(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit_cbs=False):
+    assert exists(con_file)
+    assert exists(mag_file)
+    assert exists(aia_file)
+
+    # get the datetime
+    iso = get_date(con_file).isoformat()
+
+    # make SDOImage instances
+    try:
+        con = SDOImage(con_file)
+        mag = SDOImage(mag_file)
+        dop = SDOImage(dop_file)
+        aia = SDOImage(aia_file)
+    except OSError:
+        print("\t >>> Invalid file, skipping " + iso, flush=True)
+        return None
+
+    # check for data quality issue
+    if not all(list(map(is_quality_data, [con, mag, dop, aia]))):
+        print("\t >>> Data quality issue, skipping " + iso, flush=True)
+        return None
+
+    # calculate geometries
+    con.calc_geometry()
+    mag.inherit_geometry(con)
+    dop.inherit_geometry(con)
+
+    # interpolate aia image onto hmi image scale and inherit geometry
+    aia.rescale_to_hmi(con)
+
+    # calculate limb darkening/brightening in continuum map and filtergram
+    try:
+        con.calc_limb_darkening()
+        aia.calc_limb_darkening()
+    except:
+        print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
+        return None
+
+    # correct magnetogram for foreshortening
+    mag.correct_magnetogram()
+
+    # set values to nan for mu less than mu_thresh
+    con.mask_low_mu(mu_thresh)
+    mag.mask_low_mu(mu_thresh)
+    dop.mask_low_mu(mu_thresh)
+    aia.mask_low_mu(mu_thresh)
+
+    # identify regions for thresholding
+    try:
+        mask = SunMask(con, mag, dop, aia)
+        mask.mask_low_mu(mu_thresh)
+    except:
+        print("\t >>> Region identification failed, skipping " + iso, flush=True)
+        return None
+
+    return con, mag, aia, mask   
+
 
 def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh, n_rings, datadir):
     process_data_set(con_file, mag_file, dop_file, aia_file,

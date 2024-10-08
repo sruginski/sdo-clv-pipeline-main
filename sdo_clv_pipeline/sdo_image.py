@@ -397,8 +397,12 @@ class SunMask(object):
 
         # get indices for penumbrae
         indp = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
-        ind2 = indp & (dop.v_corr <= 0)
-        ind3 = indp & (dop.v_corr > 0)
+        if hasattr(dop, "v_corr"):
+            ind2 = indp & (dop.v_corr <= 0)
+            ind3 = indp & (dop.v_corr > 0)
+        else:
+            ind2 = indp
+            ind3 = np.zeros(np.shape(indp), dtype=bool)
 
         """
         # find contiguous penumbra regions
