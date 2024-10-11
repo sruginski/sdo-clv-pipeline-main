@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["sdo_clv_pipeline"]
+
+[project]
+name = "sdo_clv_pipeline"
+authors = [
+    {name = "Michael Palumbo", email = "palumbo.astro@gmail.com"}
+]
+description = "SDO data reduction for center-to-limb variability"
+version = "0.1.1"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "numpy",
+    "pandas",
+    "PyQt5",
+    "matplotlib",
+    "sunpy",
+    "astropy",
+    "scipy",
+    "reproject",
+    "scikit-image",
+    "pyshtools"
+]

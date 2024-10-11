@@ -6,7 +6,7 @@ import argparse, warnings
 import os, sys, pdb, time, glob
 from sunpy.net import Fido, attrs as a
 from sunpy.time import TimeRange
-from astropy.units.quantity import AstropyDeprecationWarning
+# from astropy.units.quantity import AstropyDeprecationWarning
 
 def download_data(series="720", email=None, outdir=None, start=None, end=None, sample=None, overwrite=False, progress=False):
     # set time attributes for search
@@ -16,7 +16,7 @@ def download_data(series="720", email=None, outdir=None, start=None, end=None, s
     sample = a.Sample(sample * u.hour)
     provider = a.Provider("JSOC")
     notify = a.jsoc.Notify(email)
-    quality = a.jsoc.Keyword("QUALLEV1") == 0
+    # quality = a.jsoc.Keyword("QUALLEV1") == 0
 
     # set attributes for HMI query
     instr1 = a.Instrument.hmi
@@ -36,7 +36,7 @@ def download_data(series="720", email=None, outdir=None, start=None, end=None, s
     if series == "45":
         con, mag, vel = Fido.search(trange, instr1, physobs, sample)
     elif series == "720":
-        con, mag, vel = Fido.search(trange, physobs, sample, notify, quality)
+        con, mag, vel = Fido.search(trange, physobs, sample, notify)#, quality)
     else:
         return None
 

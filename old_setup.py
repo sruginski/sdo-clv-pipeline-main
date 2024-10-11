@@ -13,20 +13,19 @@ setuptools.setup(
         'numpy',
         'pandas',
         'PyQt5',
-        'matplotlib==3.5.3',
-        'sunpy==4.0.5',
-        'astropy==5.3.3',
-        'scipy==1.10.*',
-        'reproject==0.9',
-        'scikit-image==0.19.3',
-        'pyshtools==4.10.3'
+        'matplotlib',
+        'sunpy',
+        'astropy',
+        'scipy',
+        'reproject',
+        'scikit-image',
+        'pyshtools'
     ],
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ],
-    python_requires='==3.9.*',
+    ]
 )
 
