@@ -14,7 +14,7 @@ authors = [
 description = "SDO data reduction for center-to-limb variability"
 version = "0.1.1"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = "==3.11.6"
 
 dependencies = [
     "numpy",
@@ -26,5 +26,12 @@ dependencies = [
     "scipy",
     "reproject",
     "scikit-image",
-    "pyshtools"
+    "pyshtools",
+    "ipykernel>=6.29.5",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "uv>=0.7.10",
 ]
