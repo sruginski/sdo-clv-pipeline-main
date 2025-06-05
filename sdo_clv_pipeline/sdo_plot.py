@@ -15,8 +15,6 @@ from astropy.io.fits.verify import VerifyWarning
 
 
 def plot_image(sdo_image, outdir=None, fname=None):
-    # assert outdir is not None
-
     # get the WCS
     wcs = sdo_image.wcs
 
@@ -48,11 +46,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        # if fname is None:
-        #     fname = "mag_" + sdo_image.date_obs + ".pdf"
-        # fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        # plt.clf(); plt.close()
-        plt.show()
+        if outdir is None:
+            plt.show()
+        else:
+            if fname is None:
+                fname = "mag_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
         return None
 
     elif sdo_image.is_dopplergram():
@@ -75,10 +75,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "dop_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is None:
+            plt.show()
+        else:
+            if fname is None:
+                fname = "dop_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
         return None
 
     elif sdo_image.is_continuum():
@@ -105,10 +108,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "con_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is None:
+            plt.show()
+        else:
+            if fname is None:
+                fname = "con_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
         return None
 
     elif sdo_image.is_filtergram():
@@ -131,10 +137,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "aia_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is None:
+            plt.show()
+        else:
+            if fname is None:
+                fname = "aia_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
         return None
 
     else:
@@ -160,7 +169,7 @@ def plot_mask(mask, outdir=None, fname=None):
     img = ax1.imshow(mask.regions - 0.5, cmap=cmap, norm=norm, origin="lower", interpolation=None)
     sp.visualization.wcsaxes_compat.wcsaxes_heliographic_overlay(ax1, grid_spacing=15*u.deg, annotate=True,
                                                                  color="k", alpha=0.5, ls="--", lw=0.5)
-    limb = ax1.contour(sdo_image.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
+    limb = ax1.contour(mask.mu >= 0.0, colors="k", linestyles="--", linewidths=0.5, alpha=0.5)
     clb = fig.colorbar(img, ticks=[0.5, 1.5, 2.5, 3.5, 4.5])
     clb.ax.set_yticklabels([r"${\rm Umbra}$", r"${\rm Penumbra}$", r"${\rm Quiet\ Sun}$", r"${\rm Network}$", r"${\rm Plage}$"])
     ax1.invert_xaxis()
@@ -171,9 +180,11 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.grid(False)
 
     # figure out the filename
-    # if fname is None:
-    #     fname = "mask_" + mask.date_obs + ".pdf"
-    # fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-    # plt.clf(); plt.close()
-    plt.show()
+    if outdir is None:
+        plt.show()
+    else:
+        if fname is None:
+            fname = "mask_" + mask.date_obs + ".pdf"
+        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+        plt.clf(); plt.close()
     return None

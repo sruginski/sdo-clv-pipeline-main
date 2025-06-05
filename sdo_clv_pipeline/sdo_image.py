@@ -402,7 +402,7 @@ class SunMask(object):
             ind3 = indp & (dop.v_corr > 0)
         else:
             ind2 = indp
-            ind3 = np.zeros(np.shape(indp), dtype=bool)
+            ind3 = indp
 
         """
         # find contiguous penumbra regions
