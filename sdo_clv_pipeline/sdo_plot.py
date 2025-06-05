@@ -15,7 +15,7 @@ from astropy.io.fits.verify import VerifyWarning
 
 
 def plot_image(sdo_image, outdir=None, fname=None):
-    assert outdir is not None
+    # assert outdir is not None
 
     # get the WCS
     wcs = sdo_image.wcs
@@ -48,10 +48,11 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "mag_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        # if fname is None:
+        #     fname = "mag_" + sdo_image.date_obs + ".pdf"
+        # fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+        # plt.clf(); plt.close()
+        plt.show()
         return None
 
     elif sdo_image.is_dopplergram():
@@ -140,7 +141,7 @@ def plot_image(sdo_image, outdir=None, fname=None):
         return None
 
 def plot_mask(mask, outdir=None, fname=None):
-    assert outdir is not None
+    # assert outdir is not None
 
     # merge the penumbra
     mask.regions[mask.regions >= 3] -= 1
@@ -170,8 +171,9 @@ def plot_mask(mask, outdir=None, fname=None):
     ax1.grid(False)
 
     # figure out the filename
-    if fname is None:
-        fname = "mask_" + mask.date_obs + ".pdf"
-    fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-    plt.clf(); plt.close()
+    # if fname is None:
+    #     fname = "mask_" + mask.date_obs + ".pdf"
+    # fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+    # plt.clf(); plt.close()
+    plt.show()
     return None

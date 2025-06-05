@@ -2,6 +2,8 @@
 *.DS_STORE
 *.pyc
 *egg-info*
+*.fits
+uv.lock
 
 # directories
 data/*

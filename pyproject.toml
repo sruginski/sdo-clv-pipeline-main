@@ -19,12 +19,12 @@ requires-python = ">=3.12"
 dependencies = [
     "numpy",
     "pandas",
-    "PyQt5",
     "matplotlib",
     "sunpy",
     "astropy",
     "scipy",
     "reproject",
     "scikit-image",
-    "pyshtools"
+    "pyshtools",
+    "ipykernel>=6.29.5",
 ]
