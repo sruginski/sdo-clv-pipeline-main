@@ -440,7 +440,7 @@ class SunMask(object):
         self.regions[ind4] = 4 # quiet sun
         self.regions[ind5] = 5 # bright areas (will separate into plage + network)
 
-        # label unique contiguous bright regions and calculate their sizes
+        # label unique contiguous bright regions
         binary_img = self.regions == 5
         structure = ndimage.generate_binary_structure(2,2)
         labels, nlabels = ndimage.label(binary_img, structure=structure)
@@ -449,6 +449,7 @@ class SunMask(object):
         rprops = regionprops(labels)
         areas = np.array([rprop.area for rprop in rprops]).astype(float)
         areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
+        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float)
 
         # area thresh is 20ppm of pixels on hemisphere
         pix_hem = np.nansum(con.mu > 0.0)
@@ -457,6 +458,73 @@ class SunMask(object):
         # assign region type to plage for ratios less than ratio thresh
         ind6 = np.concatenate(([False], areas > area_thresh))[labels]
         self.regions[ind6] = 6 # plage
+
+        # give each penumbra island a number
+        binary_img = (self.regions == 2) | (self.regions == 3)|(self.regions == 1) 
+        structure = ndimage.generate_binary_structure(2,2)
+        labels, nlabels = ndimage.label(binary_img, structure=structure)
+
+        # plt.imshow(labels)
+        # plt.colorbar()
+        # # plt.show()
+
+        print(np.shape(ind2 | ind3))
+
+        rprops = regionprops(labels)
+        areas = np.array([rprop.area for rprop in rprops]).astype(float)
+        areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
+        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float)
+
+        areas_array = np.concatenate(([0.0], areas))[labels] 
+        # plt.imshow(areas_array)
+        # plt.colorbar()
+        # # plt.show()
+
+        perims_array = np.concatenate(([0.0], perims))[labels]
+        # plt.imshow(perims_array)
+        # plt.colorbar()
+        # # plt.show()
+
+        max_area = np.max(areas_array)
+        print(max_area)
+        max_area_idx = areas_array == max_area
+        plt.imshow(max_area_idx)
+        plt.colorbar()
+        plt.show()
+
+        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure)
+        plt.imshow(dilated_idx)
+        plt.colorbar()
+        plt.show()
+
+        
+        plt.imshow(dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64))
+        plt.colorbar()
+        plt.show()
+
+
+
+
+
+
+        # areas_array = np.zeros(np.shape(self.regions))
+        # print(len(areas))
+        # print(np.shape(ind5))
+        # print(len(areas_array[ind5]))
+
+        # derp = np.concatenate(([0.0], areas))[labels]
+        # plt.imshow(derp)
+        # plt.colorbar()
+        # plt.show()
+
+        # derp = np.concatenate(([0.0], perims))[labels]
+        # plt.imshow(derp)
+        # plt.colorbar()
+        # plt.show()
+       
+        # plt.imshow(areas_array)
+        # plt.colorbar()
+        # plt.show()
 
         # set isolated bright pixels to quiet sun
         ind_iso = np.concatenate(([False], areas == 1))[labels]
