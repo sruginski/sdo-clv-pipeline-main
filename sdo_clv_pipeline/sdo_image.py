@@ -393,14 +393,15 @@ class SunMask(object):
         self.con_thresh2 = 0.45 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
 
         # get indices for umbrae
-        ind1 = con.iflat <= self.con_thresh2
+        ind1 = con.iflat <= self.con_thresh2      # if intensity less than thresh2, umbra (ind1)
 
         # get indices for penumbrae
         indp = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
+            # if flattened continuum intensity less than thresh1 and greater than thresh2, penumbra (ind1 or ind2)
         if hasattr(dop, "v_corr"):
-            ind2 = indp & (dop.v_corr <= 0)
-            ind3 = indp & (dop.v_corr > 0)
-        else:
+            ind2 = indp & (dop.v_corr <= 0)    # if penumbra and bluehift or 0, ind2
+            ind3 = indp & (dop.v_corr > 0)     # if penumbra and redshift, ind3
+        else: # no attribute v_corr
             ind2 = indp
             ind3 = indp
 
@@ -423,15 +424,16 @@ class SunMask(object):
 
         # get indices for quiet sun
         ind4 = (con.iflat > self.con_thresh1) & self.w_quiet
+            # if continuum intensity is greater than thresh1 and weak B field
 
         # calculate intensity thresholds for AIA
         weights = self.w_active * (~ind1) * (~ind2) * (~ind3)
         self.aia_thresh = np.nansum(aia.iflat * weights)/np.nansum(weights)
 
         # get indices for bright regions (plage/faculae + network)
-        ind5a = (con.iflat > self.con_thresh1) & self.w_active
-        ind5b = (aia.iflat > self.aia_thresh) & (~ind1) & (~ind2) & (~ind3)
-        ind5 = ind5a | ind5b
+        ind5a = (con.iflat > self.con_thresh1) & self.w_active    # intensity greater than thresh 1 and strong B field
+        ind5b = (aia.iflat > self.aia_thresh) & (~ind1) & (~ind2) & (~ind3)  # > aia thresh and not umbra or penumbra
+        ind5 = ind5a | ind5b # if ind5a or ind5b, bright
 
         # set mask indices
         self.regions[ind1] = 1 # umbrae
@@ -440,16 +442,18 @@ class SunMask(object):
         self.regions[ind4] = 4 # quiet sun
         self.regions[ind5] = 5 # bright areas (will separate into plage + network)
 
-        # label unique contiguous bright regions
-        binary_img = self.regions == 5
-        structure = ndimage.generate_binary_structure(2,2)
-        labels, nlabels = ndimage.label(binary_img, structure=structure)
+        # label unique contiguous bright regions (label islands of bright stuff)
+        binary_img = self.regions == 5  # get bright areas 
+        structure = ndimage.generate_binary_structure(2,2) # array of bools, defines feature connections
+        labels, nlabels = ndimage.label(binary_img, structure=structure) 
+            # takes bright areas and feature connections, gives each island a label
 
-        # get labeled region areas and perimeters
-        rprops = regionprops(labels)
-        areas = np.array([rprop.area for rprop in rprops]).astype(float)
+        # get labeled region areas and perimeters for bright areas
+        rprops = regionprops(labels) # get the list of labels
+        areas = np.array([rprop.area for rprop in rprops]).astype(float)    
+            # for each label in list, get area as float (pixels) and put that in array
         areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
-        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float)
+        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float) # for each island, get perimeter as float
 
         # area thresh is 20ppm of pixels on hemisphere
         pix_hem = np.nansum(con.mu > 0.0)
@@ -459,21 +463,23 @@ class SunMask(object):
         ind6 = np.concatenate(([False], areas > area_thresh))[labels]
         self.regions[ind6] = 6 # plage
 
-        # give each penumbra island a number
-        binary_img = (self.regions == 2) | (self.regions == 3)|(self.regions == 1) 
-        structure = ndimage.generate_binary_structure(2,2)
-        labels, nlabels = ndimage.label(binary_img, structure=structure)
+
+        # label each penumbra island and include umbra so we only expand outwards
+        binary_img = (self.regions == 2) | (self.regions == 3)|(self.regions == 1) # get penumbra and umbra 
+        structure = ndimage.generate_binary_structure(2,2) # binary structure (rank, connectivity)
+        labels, nlabels = ndimage.label(binary_img, structure=structure) # label each island of umbra and penumbra
 
         # plt.imshow(labels)
         # plt.colorbar()
         # # plt.show()
 
-        print(np.shape(ind2 | ind3))
+        # print(np.shape(ind2 | ind3))
 
-        rprops = regionprops(labels)
-        areas = np.array([rprop.area for rprop in rprops]).astype(float)
+        # get labeled region areas and perimeters for umbra and penumbra
+        rprops = regionprops(labels) # get list of islands
+        areas = np.array([rprop.area for rprop in rprops]).astype(float) # get area for each island as float and put in arr
         areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
-        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float)
+        perims = np.array([rprop.perimeter for rprop in rprops]).astype(float) # get perimeter of each island
 
         areas_array = np.concatenate(([0.0], areas))[labels] 
         # plt.imshow(areas_array)
@@ -485,26 +491,34 @@ class SunMask(object):
         # plt.colorbar()
         # # plt.show()
 
-        max_area = np.max(areas_array)
-        print(max_area)
-        max_area_idx = areas_array == max_area
-        plt.imshow(max_area_idx)
+
+        # take island with max area
+        max_area = np.max(areas_array) # get the max value in the array
+        
+        # investigating area and how many dilations we expect to go out
+        # print(max_area)
+        # r = np.sqrt((max_area)/pi)
+
+        print(r)
+        max_area_idx = areas_array == max_area # go through areas_array and get list of indeces of the pixels with the max area
+        plt.imshow(max_area_idx) 
         plt.colorbar()
         plt.show()
 
-        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure)
+        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure) 
+        # use feature connections and indeces of largest island to go out 1 pixel
         plt.imshow(dilated_idx)
         plt.colorbar()
         plt.show()
 
         
-        plt.imshow(dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64))
+        plt.imshow(dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64)) # dilated area - area = only outline left
         plt.colorbar()
         plt.show()
 
-
-
-
+        # have the outline of first dilation out from the perimeter of the penumbra of the island of max area plotted
+        # calculate intensity of each pixel in the outline (dilation 1)
+        # calculate average intensity 
 
 
         # areas_array = np.zeros(np.shape(self.regions))
