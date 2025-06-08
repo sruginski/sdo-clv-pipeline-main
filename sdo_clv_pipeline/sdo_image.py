@@ -498,27 +498,28 @@ class SunMask(object):
         # investigating area and how many dilations we expect to go out
         # print(max_area)
         # r = np.sqrt((max_area)/pi)
+        # print(r)
 
-        print(r)
-        max_area_idx = areas_array == max_area # go through areas_array and get list of indeces of the pixels with the max area
+        max_area_idx = areas_array == max_area # go through areas_array and get list of indices of the pixels with the max area
         plt.imshow(max_area_idx) 
         plt.colorbar()
         plt.show()
 
         dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure) 
-        # use feature connections and indeces of largest island to go out 1 pixel
+        # use feature connections and indices of largest island to go out 1 pixel
         plt.imshow(dilated_idx)
         plt.colorbar()
         plt.show()
 
-        
-        plt.imshow(dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64)) # dilated area - area = only outline left
+        dilation = dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64) # dilated area - area = only outline left
+        plt.imshow(dilation) 
         plt.colorbar()
         plt.show()
 
         # have the outline of first dilation out from the perimeter of the penumbra of the island of max area plotted
-        # calculate intensity of each pixel in the outline (dilation 1)
-        # calculate average intensity 
+        # calculate velocity/intensity of each pixel in the outline (dilation 1)
+        # calculate average velocity/intensity 
+        # plot average velocity vs # of dilations
 
 
         # areas_array = np.zeros(np.shape(self.regions))
