@@ -511,9 +511,10 @@ class SunMask(object):
         plt.colorbar()
         plt.show()
 
-        dilation = dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64) # dilated area - area = only outline left
+        dilation = np.logical_xor(dilated_idx, max_area_idx) # dilated area - area = only outline left
         plt.imshow(dilation) 
         plt.colorbar()
+        plt.show()
 
 
         # have the outline of first dilation out from the perimeter of the penumbra of the island of max area plotted
@@ -525,11 +526,26 @@ class SunMask(object):
         # plt.colorbar()
         # plt.show()
 
+        plt.imshow(dop.v_corr * dilation)
+        plt.colorbar()
+        plt.show()
+
+        new_arr = dop.v_corr * dilation
+        new_arr[new_arr == 0.0] = np.nan
+        plt.imshow(new_arr)
+        plt.colorbar()
+        plt.show()
+
         #velocities = np.array(dop.v_corr[dilation])
+        #print(velocities)
+
+        #print(dop.v_corr)
 
         #x, y = dilation.shape
 
-        print(con.image[dilation])
+        
+
+        #print(con.image[dilation.astype(int)])
 
         #for i in dilation:
             #print(i)
