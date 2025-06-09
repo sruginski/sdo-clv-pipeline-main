@@ -505,6 +505,46 @@ class SunMask(object):
         plt.colorbar()
         plt.show()
 
+        # set-up x axis
+        max_dilations = 50  # how many dilations?
+        dilation_arr = []   
+        for i in range (1, max_dilations+1):
+            dilation_arr.append(i)
+
+        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure)
+        dilation = np.logical_xor(dilated_idx, max_area_idx) # dilated area - area = only outline left 
+        # use feature connections and indices of largest island to go out 1 pixel
+        vel_arr = np.array(dop.v_corr[dilation])
+        avg_vel = np.average(vel_arr)
+        avg_vel_arr = []
+        avg_vel_arr.append(avg_vel)
+        dilation_count = 1
+
+        # y axis
+        prev_dilation = dilated_idx
+        while dilation_count < max_dilations:
+            new_dilated_idx = ndimage.binary_dilation(prev_dilation, structure = structure)   # dilate
+            new_dilation = np.logical_xor(new_dilated_idx, prev_dilation)   # new outline
+            vel_arr = np.array(dop.v_corr[new_dilation])
+            avg_vel = np.average(vel_arr)
+            avg_vel_arr.append(avg_vel)
+            dilation_count += 1 # update dilation count
+            prev_dilation = new_dilation
+
+        print(dilation_arr)
+        print(avg_vel_arr)
+        
+        x = dilation_arr
+        y = avg_vel_arr
+        plt.plot(x,y)
+        plt.xlabel("# of Dilations")
+        plt.ylabel("Average Velocity (m/s)")
+        plt.title("Average Velocity vs # of Dilations")
+        plt.show()
+
+
+
+        '''
         dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure) 
         # use feature connections and indices of largest island to go out 1 pixel
         plt.imshow(dilated_idx)
@@ -522,10 +562,6 @@ class SunMask(object):
         # calculate average velocity/intensity 
         # plot average velocity vs # of dilations
 
-        # plt.imshow()
-        # plt.colorbar()
-        # plt.show()
-
         plt.imshow(dop.v_corr * dilation)
         plt.colorbar()
         plt.show()
@@ -535,6 +571,13 @@ class SunMask(object):
         plt.imshow(new_arr)
         plt.colorbar()
         plt.show()
+
+        vel_arr = np.array(dop.v_corr[dilation])
+        print(vel_arr) #YAYYY array of velocities in dilation 1
+        avg_vel = np.average(vel_arr)
+        print(avg_vel) 
+        '''
+        
 
         #velocities = np.array(dop.v_corr[dilation])
         #print(velocities)
