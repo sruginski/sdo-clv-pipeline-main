@@ -514,13 +514,26 @@ class SunMask(object):
         dilation = dilated_idx.astype(np.float64) - max_area_idx.astype(np.float64) # dilated area - area = only outline left
         plt.imshow(dilation) 
         plt.colorbar()
-        plt.show()
+
 
         # have the outline of first dilation out from the perimeter of the penumbra of the island of max area plotted
         # calculate velocity/intensity of each pixel in the outline (dilation 1)
         # calculate average velocity/intensity 
         # plot average velocity vs # of dilations
 
+        # plt.imshow()
+        # plt.colorbar()
+        # plt.show()
+
+        #velocities = np.array(dop.v_corr[dilation])
+
+        #x, y = dilation.shape
+
+        print(con.image[dilation])
+
+        #for i in dilation:
+            #print(i)
+            #print(dop.v_corr)
 
         # areas_array = np.zeros(np.shape(self.regions))
         # print(len(areas))
