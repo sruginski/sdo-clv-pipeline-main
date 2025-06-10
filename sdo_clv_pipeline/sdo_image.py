@@ -24,12 +24,12 @@ warnings.simplefilter("ignore", category=VerifyWarning)
 warnings.simplefilter("ignore", category=FITSFixedWarning)
 
 class SDOImage(object):
-    def __init__(self, file):
+    def __init__(self, file, dtype=np.float32):
         # set the filename
         self.filename = file
 
         # get the image and the header
-        self.image = read_data(self.filename)
+        self.image = read_data(self.filename, dtype=dtype)
         self.parse_header()
 
         # initialize mu_thresh
@@ -108,7 +108,7 @@ class SDOImage(object):
 
         # get mu
         mask = self.rr <= 1.0
-        self.mu = np.zeros((4096, 4096))
+        self.mu = np.zeros_like(self.image)
         self.mu[mask] = np.sqrt(1.0 - self.rr.value[mask]**2.0)
         self.mu[~mask] = np.nan
         return None
@@ -118,6 +118,7 @@ class SDOImage(object):
         # self.yy = np.copy(other_image.yy)
         # self.rr = np.copy(other_image.rr)
         self.mu = np.copy(other_image.mu)
+        self.pix_area = np.copy(other_image.pix_area)
         # self.lat = np.copy(other_image.lat)
         # self.lon = np.copy(other_image.lon)
         return None
@@ -191,7 +192,7 @@ class SDOImage(object):
         vr3 = -self.obs_vn * sin_sig * cos_chi
 
         # reshape into 4096 x 4096 array
-        self.v_obs = np.zeros((4096, 4096))
+        self.v_obs = np.zeros_like(self.image)
         self.v_obs[self.mask_nan] = -(vr1 + vr2 + vr3)[self.mask_nan]
         self.v_obs[~self.mask_nan] = np.nan
         return None
@@ -262,23 +263,23 @@ class SDOImage(object):
         self.fit_params = np.linalg.solve(A, self.RHS)
 
         # get rotation component
-        self.v_rot = np.zeros((4096, 4096))
+        self.v_rot = np.zeros_like(self.image)
         self.v_rot[self.mask_nan] = self.fit_params[:3].dot(self.im_arr[:3, :])
         self.v_rot[~self.mask_nan] = np.nan
 
         # get meridional circulation component
-        self.v_mer = np.zeros((4096, 4096))
+        self.v_mer = np.zeros_like(self.image)
         self.v_mer[self.mask_nan] = self.fit_params[3:5].dot(self.im_arr[3:5, :])
         self.v_mer[~self.mask_nan] = np.nan
 
         # get convective blueshift w/ limb component
-        self.v_cbs = np.zeros((4096, 4096))
+        self.v_cbs = np.zeros_like(self.image)
         self.v_cbs[self.mask_nan] = self.fit_params[5:].dot(self.im_arr[5:, :])
         self.v_cbs[~self.mask_nan] = np.nan
 
         # get corrected velocity
         self.dat -= self.fit_params.dot(self.im_arr)
-        self.v_corr = np.zeros((4096, 4096))
+        self.v_corr = np.zeros_like(self.image)
         self.v_corr[self.mask_nan] = self.dat
         self.v_corr[~self.mask_nan] = np.nan
         return None
@@ -407,7 +408,7 @@ class SunMask(object):
 
     def identify_regions(self, con, mag, dop, aia):
         # allocate memory for mask array
-        self.regions = np.zeros(np.shape(con.image))
+        self.regions = np.zeros_like(con.image)
 
         # calculate intensity thresholds for HMI
         self.con_thresh1 = 0.89 * np.nansum(con.iflat * self.w_quiet)/np.nansum(self.w_quiet)
@@ -423,7 +424,7 @@ class SunMask(object):
             ind3 = indp & (dop.v_corr > 0)
         else:
             ind2 = indp
-            ind3 = np.zeros(np.shape(indp), dtype=bool)
+            ind3 = np.zeros_like(indp)
 
         """
         # find contiguous penumbra regions
@@ -487,8 +488,8 @@ class SunMask(object):
 
         # find areas (NEW WAY)
         rprops = regionprops(labels, dop.pix_area)
-        areas_mic = np.zeros_like(self.mu)
-        areas_pix = np.zeros_like(self.mu)
+        areas_mic = np.zeros_like(con.image)
+        areas_pix = np.zeros_like(con.image)
         for k in range(1, len(rprops)):
             areas_mic[rprops[k].coords[:, 0], rprops[k].coords[:, 1]] = rprops[k].area * rprops[k].mean_intensity
             areas_pix[rprops[k].coords[:, 0], rprops[k].coords[:, 1]] = rprops[k].area
