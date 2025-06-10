@@ -10,7 +10,6 @@ from sunpy.coordinates import frames
 from scipy import ndimage
 from astropy.wcs import WCS
 from scipy.optimize import curve_fit
-from reproject import reproject_interp
 from skimage.measure import regionprops
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
