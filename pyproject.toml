@@ -27,6 +27,7 @@ dependencies = [
     "reproject",
     "scikit-image",
     "ipykernel>=6.29.5",
+    "numba>=0.61.2",
 ]
 
 [dependency-groups]

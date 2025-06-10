@@ -19,6 +19,7 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 from .sdo_io import *
 from .limbdark import *
 from .legendre import *
+from .reproject import *
 
 warnings.simplefilter("ignore", category=VerifyWarning)
 warnings.simplefilter("ignore", category=FITSFixedWarning)
@@ -320,11 +321,16 @@ class SDOImage(object):
     def rescale_to_hmi(self, hmi_image):
         assert self.is_filtergram()
 
-        # rescale the image
-        self.image = reproject_interp((self.image, self.head), hmi_image.head,
-                                      return_footprint=False)
+        # compute pixel mapping 
+        H, W = hmi_image.image.shape
+        src_x, src_y = compute_pixel_mapping(self.wcs, hmi_image.wcs, (H, W))
 
-        # borrow the geometry now that the images are aligned
+        # do the interpolation (bilinear)
+        dst = np.empty((H, W), dtype=np.float32)
+        bilinear_reproject(self.image, src_x, src_y, dst)
+
+        # set attributes
+        self.image = dst
         self.inherit_geometry(hmi_image)
         self.wcs = hmi_image.wcs
 
