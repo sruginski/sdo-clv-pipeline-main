@@ -71,11 +71,3 @@ def gen_leg_x_vec(lmax, x):
     leg_out    = leg    / np.sqrt(2) / norm_l[:,None]
     leg_d1_out = leg_dx / np.sqrt(2) / norm_l[:,None]
     return leg_out, leg_d1_out
-
-
-def inv_SVD(A, svdlim):
-    u, s, v = np.linalg.svd(A, full_matrices=False)
-    sinv = s**-1
-    sinv[sinv/sinv[0] > svdlim] = 0.0  # svdlim
-    return np.dot(v.transpose().conjugate(),
-                  np.dot(np.diag(sinv), u.transpose().conjugate()))

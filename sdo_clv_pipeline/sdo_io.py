@@ -20,7 +20,7 @@ def read_header(file):
 def read_data(file):
     with fits.open(file) as hdu_list:
         hdu_list.verify("silentfix")
-        data = hdu_list[1].data.astype(float)
+        data = hdu_list[1].data.astype(np.float32)
     return data
 
 # function to glob the input data

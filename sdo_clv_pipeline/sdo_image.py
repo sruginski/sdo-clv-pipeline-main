@@ -14,6 +14,7 @@ from reproject import reproject_interp
 from skimage.measure import regionprops
 from astropy.wcs import FITSFixedWarning
 from astropy.io.fits.verify import VerifyWarning
+from astropy.wcs.utils import proj_plane_pixel_scales
 
 from .sdo_io import *
 from .limbdark import *
@@ -86,17 +87,17 @@ class SDOImage(object):
         paxis1 = np.arange(self.naxis1)
         paxis2 = np.arange(self.naxis2)
         xx, yy = np.meshgrid(paxis1, paxis2)
-        self.hpc = smap.pixel_to_world(xx * u.pix, yy * u.pix)   # helioprojective cartesian
+        hpc = smap.pixel_to_world(xx * u.pix, yy * u.pix)   # helioprojective cartesian
         self.rsun_solrad = self.dsun_obs/self.rsun_ref
 
         # transform to other coordinate systems
-        hgs = self.hpc.transform_to(frames.HeliographicStonyhurst)
-        hcc = self.hpc.transform_to(frames.Heliocentric)
+        hgs = hpc.transform_to(frames.HeliographicStonyhurst)
+        hcc = hpc.transform_to(frames.Heliocentric)
 
         # get cartesian and radial coordinates
         self.xx = hcc.x
         self.yy = hcc.y
-        self.rr = np.sqrt(self.hpc.Tx**2 + self.hpc.Ty**2) / (self.rsun_obs * u.arcsec)
+        self.rr = np.sqrt(hpc.Tx**2 + hpc.Ty**2) / (self.rsun_obs * u.arcsec)
 
         # heliocgraphic latitude and longitude
         self.lat = hgs.lat + 90 * u.deg
@@ -256,15 +257,9 @@ class SDOImage(object):
         self.dat = (self.image - self.v_obs - self.v_grav)[self.mask_nan].copy()
         self.RHS = self.im_arr.dot(self.dat)
 
-        # fill the matrix
-        A = np.zeros((n_poly, n_poly))
-        for i in range(n_poly):
-            for j in range(n_poly):
-                A[i, j] = self.im_arr[i, :].dot(self.im_arr[j, :])
-
-        # invert and compute fit params
-        Ainv = inv_SVD(A, 1e5)
-        self.fit_params = Ainv.dot(self.RHS)
+        # fill the matrix and compute fit params
+        A = self.im_arr @ self.im_arr.T
+        self.fit_params = np.linalg.solve(A, self.RHS)
 
         # get rotation component
         self.v_rot = np.zeros((4096, 4096))
