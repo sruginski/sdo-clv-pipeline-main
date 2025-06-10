@@ -491,7 +491,6 @@ class SunMask(object):
         # plt.colorbar()
         # # plt.show()
 
-
         # take island with max area
         max_area = np.max(areas_array) # get the max value in the array
         
@@ -511,6 +510,9 @@ class SunMask(object):
         for i in range (1, max_dilations+1):
             dilation_arr.append(i)
 
+        # first plot
+        
+        # first dilation
         dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure)
         dilation = np.logical_xor(dilated_idx, max_area_idx) # dilated area - area = only outline left 
         # use feature connections and indices of largest island to go out 1 pixel
@@ -524,16 +526,19 @@ class SunMask(object):
         prev_dilation = dilated_idx
         while dilation_count < max_dilations:
             new_dilated_idx = ndimage.binary_dilation(prev_dilation, structure = structure)   # dilate
-            new_dilation = np.logical_xor(new_dilated_idx, prev_dilation)   # new outline
-            vel_arr = np.array(dop.v_corr[new_dilation])
+            new_dilation = np.logical_xor(new_dilated_idx, prev_dilation)   # new outline, only that ring
+            # new_dilation = np.logical_xor(new_dilated_idx, max_area_idx) # new outline including previous dilations
+            vel_arr = np.array(dop.v_corr[new_dilation]) 
             avg_vel = np.average(vel_arr)
             avg_vel_arr.append(avg_vel)
             dilation_count += 1 # update dilation count
-            prev_dilation = new_dilation
+            # prev_dilation = new_dilation
+            prev_dilation = new_dilated_idx
 
-        print(dilation_arr)
+        print(dilation_arr) # check that numbers make sense
         print(avg_vel_arr)
         
+        # plot
         x = dilation_arr
         y = avg_vel_arr
         plt.plot(x,y)
@@ -541,6 +546,46 @@ class SunMask(object):
         plt.ylabel("Average Velocity (m/s)")
         plt.title("Average Velocity vs # of Dilations")
         plt.show()
+        
+
+        '''
+        # second plot
+        
+        # first dilation
+        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = structure)
+        dilation = np.logical_xor(dilated_idx, max_area_idx) # dilated area - area = only outline left 
+        # use feature connections and indices of largest island to go out 1 pixel
+        vel_arr = np.array(dop.v_corr[dilation])
+        avg_vel = np.average(vel_arr)
+        avg_vel_arr = []
+        avg_vel_arr.append(avg_vel)
+        dilation_count = 1
+
+        # y axis
+        prev_dilation = dilated_idx
+        while dilation_count < max_dilations:
+            new_dilated_idx = ndimage.binary_dilation(prev_dilation, structure = structure)   # dilate
+            new_dilation = np.logical_xor(new_dilated_idx, max_area_idx) # new outline including previous dilations
+            vel_arr = np.array(dop.v_corr[new_dilation]) 
+            avg_vel = np.average(vel_arr)
+            avg_vel_arr.append(avg_vel)
+            dilation_count += 1 # update dilation count
+            # prev_dilation = new_dilation
+            prev_dilation = new_dilated_idx
+
+        print(dilation_arr) # check that numbers make sense
+        print(avg_vel_arr)
+        
+        # plot
+        x = dilation_arr
+        y = avg_vel_arr
+        plt.plot(x,y)
+        plt.xlabel("# of Dilations")
+        plt.ylabel("Average Velocity (m/s)")
+        plt.title("Average Velocity vs # of Dilations")
+        plt.show()
+        '''
+
 
 
 
