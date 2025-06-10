@@ -15,8 +15,6 @@ from astropy.io.fits.verify import VerifyWarning
 
 
 def plot_image(sdo_image, outdir=None, fname=None):
-    assert outdir is not None
-
     # get the WCS
     wcs = sdo_image.wcs
 
@@ -47,11 +45,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         # ax1.text(1400, 4000, sdo_image.date_obs, fontsize=10, c="black")
         ax1.grid(False)
 
-        # figure out the filename
-        if fname is None:
-            fname = "mag_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is not None:
+            if fname is None:
+                fname = "mag_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+        else:
+            plt.show()
         return None
 
     elif sdo_image.is_dopplergram():
@@ -74,10 +74,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "dop_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is not None:
+            if fname is None:
+                fname = "dop_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+        else:
+            plt.show()
         return None
 
     elif sdo_image.is_continuum():
@@ -104,10 +107,13 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "con_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is not None:
+            if fname is None:
+                fname = "con_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+        else:
+            plt.show()
         return None
 
     elif sdo_image.is_filtergram():
@@ -130,12 +136,15 @@ def plot_image(sdo_image, outdir=None, fname=None):
         ax1.grid(False)
 
         # figure out the filename
-        if fname is None:
-            fname = "aia_" + sdo_image.date_obs + ".pdf"
-        fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
-        plt.clf(); plt.close()
+        if outdir is not None:
+            if fname is None:
+                fname = "aia_" + sdo_image.date_obs + ".pdf"
+            fig.savefig(outdir + fname, bbox_inches="tight", dpi=500)
+            plt.clf(); plt.close()
+        else:
+            plt.show()
         return None
-
+    
     else:
         return None
 
