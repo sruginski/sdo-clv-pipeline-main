@@ -102,6 +102,9 @@ class SDOImage(object):
         self.lat = hgs.lat + 90 * u.deg
         self.lon = hgs.lon
 
+        # calculate the pixel areas
+        self.pix_area = calculate_pixel_area(self.lat, self.lon)
+
         # get mu
         mask = self.rr <= 1.0
         self.mu = np.zeros((4096, 4096))
@@ -339,6 +342,21 @@ def calculate_weights(mag):
     w_quiet[np.logical_or(mag.mu < mag.mu_thresh, np.isnan(mag.mu))] = False
     return w_active, w_quiet
 
+def calculate_pixel_area(lat, lon):
+    # convert to radians
+    lat_rad = lat.value * np.pi / 180.0
+    lon_rad = lon.value * np.pi / 180.0
+    d_lat = np.diff(lat_rad, 1, 0)
+    d_lon = np.diff(lon_rad, 1, 1)
+
+    # pad the edge
+    d_lat2 = np.pad(d_lat, ((0, 1), (0, 0)), mode="constant")
+    d_lon2 = np.pad(d_lon, ((0, 0), (0, 1)), mode="constant")
+    
+    # compute the areas of pixels
+    pix_area = np.sin(lat_rad) * np.abs(d_lon2) * np.abs(d_lat2) / (2 * np.pi) * 1e6
+    return pix_area
+
 class SunMask(object):
     def __init__(self, con, mag, dop, aia):
         # check argument order/names are correct
@@ -445,7 +463,8 @@ class SunMask(object):
         structure = ndimage.generate_binary_structure(2,2)
         labels, nlabels = ndimage.label(binary_img, structure=structure)
 
-        # get labeled region areas and perimeters
+        """
+        # get labeled region areas and perimeters (OLD WAY)
         rprops = regionprops(labels)
         areas = np.array([rprop.area for rprop in rprops]).astype(float)
         areas *= (1e6/np.sum(self.mu > 0.0)) # convert to microhemispheres
@@ -461,6 +480,26 @@ class SunMask(object):
         # set isolated bright pixels to quiet sun
         ind_iso = np.concatenate(([False], areas == 1))[labels]
         self.regions[ind_iso] = 4 # quiet sun
+        """
+
+        # find areas (NEW WAY)
+        rprops = regionprops(labels, dop.pix_area)
+        areas_mic = np.zeros_like(self.mu)
+        areas_pix = np.zeros_like(self.mu)
+        for k in range(1, len(rprops)):
+            areas_mic[rprops[k].coords[:, 0], rprops[k].coords[:, 1]] = rprops[k].area * rprops[k].mean_intensity
+            areas_pix[rprops[k].coords[:, 0], rprops[k].coords[:, 1]] = rprops[k].area
+
+        # area thresh is 20 microhemispheres
+        area_thresh = 20.0
+
+        # assign region type to plage for ratios less than ratio thresh
+        ind6 = areas_mic >= area_thresh
+        self.regions[ind6] = 6 # plage
+
+        # set isolated bright pixels to quiet sun
+        ind_iso = areas_pix == 1.0
+        self.regions[ind_iso] = 4 # quiet sun
 
         # make any remaining unclassified pixels quiet sun
         ind_rem = ((con.mu >= con.mu_thresh) & (self.regions == 0))
@@ -468,7 +507,6 @@ class SunMask(object):
 
         # set values beyond mu_thresh to nan
         self.regions[np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))] = np.nan
-
         return None
 
     def mask_low_mu(self, mu_thresh):
