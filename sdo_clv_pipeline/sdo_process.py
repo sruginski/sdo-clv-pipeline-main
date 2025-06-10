@@ -61,12 +61,12 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
     mag.correct_magnetogram()
 
     # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
-    # dop.correct_dopplergram(fit_cbs=fit_cbs)
+    dop.correct_dopplergram(fit_cbs=fit_cbs)
 
     # check that the dopplergram correction went well
-    # if np.nanmax(np.abs(dop.v_rot)) < 1000.0:
-    #     print("\t >>> Dopplergram correction failed, skipping " + iso, flush=True)
-    #     return None
+    if np.nanmax(np.abs(dop.v_rot)) < 1000.0:
+        print("\t >>> Dopplergram correction failed, skipping " + iso, flush=True)
+        return None
 
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
@@ -75,12 +75,12 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
     aia.mask_low_mu(mu_thresh)
 
     # identify regions for thresholding
-    # try:
-    mask = SunMask(con, mag, dop, aia)
-    mask.mask_low_mu(mu_thresh)
-    # except:
-        # print("\t >>> Region identification failed, skipping " + iso, flush=True)
-        # return None
+    try:
+        mask = SunMask(con, mag, dop, aia)
+        mask.mask_low_mu(mu_thresh)
+    except:
+        print("\t >>> Region identification failed, skipping " + iso, flush=True)
+        return None
 
     return con, mag, dop, aia, mask
 
