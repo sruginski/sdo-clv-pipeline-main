@@ -140,6 +140,15 @@ class SDOImage(object):
         if self.is_continuum() | self.is_filtergram():
             self.ldark[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
             self.iflat[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+        elif self.is_magnetogram():
+            self.B_obs[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+        elif self.is_dopplergram():
+            self.v_corr[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+            self.v_obs[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+            self.v_rot[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+            self.v_mer[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+            self.v_cbs[np.logical_or(self.mu < mu_thresh, np.isnan(self.mu))] = np.nan
+
         return None
 
     def correct_magnetogram(self):

@@ -26,7 +26,6 @@ dependencies = [
     "scipy",
     "reproject",
     "scikit-image",
-    "pyshtools",
     "ipykernel>=6.29.5",
 ]
 
