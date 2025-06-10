@@ -153,6 +153,7 @@ class SDOImage(object):
 
         # get mask excluding nans / sqrts of negatives
         # self.mask_nan = np.logical_and((self.rr <= 0.95), ~np.isnan(self.lat))
+        # self.mask_nan = np.logical_and((self.mu >= 0.1), ~np.isnan(self.image))
         self.mask_nan = (self.mu >= 0.1)
 
         # velocity components
@@ -207,13 +208,11 @@ class SDOImage(object):
         self.lp = cos_B0 * sin_phi
 
         # calculate legendre poylnomials
-        # print(">>> Generating ~Legendre~ Polynomials", flush=True)
-        pl_theta, dt_pl_theta = gen_leg(5, self.lat_mask)
+        pl_theta, dt_pl_theta = gen_leg_vec(5, self.lat_mask)
         if fit_cbs:
-            pl_rho, dt_pl_rho = gen_leg_x(5, self.rho_mask)
+            pl_rho, dt_pl_rho = gen_leg_x_vec(5, self.rho_mask)
         else:
-            pl_rho, dt_pl_rho = gen_leg_x(0, self.rho_mask)
-        # print(">>> Done generating ~Legendre~ Polynomials", flush=True)
+            pl_rho, dt_pl_rho = gen_leg_x_vec(0, self.rho_mask)
 
         # figure out how many polynomials we need
         if fit_cbs:
