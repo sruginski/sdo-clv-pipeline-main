@@ -17,12 +17,12 @@ import multiprocessing as mp
 def is_quality_data(sdo_image):
     return sdo_image.quality == 0
 
-def reduce_sdo_images(
-    con_file, mag_file, dop_file, aia_file,
-    moat_vels, moat_mags, moat_ints, moat_dilations,
-    moat_thetas, moat_areas, moat_vals, counter,
-    moat_avg_vels, symbol, left_moats, right_moats, mu_thresh=0.1, fit_cbs=False
-):
+def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, moat_vels, 
+                      moat_mags, moat_ints, moat_dilations, moat_thetas, 
+                      moat_areas, moat_vals, counter,moat_avg_vels, 
+                      symbol, left_moats, right_moats, mu_thresh=0.1, 
+                      fit_cbs=False, plot_moat=True):
+    # assertions
     assert exists(con_file)
     assert exists(mag_file)
     assert exists(dop_file)
@@ -63,32 +63,35 @@ def reduce_sdo_images(
         return None
 
     # correct magnetogram for foreshortening
-    print("correct mag")
+    # print("correct mag")
     mag.correct_magnetogram()
 
     # calculate differential rot., meridional circ., obs. vel, grav. redshift, cbs
-    print("correct dop")
+    # print("correct dop")
     dop.correct_dopplergram(fit_cbs=fit_cbs)
 
     # check that the dopplergram correction went well
-    print("checking")
+    # print("checking")
     if np.nanmax(np.abs(dop.v_rot)) < 1000.0:
         print("\t >>> Dopplergram correction failed, skipping " + iso, flush=True)
         return None
     
-    print("set to nan")
+    # print("set to nan")
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
     dop.mask_low_mu(mu_thresh)
     mag.mask_low_mu(mu_thresh)
     aia.mask_low_mu(mu_thresh)
 
-    print("mask")
+    # print("mask")
 
     # identify regions for thresholding
     # try:
-    print("About to construct SunMask")
-    mask = SunMask(con, mag, dop, aia, moat_vels, moat_mags, moat_ints, moat_dilations, moat_thetas, moat_areas, moat_vals, counter, moat_avg_vels, symbol, left_moats, right_moats)
+    # print("About to construct SunMask")
+    mask = SunMask(con, mag, dop, aia, moat_vels, moat_mags, moat_ints, 
+                   moat_dilations, moat_thetas, moat_areas, moat_vals, 
+                   counter, moat_avg_vels, symbol, left_moats, right_moats,
+                   plot_moat=plot_moat)
     mask.mask_low_mu(mu_thresh)
     # except:
         # print("\t >>> Region identification failed, skipping " + iso, flush=True)
@@ -96,7 +99,10 @@ def reduce_sdo_images(
 
     return con, mag, dop, aia, mask
 
-def reduce_sdo_images_fast(con_file, mag_file, dop_file, aia_file, moat_vels, moat_mags, moat_ints, moat_dilations, moat_thetas, moat_areas, moat_vals, counter, moat_avg_vels, symbol, left_moats, right_moats, mu_thresh=0.1, fit_cbs=False):
+def reduce_sdo_images_fast(con_file, mag_file, dop_file, aia_file, moat_vels, 
+                           moat_mags, moat_ints, moat_dilations, moat_thetas, 
+                           moat_areas, moat_vals, counter, moat_avg_vels, symbol, 
+                           left_moats, right_moats, mu_thresh=0.1, fit_cbs=False):
     assert exists(con_file)
     assert exists(mag_file)
     assert exists(aia_file)
@@ -146,7 +152,9 @@ def reduce_sdo_images_fast(con_file, mag_file, dop_file, aia_file, moat_vels, mo
 
     # identify regions for thresholding
     try:
-        mask = SunMask(con, mag, dop, aia, moat_vels, moat_mags, moat_ints, moat_dilations, moat_thetas, moat_areas, moat_vals, counter, moat_avg_vels, symbol, left_moats, right_moats)
+        mask = SunMask(con, mag, dop, aia, moat_vels, moat_mags, moat_ints, 
+                       moat_dilations, moat_thetas, moat_areas, moat_vals, 
+                       counter, moat_avg_vels, symbol, left_moats, right_moats)
         mask.mask_low_mu(mu_thresh)
         counter += 1
     except:
@@ -166,7 +174,10 @@ def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh,
 def process_data_set(con_file, mag_file, dop_file, aia_file,moat_vels, moat_mags, 
                      moat_ints, moat_dilations, moat_thetas, moat_areas, moat_vals, 
                      counter, moat_avg_vels, symbol, left_moats, right_moats,
-                     mu_thresh, n_rings=10, suffix=None, datadir=None):
+                     mu_thresh, n_rings=10, suffix=None, datadir=None,
+                     plot_moat=True):
+
+    print(">>> Running Epoch %s " % get_date(con_file).isoformat(), flush=True)
 
     start_time = time.perf_counter()
     #figure out data directories
@@ -179,7 +190,7 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,moat_vels, moat_mags
         fname2 = os.path.join(datadir, "region_output.csv")
     else:
         # make tmp directory
-        tmpdir = os.path.join(datadir,"tmp/")
+        tmpdir = os.path.join(datadir, "tmp")
 
         # filenames
         fname1 = os.path.join(tmpdir, "thresholds_", suffix, ".csv")
@@ -191,16 +202,17 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,moat_vels, moat_mags
                 create_file(file)
 
     # reduce the data set
-    # try:
-    ### TODO: below lines fails
-    con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, 
-                                                    aia_file, moat_vels, moat_mags, 
-                                                    moat_ints, moat_dilations, moat_thetas, 
-                                                    moat_areas, moat_vals, counter, 
-                                                    moat_avg_vels, symbol, left_moats, 
-                                                    right_moats)
-    # except:
-        # return None
+    try:
+        con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, 
+                                                     aia_file, moat_vels, moat_mags, 
+                                                     moat_ints, moat_dilations, 
+                                                     moat_thetas, moat_areas, 
+                                                     moat_vals, counter, 
+                                                     moat_avg_vels, symbol, 
+                                                     left_moats, right_moats,
+                                                     plot_moat=plot_moat)
+    except:
+        return None
 
     # get the MJD of the obs
     mjd = Time(con.date_obs).mjd
@@ -292,11 +304,12 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,moat_vels, moat_mags
     del mu_grid
     del v_quiet
     del region_mask
-    gc.collect()
+    gc.collect() 
+
+    end_time = time.perf_counter()
 
     end_time = time.perf_counter()
 
     # report success and return
-    print("\t >>> Epoch %s run successfully" % get_date(con_file).isoformat(), flush=True)
-    print("Elapsed time: ", end_time - start_time)
+    print("\t >>> Run successfully in %s seconds" % str(end_time - start_time), flush=True)
     return None

@@ -27,7 +27,6 @@ from sdo_clv_pipeline.plot_moats_data import load_and_plot
 warnings.simplefilter("ignore", category=VerifyWarning)
 warnings.simplefilter("ignore", category=FITSFixedWarning)
 
-
 class SDOImage(object):
     def __init__(self, file, dtype=np.float32):
         # set the filename
@@ -377,9 +376,10 @@ def pad_max_len(data, max_length):
 class SunMask(object):
     def __init__(self, con, mag, dop, aia, moat_vels, moat_mags, moat_ints, 
                  moat_dilations, moat_thetas, moat_areas, moat_vals, counter, 
-                 moat_avg_vels, symbol, left_moats, right_moats):
+                 moat_avg_vels, symbol, left_moats, right_moats, 
+                 plot_moat=True):
         # check argument order/names are correct
-        print("Entered SunMask.__init__")
+        # print("Entered SunMask.__init__")
         
         assert con.is_continuum()
         assert mag.is_magnetogram()
@@ -403,7 +403,8 @@ class SunMask(object):
         # identify regions
         self.identify_regions(con, mag, dop, aia, moat_vels, moat_mags, moat_ints, 
                               moat_dilations, moat_thetas, moat_areas, moat_vals, 
-                              counter, moat_avg_vels, symbol, left_moats, right_moats)
+                              counter, moat_avg_vels, symbol, left_moats, right_moats,
+                              plot_moat=plot_moat)
 
         # get region fracs
         self.umb_frac = np.nansum(self.is_umbra()) / npix
@@ -428,7 +429,8 @@ class SunMask(object):
 
     def identify_regions(self, con, mag, dop, aia, moat_vels, moat_mags, moat_ints, 
                          moat_dilations, moat_thetas, moat_areas, moat_vals, counter, 
-                         moat_avg_vels, symbol, left_moats, right_moats):
+                         moat_avg_vels, symbol, left_moats, right_moats,
+                         plot_moat=True):    
         # allocate memory for mask array
         self.regions = np.zeros_like(con.image)
 
@@ -440,14 +442,13 @@ class SunMask(object):
         ind1 = con.iflat <= self.con_thresh2      # if intensity less than thresh2, umbra (ind1)
 
         # get indices for penumbrae
-        indp = (con.iflat <= self.con_thresh1) & (con.iflat > self.con_thresh2)
+        indp = np.logical_and(con.iflat <= self.con_thresh1, con.iflat > self.con_thresh2)
             # if flattened continuum intensity less than thresh1 and greater than thresh2, penumbra (ind1 or ind2)
         if hasattr(dop, "v_corr"):
-            ind2 = indp & (dop.v_corr <= 0)    # if penumbra and bluehift or 0, ind2
-            ind3 = indp & (dop.v_corr > 0)     # if penumbra and redshift, ind3
+            ind2 = np.logical_and(indp, dop.v_corr <= 0)    # if penumbra and bluehift or 0, ind2
+            ind3 = np.logical_and(indp, dop.v_corr > 0)     # if penumbra and redshift, ind3
         else: # no attribute v_corr
             ind2 = indp
-
             ind3 = np.zeros_like(indp)
 
         """
@@ -469,14 +470,14 @@ class SunMask(object):
 
         # get indices for quiet sun
         # if continuum intensity is greater than thresh1 and weak B field
-        ind4 = (con.iflat > self.con_thresh1) & self.w_quiet
+        ind4 = np.logical_and(con.iflat > self.con_thresh1, self.w_quiet)
         
         # calculate intensity thresholds for AIA
         weights = self.w_active * (~ind1) * (~ind2) * (~ind3)
-        self.aia_thresh = np.nansum(aia.iflat * weights)/np.nansum(weights)
+        self.aia_thresh = np.nansum(aia.iflat * weights) / np.nansum(weights)
 
         # get indices for bright regions (plage/faculae + network)
-        ind5a = (con.iflat > self.con_thresh1) & self.w_active    # intensity greater than thresh 1 and strong B field
+        ind5a = np.logical_and(con.iflat > self.con_thresh1, self.w_active)  # intensity greater than thresh 1 and strong B field
         ind5b = (aia.iflat > self.aia_thresh) & (~ind1) & (~ind2) & (~ind3)  # > aia thresh and not umbra or penumbra
         ind5 = ind5a | ind5b # if ind5a or ind5b, bright
 
@@ -511,14 +512,15 @@ class SunMask(object):
         ### plotting ####
 
         # label each penumbra island and include umbra so we only expand outwards
-        binary_img = (self.regions == 2) | (self.regions == 3)|(self.regions == 1) # get penumbra and umbra 
+        binary_img = (self.regions == 2) | (self.regions == 3) | (self.regions == 1) # get penumbra and umbra 
         corners = ndimage.generate_binary_structure(2,2) # binary structure (rank, connectivity)
         no_corners = ndimage.generate_binary_structure(2,1)
         labels, nlabels = ndimage.label(binary_img, structure=corners) # label each island of umbra and penumbra
 
-        plt.imshow(labels)
-        plt.colorbar()
-        plt.show()
+        if plot_moat:
+            plt.imshow(labels)
+            plt.colorbar()
+            plt.show()
 
         # get labeled region areas and perimeters for umbra and penumbra
         # find areas (NEW WAY)
@@ -553,6 +555,11 @@ class SunMask(object):
         left_moat_pixels = np.zeros_like(self.regions, dtype=bool)
         right_moat_pixels = np.zeros_like(self.regions, dtype=bool)
 
+        # allocate re-useable arrays
+        bit_array_out1 = np.zeros_like(con.image).astype(bool)
+        bit_array_out2 = np.zeros_like(bit_array_out1)
+
+        # iterate over regions
         for rprop in rprops:
             # get area of that region              
             max_area = rprop.area
@@ -560,9 +567,11 @@ class SunMask(object):
             #print(centroid)                 
             #if rprop.label == a_label[counter]:
             #if max_area == maximum_area:
+
             if max_area > 600:
-                print(rprop.label)
-                print(max_area)
+                # print(rprop.label)
+                # print(max_area)
+
                 # get pixels in that region
                 max_area_idx = areas_pix == max_area
                 areas.append(max_area) # areas[i] = max_area
@@ -581,19 +590,22 @@ class SunMask(object):
                 # print(avg_mu)
 
                 # don't double count
-                idx_new = np.logical_and(max_area_idx, self.regions != 2)
-                idx_new = np.logical_and(idx_new, self.regions != 1)
+                # idx_new = np.logical_and(max_area_idx, self.regions != 2)
+                # idx_new = np.logical_and(idx_new, self.regions != 1)
+
+                np.logical_and(max_area_idx, self.regions != 2, out=bit_array_out1)
+                np.logical_and(bit_array_out1, self.regions != 1, out=bit_array_out2)
 
                 # plt.imshow(idx_new) 
                 # plt.colorbar()
                 # plt.show() # visualize that region
 
-                # TODO below line fails: too many values to unpack
-                out = SunMask.plot_value(dilated_spots, self, dop, mag, con, idx_new, 
-                                         max_area, corners, no_corners, moat_avg_vels, 
-                                         symbol, left_moats, right_moats)
-                dilation_arr, avg_vel_arr, avg_mag_arr, avg_int_arr, dilated_spots, moat_avg_vels, left_moats, right_moats = out
-                print("below line")
+                mv = SunMask.plot_value(dilated_spots, self, dop, mag, con, 
+                                        bit_array_out2, max_area, corners, 
+                                        no_corners, moat_avg_vels, symbol, 
+                                        left_moats, right_moats)
+                dilation_arr, avg_vel_arr, avg_mag_arr, avg_int_arr, dilated_spots, moat_avg_vels, left_moats, right_moats = mv
+                # print("below line")
 
                 vels.append(avg_vel_arr)
                 moat_vels.append(avg_vel_arr)
@@ -632,13 +644,15 @@ class SunMask(object):
         letters = [ascii_letters[i%52] for i in range(len(areas))]
         
         # moats = np.array(moats, dtype = object)
-        np.savez_compressed('moats_data.npz', x=x, vels=vels, mags=mags, ints=ints, 
+        moat_file = os.path.join(root, "data", "moats_data.npz")
+        np.savez_compressed(moat_file, x=x, vels=vels, mags=mags, ints=ints, 
                             areas=areas, mus=mus, area_idx_arr=area_idx_arr, 
                             letters=letters, dilated_spots=dilated_spots)
         
-        print("before plotting")
-        load_and_plot()
-        #plot_loop()
+        # print("before plotting")
+        if plot_moat:
+            load_and_plot()
+            # plot_loop()
 
         # for i in dilated_spots:
         #     if symbol[i] == 0:
@@ -682,7 +696,7 @@ class SunMask(object):
         self.moat_thetas = moat_thetas
         self.moat_areas = moat_areas
 
-        print("moat pixels")
+        # print("moat pixels")
         plt.imshow(moat_pixels)
 
         return None
@@ -729,7 +743,7 @@ class SunMask(object):
                    max_area, corners, no_corners, moat_avg_vels, 
                    symbol, left_moats, right_moats):
         # first dilation
-        dilated_idx = ndimage.binary_dilation(max_area_idx, structure = no_corners)
+        dilated_idx = ndimage.binary_dilation(max_area_idx, structure=no_corners)
         idx_new = np.logical_and(dilated_idx, self.regions != 2)
         idx_new = np.logical_and(idx_new, self.regions != 1)
         
@@ -865,8 +879,6 @@ class SunMask(object):
             for n in avg_mag_arr:
                 n = -1*n
                 inv_mag_arr.append(n)
-            # TODO check return values
             return (dilation_arr, avg_vel_arr, inv_mag_arr, avg_int_arr, dilated_spots, moat_avg_vels, left_moats, right_moats)
         else:
             return (dilation_arr, avg_vel_arr, avg_mag_arr, avg_int_arr, dilated_spots, moat_avg_vels, left_moats, right_moats)
-
