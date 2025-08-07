@@ -116,7 +116,7 @@ def main():
         for i in range(len(con_files)):
             process_data_set(con_files[i], mag_files[i], dop_files[i], aia_files[i],
                              mu_thresh=mu_thresh, n_rings=n_rings, datadir=datadir,
-                             plot_moat=False)
+                             plot_moat=False, classify_moat=False)
 
         # print run time
         print("Serial: --- %s seconds ---" % (time.time() - t0))

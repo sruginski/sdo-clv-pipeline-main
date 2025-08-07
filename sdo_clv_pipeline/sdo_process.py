@@ -93,7 +93,7 @@ def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh,
     process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=mu_thresh, n_rings=n_rings,
                      suffix=str(mp.current_process().pid), datadir=datadir,
-                     plot_moat=False)
+                     plot_moat=False, classify_moat=False)
     return None
 
 def process_data_set(con_file, mag_file, dop_file, aia_file, 
