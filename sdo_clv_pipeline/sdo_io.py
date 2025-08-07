@@ -26,19 +26,28 @@ def read_data(file, dtype=np.float32):
 # function to glob the input data
 def find_data(indir, globexp=""):
     # find the data
-    con_files, con_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*con*.fits"))
-    mag_files, mag_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*mag*.fits"))
-    dop_files, dop_dates = sort_data(glob.glob(indir + "*hmi*" + globexp + "*op*.fits"))
-    aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*" + globexp + ".fits"))
+    con_files, con_dates = sort_data(glob.glob(os.path.join(indir, f"hmi.*.{globexp}*.continuum.fits")))
+    mag_files, mag_dates = sort_data(glob.glob(os.path.join(indir, f"hmi.*.{globexp}*.magnetogram.fits")))
+    dop_files, dop_dates = sort_data(glob.glob(os.path.join(indir, f"hmi.*.{globexp}*.Dopplergram.fits")))
+    aia_files, aia_dates = sort_data(glob.glob(os.path.join(indir, f"aia_lev1_1700a_{globexp}*t*_image_lev1*")))
+    # aia_files, aia_dates = sort_data(glob.glob(indir + "*aia*" + globexp + ".fits"))
 
     # find datetimes that are in *all* lists
     common_dates = list(set.intersection(*map(set, [con_dates, mag_dates, dop_dates, aia_dates])))
+    # print(common_dates)
 
     # remove epochs that are missing in any data set from all data sets
     con_files = [con_files[idx] for idx, date in enumerate(con_dates) if date in common_dates]
     mag_files = [mag_files[idx] for idx, date in enumerate(mag_dates) if date in common_dates]
     dop_files = [dop_files[idx] for idx, date in enumerate(dop_dates) if date in common_dates]
     aia_files = [aia_files[idx] for idx, date in enumerate(aia_dates) if date in common_dates]
+
+    print("File counts:")
+    print("\t >>> CON:", len(con_files))
+    print("\t >>> MAG:", len(mag_files))
+    print("\t >>> DOP:", len(dop_files))
+    print("\t >>> AIA:", len(aia_files))
+
     return con_files, mag_files, dop_files, aia_files
 
 def sort_data(f_list):
@@ -85,19 +94,19 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
     assert (len(con_files) == len(mag_files) == len(dop_files) == len(aia_files))
 
     # figure out data directories
-    if datadir == None:
+    if datadir is None:
         globdir = globexp.replace("*","")
-        datadir = str(root / "data") + "/" + globdir + "/"
+        datadir = os.path.join(root, "data", globdir)
 
-    if not isdir(str(root / "data") + "/"):
-        os.mkdir(str(root / "data") + "/")
+    if not isdir(os.path.join(root, "data")):
+        os.mkdir(os.path.join(root, "data"))
 
     if not isdir(datadir):
         os.mkdir(datadir)
 
     # name output files
-    fname1 = datadir + "thresholds.csv"
-    fname2 = datadir + "region_output.csv"
+    fname1 = os.path.join(datadir, "thresholds.csv")
+    fname2 = os.path.join(datadir, "region_output.csv")
 
     # headers for output files
     header1 = ["mjd", "aia_thresh", "a_aia", "b_aia", "c_aia",
@@ -106,7 +115,9 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
                "min_vel_sat", "max_vel_sat", "avg_vel_sat",
                "min_vel_rot", "max_vel_rot", "avg_vel_rot",
                "min_vel_mer", "max_vel_mer", "avg_vel_mer"]
-    header2 = ["mjd", "region", "lo_mu", "hi_mu", "pixel_frac", "light_frac", "v_hat", "v_phot", "v_quiet", "v_conv", "mag_unsigned", "avg_int", "avg_int_flat"]
+    header2 = ["mjd", "region", "lo_mu", "hi_mu", "pixel_frac", 
+               "light_frac", "v_hat", "v_phot", "v_quiet", 
+               "v_conv", "mag_unsigned", "avg_int", "avg_int_flat"]
 
     # replace/create/modify output files
     fileset = (fname1, fname2)
@@ -142,7 +153,7 @@ def organize_IO(indir, datadir=None, clobber=False, globexp=""):
 def clean_output_directory(*fnames):
     for fname in fnames:
         truncate_output_file(fname)
-        fname_mp = glob.glob(split(fname)[0] + "/tmp/" + splitext(split(fname)[1])[0] + "_*")
+        fname_mp = glob.glob(os.path.join(split(fname)[0], "tmp", splitext(split(fname)[1])[0] + "_*"))
         if not not fname_mp:
             for f_mp in fname_mp:
                 os.remove(f_mp)

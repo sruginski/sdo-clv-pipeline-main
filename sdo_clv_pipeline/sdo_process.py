@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import gc, os, re, pdb, csv, glob, time, argparse
 from astropy.time import Time
 from os.path import exists, split, isdir, getsize
+from multiprocessing import get_context
+import multiprocessing as mp
 
 # bring functions into scope
 from .paths import root
@@ -17,7 +19,8 @@ import multiprocessing as mp
 def is_quality_data(sdo_image):
     return sdo_image.quality == 0
 
-def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit_cbs=False):
+def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit_cbs=False, **kwargs):
+    # assertions
     assert exists(con_file)
     assert exists(mag_file)
     assert exists(dop_file)
@@ -67,7 +70,7 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
     if np.nanmax(np.abs(dop.v_rot)) < 1000.0:
         print("\t >>> Dopplergram correction failed, skipping " + iso, flush=True)
         return None
-
+    
     # set values to nan for mu less than mu_thresh
     con.mask_low_mu(mu_thresh)
     dop.mask_low_mu(mu_thresh)
@@ -76,7 +79,8 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
 
     # identify regions for thresholding
     try:
-        mask = SunMask(con, mag, dop, aia)
+        # print("About to construct SunMask")
+        mask = SunMask(con, mag, dop, aia, **kwargs)
         mask.mask_low_mu(mu_thresh)
     except:
         print("\t >>> Region identification failed, skipping " + iso, flush=True)
@@ -84,102 +88,48 @@ def reduce_sdo_images(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit
 
     return con, mag, dop, aia, mask
 
-def reduce_sdo_images_fast(con_file, mag_file, dop_file, aia_file, mu_thresh=0.1, fit_cbs=False):
-    assert exists(con_file)
-    assert exists(mag_file)
-    assert exists(aia_file)
-
-    # get the datetime
-    iso = get_date(con_file).isoformat()
-
-    # make SDOImage instances
-    try:
-        con = SDOImage(con_file)
-        mag = SDOImage(mag_file)
-        dop = SDOImage(dop_file)
-        aia = SDOImage(aia_file)
-    except OSError:
-        print("\t >>> Invalid file, skipping " + iso, flush=True)
-        return None
-
-    # check for data quality issue
-    if not all(list(map(is_quality_data, [con, mag, dop, aia]))):
-        print("\t >>> Data quality issue, skipping " + iso, flush=True)
-        return None
-
-    # calculate geometries
-    con.calc_geometry()
-    mag.inherit_geometry(con)
-    dop.inherit_geometry(con)
-
-    # interpolate aia image onto hmi image scale and inherit geometry
-    aia.rescale_to_hmi(con)
-
-    # calculate limb darkening/brightening in continuum map and filtergram
-    try:
-        con.calc_limb_darkening()
-        aia.calc_limb_darkening()
-    except:
-        print("\t >>> Limb darkening fit failed, skipping " + iso, flush=True)
-        return None
-
-    # correct magnetogram for foreshortening
-    mag.correct_magnetogram()
-
-    # set values to nan for mu less than mu_thresh
-    con.mask_low_mu(mu_thresh)
-    mag.mask_low_mu(mu_thresh)
-    dop.mask_low_mu(mu_thresh)
-    aia.mask_low_mu(mu_thresh)
-
-    # identify regions for thresholding
-    try:
-        mask = SunMask(con, mag, dop, aia)
-        mask.mask_low_mu(mu_thresh)
-    except:
-        print("\t >>> Region identification failed, skipping " + iso, flush=True)
-        return None
-
-    return con, mag, aia, mask   
-
 
 def process_data_set_parallel(con_file, mag_file, dop_file, aia_file, mu_thresh, n_rings, datadir):
     process_data_set(con_file, mag_file, dop_file, aia_file,
                      mu_thresh=mu_thresh, n_rings=n_rings,
-                     suffix=str(mp.current_process().pid), datadir=datadir)
+                     suffix=str(mp.current_process().pid), datadir=datadir,
+                     plot_moat=False)
     return None
 
+def process_data_set(con_file, mag_file, dop_file, aia_file, 
+                     mu_thresh, n_rings=10, suffix=None, 
+                     datadir=None, **kwargs):
+    iso = get_date(con_file).isoformat()
+    print(">>> Running epoch %s " % iso, flush=True)
 
-def process_data_set(con_file, mag_file, dop_file, aia_file,
-                     mu_thresh=0.1, n_rings=10, suffix=None, datadir=None):
+    # start the timer
+    start_time = time.perf_counter()
 
-    # figure out data directories
-    if not isdir(datadir):
-        os.mkdir(datadir)
+    #figure out data directories
+    if not isdir(datadir): os.mkdir(datadir)
 
     # name output files
     if suffix is None:
-        fname1 = datadir + "thresholds.csv"
-        fname2 = datadir + "region_output.csv"
+        fname1 = os.path.join(datadir, "thresholds.csv")
+        fname2 = os.path.join(datadir, "region_output.csv")
     else:
         # make tmp directory
-        tmpdir = datadir + "tmp/"
+        tmpdir = os.path.join(datadir, "tmp")
 
         # filenames
-        fname1 = tmpdir + "thresholds_" + suffix + ".csv"
-        fname2 = tmpdir + "region_output_" + suffix + ".csv"
+        fname1 = os.path.join(tmpdir, "thresholds_" + suffix + ".csv")
+        fname2 = os.path.join(tmpdir, "region_output_" + suffix + ".csv")
 
-        # check if the files exist, create otherwise
-        for file in (fname1, fname2):
+    # check if the files exist, create otherwise
+    for file in (fname1, fname2):
             if not exists(file):
                 create_file(file)
 
     # reduce the data set
     try:
-        con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file,
-                                                     dop_file, aia_file,
-                                                      mu_thresh=mu_thresh)
+        con, mag, dop, aia, mask = reduce_sdo_images(con_file, mag_file, dop_file, aia_file, **kwargs)
     except:
+        print("\t >>> Epoch %s reduction failed for unknown reasons :(" % iso, flush=True)
         return None
 
     # get the MJD of the obs
@@ -193,66 +143,47 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
                           np.nanmin(dop.v_rot), np.nanmax(dop.v_rot), np.nanmean(dop.v_rot),
                           np.nanmin(dop.v_mer), np.nanmax(dop.v_mer), np.nanmean(dop.v_mer))
 
-    # create arrays to hold velocity magnetic fiel, and pixel fraction results
+    # flatten per-pixel arrays
+    flat_mu = mask.mu.ravel()
+    flat_reg = mask.regions.ravel()
+    flat_int = con.image.ravel()
+    flat_v_corr = dop.v_corr.ravel()
+    flat_v_rot = dop.v_rot.ravel()
+    flat_abs_mag = np.abs(mag.B_obs).ravel()
+    flat_iflat = con.iflat.ravel()
+    flat_ld = con.ldark.ravel()
+    flat_w_quiet = mask.is_quiet_sun().ravel()
+    flat_w_active = np.logical_not(flat_w_quiet)
+
+    # calculate k_hat
+    w_quiet = mask.is_quiet_sun()
+    k_hat_con = np.nansum(con.image * con.ldark * w_quiet) / np.nansum(con.ldark**2 * w_quiet)
+
+    # create arrays to hold velocity, magnetic field, and pixel fraction results
     results = []
 
-    # calculate number of pixels and total light
-    all_pixels = np.nansum(con.mu >= mu_thresh)
-    all_light = np.nansum(con.image * (con.mu >= mu_thresh))
+    # calculate disk-integrataed quantities
+    results.append(compute_disk_results(mjd, flat_mu, flat_int, flat_v_corr,
+                                        flat_v_rot, flat_ld, flat_iflat,
+                                        flat_w_quiet, flat_w_active, flat_abs_mag,
+                                        mu_thresh, k_hat_con))
+    
+    # calculate velocities for regions, not binning by mu
+    results.extend(compute_region_only_results(mjd, flat_mu, flat_int,
+                                               flat_v_corr, flat_v_rot,
+                                               flat_ld, flat_iflat,
+                                               flat_abs_mag, flat_w_quiet, 
+                                               flat_w_active, 
+                                               flat_reg, region_codes,
+                                               mu_thresh, k_hat_con))
 
-    # calculate disk-integrated velocities, mag field, and intensity
-    vels = calc_velocities(con, mag, dop, aia, mask)
-    mags = calc_mag_stats(con, mag)
-    ints = calc_int_stats(con)
-
-    # append full-disk results
-    results.append([mjd, np.nan, np.nan, np.nan, all_pixels, all_light, *vels, mags, *ints])
-
-    # loop over the mu annuli
-    mu_grid = np.linspace(mu_thresh, 1.0, n_rings)
-    regions = [1, 2, 2.5, 3, 4, 5, 6]
-    for j in range(n_rings-1):
-        # mu values for annuli
-        lo_mu=mu_grid[j]
-        hi_mu=mu_grid[j+1]
-
-        # compute the region mask
-        region_mask = calc_region_mask(mask, region=None, hi_mu=hi_mu, lo_mu=lo_mu)
-
-        # compute quiet-sun velocity in mu annulus
-        v_quiet = np.nansum(dop.v_corr * con.image * mask.is_quiet_sun() * region_mask)
-        v_quiet /= np.nansum(con.image * mask.is_quiet_sun() * region_mask)
-
-        # loop over unique region identifiers
-        for k in regions:
-            # compute the region mask
-            region_mask = calc_region_mask(mask, region=k, hi_mu=hi_mu, lo_mu=lo_mu)
-
-            # get total pix and light
-            pixels = np.nansum(region_mask)/all_pixels
-            light = np.nansum(region_mask * con.image)/all_light
-
-            if ((pixels == 0.0) | (light == 0.0)):
-                vels = [0.0, 0.0, 0.0, 0.0]
-                mags = 0.0
-                ints = [0.0, 0.0]
-                results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, mags, *ints])
-                continue
-
-            # compute velocity components in each mu annulus by region
-            if k != 4:
-                # case where region is quiet sun, return zero for v_quiet
-                vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=v_quiet)
-            else:
-                # case where region is quiet sun, return nonzero v_quiet
-                vels = calc_velocities(con, mag, dop, aia, mask, region_mask=region_mask, v_quiet=None)
-
-            # calculate mag and intensity stats
-            mags = calc_mag_stats(con, mag, region_mask=region_mask)
-            ints = calc_int_stats(con, region_mask=region_mask)
-
-            # append the velocity results
-            results.append([mjd, k, lo_mu, hi_mu, pixels, light, *vels, mags, *ints])
+    # calculate disk-resovled quantities
+    results.extend(compute_region_results(mjd, flat_mu, flat_int, flat_v_corr,
+                                          flat_v_rot, flat_ld, flat_iflat,
+                                          flat_abs_mag, flat_w_quiet, 
+                                          flat_w_active, flat_reg, 
+                                          region_codes, mu_thresh, 
+                                          n_rings, k_hat_con))
 
     # write to disk
     write_results_to_file(fname2, results)
@@ -262,17 +193,20 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     del mag
     del dop
     del aia
-    del mask
-    del vels
-    del mags
-    del ints
-    del results
-    del regions
-    del mu_grid
-    del v_quiet
-    del region_mask
-    gc.collect()
+    del flat_mu
+    del flat_ld
+    del flat_reg
+    del flat_int
+    del flat_v_rot
+    del flat_iflat
+    del flat_v_corr
+    del flat_abs_mag 
+    del flat_w_quiet
+    gc.collect() 
+    
+    # end the timer
+    end_time = time.perf_counter()
 
     # report success and return
-    print("\t >>> Epoch %s run successfully" % get_date(con_file).isoformat(), flush=True)
+    print("\t >>> Run successfully in %s seconds" % str(end_time - start_time), flush=True)
     return None
