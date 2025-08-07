@@ -7,6 +7,9 @@ import os, sys, pdb, csv, glob
 import pandas as pd
 
 from sdo_clv_pipeline.paths import root
+from sdo_clv_pipeline.sdo_image import region_codes
+from sdo_clv_pipeline.sdo_image import umbrae_code, penumbrae_code, quiet_sun_code, network_code, plage_code, moat_code
+
 
 def mask_all_zero_rows(df, return_idx=False):
     idx = (df.v_hat == 0.0) & (df.v_phot == 0.0) & (df.v_conv == 0.0) & (df.v_quiet == 0.0)
@@ -55,24 +58,27 @@ def daily_bin(df):
     return df_out
 
 # sort out paths
-datadir = str(root / "data") + "/"
+datadir = os.path.abspath(os.path.join(root, "data"))
 
 # make directory for processed output
-if not os.path.isdir(datadir + "processed/"):
-    os.mkdir(datadir + "processed/")
+if not os.path.isdir(os.path.join(datadir, "processed")):
+    os.mkdir(os.path.join(datadir, "processed"))
 
-outdir = datadir + "processed/"
+outdir = os.path.join(datadir, "processed")
+
+print(datadir)
+print(outdir)
 
 # read in and sort by mjd
-df_all = pd.read_csv(datadir + "region_output.csv")
+df_all = pd.read_csv(os.path.join(datadir, "region_output.csv"))
 df_all.sort_values(by=["mjd", "region", "lo_mu"], inplace=True)
 df_all.drop_duplicates()
 df_all.reset_index(drop=True, inplace=True)
 
 # get full disk only
-df_full_disk = df_all[(np.isnan(df_all.lo_mu)) & np.isnan(df_all.region)]
+df_full_disk = df_all[(np.isnan(df_all.lo_mu))]
 df_full_disk.reset_index(drop=True, inplace=True)
-df_full_disk.to_csv(outdir + "full_disk.csv", index=False)
+df_full_disk.to_csv(os.path.join(outdir, "full_disk.csv"), index=False)
 # full_disk_daily = daily_bin(df_full_disk)
 # full_disk_daily.to_csv(outdir + "full_disk_daily.csv", index=False)
 
@@ -87,53 +93,77 @@ idx = dist[dist > 2.0 * v_conv_rolling_std].index
 """
 
 # make dfs by mu
-plage = df_all[df_all.region == 6.0]
-network = df_all[df_all.region == 5.0]
-quiet_sun = df_all[df_all.region == 4.0]
-red_penumbrae = df_all[df_all.region == 3.0]
-all_penumbrae = df_all[df_all.region == 2.5]
-blu_penumbrae = df_all[df_all.region == 2.0]
-umbrae = df_all[df_all.region == 1.0]
+not_nan_mu_bin = np.logical_not(np.isnan(df_all.lo_mu))
+right_moat = df_all[np.logical_and(df_all.region == 9.0, not_nan_mu_bin)]
+left_moat = df_all[np.logical_and(df_all.region == 8.0, not_nan_mu_bin)]
+moat = df_all[np.logical_and(df_all.region == moat_code, not_nan_mu_bin)]
+plage = df_all[np.logical_and(df_all.region == plage_code, not_nan_mu_bin)]
+network = df_all[np.logical_and(df_all.region == network_code, not_nan_mu_bin)]
+quiet_sun = df_all[np.logical_and(df_all.region == quiet_sun_code, not_nan_mu_bin)]
+red_penumbrae = df_all[np.logical_and(df_all.region == 3.0, not_nan_mu_bin)]
+all_penumbrae = df_all[np.logical_and(df_all.region == penumbrae_code, not_nan_mu_bin)]
+blu_penumbrae = df_all[np.logical_and(df_all.region == 2.0, not_nan_mu_bin)]
+umbrae = df_all[np.logical_and(df_all.region == umbrae_code, not_nan_mu_bin)]
 
 # mask rows where all vels are 0.0 (i.e., region isn't present in that annulus)
+right_moat = mask_all_zero_rows(right_moat)
+right_moat.reset_index(drop=True, inplace=True)
+right_moat.to_csv(os.path.join(outdir, "right_moat.csv"), index=False)
+# moat_daily = daily_bin(moat)
+# moat_daily.to_csv(outdir + "moat_daily.csv", index=False)
+
+left_moat = mask_all_zero_rows(left_moat)
+left_moat.reset_index(drop=True, inplace=True)
+left_moat.to_csv(os.path.join(outdir, "left_moat.csv"), index=False)
+# moat_daily = daily_bin(moat)
+# moat_daily.to_csv(outdir + "moat_daily.csv", index=False)
+
+moat = mask_all_zero_rows(moat)
+moat.reset_index(drop=True, inplace=True)
+moat.to_csv(os.path.join(outdir, "moat.csv"), index=False)
+# moat_daily = daily_bin(moat)
+# moat_daily.to_csv(outdir + "moat_daily.csv", index=False)
+
 plage = mask_all_zero_rows(plage)
 plage.reset_index(drop=True, inplace=True)
-plage.to_csv(outdir + "plage.csv", index=False)
+plage.to_csv(os.path.join(outdir, "plage.csv"), index=False)
 # plage_daily = daily_bin(plage)
 # plage_daily.to_csv(outdir + "plage_daily.csv", index=False)
 
 network = mask_all_zero_rows(network)
 network.reset_index(drop=True, inplace=True)
-network.to_csv(outdir + "network.csv", index=False)
+network.to_csv(os.path.join(outdir, "network.csv"), index=False)
 # network_daily = daily_bin(network)
 # network_daily.to_csv(outdir + "network_daily.csv", index=False)
 
 quiet_sun = mask_all_zero_rows(quiet_sun)
 quiet_sun.reset_index(drop=True, inplace=True)
-quiet_sun.to_csv(outdir + "quiet_sun.csv", index=False)
+quiet_sun.to_csv(os.path.join(outdir, "quiet_sun.csv"), index=False)
 # quiet_sun_daily = daily_bin(quiet_sun)
 # quiet_sun_daily.to_csv(outdir + "quiet_sun_daily.csv", index=False)
 
 red_penumbrae = mask_all_zero_rows(red_penumbrae)
 red_penumbrae.reset_index(drop=True, inplace=True)
-red_penumbrae.to_csv(outdir + "red_penumbrae.csv", index=False)
+red_penumbrae.to_csv(os.path.join(outdir, "red_penumbrae.csv"), index=False)
 # red_penumbrae_daily = daily_bin(red_penumbrae)
 # red_penumbrae_daily.to_csv(outdir + "red_penumbrae_daily.csv", index=False)
 
 all_penumbrae = mask_all_zero_rows(all_penumbrae)
 all_penumbrae.reset_index(drop=True, inplace=True)
-all_penumbrae.to_csv(outdir + "penumbrae.csv", index=False)
+all_penumbrae.to_csv(os.path.join(outdir, "penumbrae.csv"), index=False)
 # all_penumbrae_daily = daily_bin(all_penumbrae)
 # all_penumbrae_daily.to_csv(outdir + "penumbrae_daily.csv", index=False)
 
 blu_penumbrae = mask_all_zero_rows(blu_penumbrae)
 blu_penumbrae.reset_index(drop=True, inplace=True)
-blu_penumbrae.to_csv(outdir + "blu_penumbrae.csv", index=False)
+blu_penumbrae.to_csv(os.path.join(outdir, "blu_penumbrae.csv"), index=False)
 # blu_penumbrae_daily = daily_bin(blu_penumbrae)
 # blu_penumbrae_daily.to_csv(outdir + "blu_penumbrae_daily.csv", index=False)
 
 umbrae = mask_all_zero_rows(umbrae)
 umbrae.reset_index(drop=True, inplace=True)
-umbrae.to_csv(outdir + "umbrae.csv", index=False)
+umbrae.to_csv(os.path.join(outdir, "umbrae.csv"), index=False)
 # umbrae_daily = daily_bin(umbrae)
 # umbrae_daily.to_csv(outdir + "umbrae_daily.csv", index=False)
+
+
