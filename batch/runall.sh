@@ -4,7 +4,7 @@
 #SBATCH --ntasks=64
 ##SBATCH --mem-per-cpu=8192
 ##SBATCH --time=2:00:00
-#SBATCH --time=48:00:00
+#SBATCH --time=72:00:00
 #SBATCH --job-name=sdo_all
 #SBATCH --chdir=/mnt/home/mpalumbo/work/savannah/sdo-clv-pipeline
 #SBATCH --output=/mnt/home/mpalumbo/work/logs/sdo_all.%j.out
@@ -17,6 +17,6 @@ cd $SLURM_SUBMIT_DIR
 
 echo "About to start Python"
 # uv run scripts/run_pipe.py --globexp "2014*01*07*"
-uv run scripts/run_pipe.py --globexp "2014"
+uv run scripts/run_pipe.py
 echo "Python exited"
 date
