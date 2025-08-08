@@ -9,6 +9,8 @@ from astropy.time import Time
 from sdo_clv_pipeline.paths import root
 from sdo_clv_pipeline.sdo_image import *
 
+mpl.use("Qt5Agg")
+
 # use style
 plt.style.use(os.path.join(root, "my.mplstyle"))
 
@@ -48,7 +50,7 @@ ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"$ \Delta v_{\rm conv}\ {\rm [ m s}^{-1} {\rm ]}$")
 ax1.legend(ncol=2)#, fontsize=9)
 fig.savefig(os.path.join(plotdir, "full_disk_series.pdf"))
-plt.show()
+# plt.show()
 plt.clf(); plt.close()
 
 fig = plt.figure()
@@ -68,7 +70,7 @@ fig.legend(ncol=7, fontsize=14, loc='upper center',
            handletextpad=0.15, bbox_to_anchor=(0.51, 0.95),
            columnspacing=0.8)
 fig.savefig(os.path.join(plotdir, "full_disk_region_time_series.pdf"))
-plt.show()
+# plt.show()
 plt.clf(); plt.close()
 
 fig = plt.figure()
