@@ -7,6 +7,7 @@ uv.lock
 *.npz
 *.png
 *.csv
+*.pdf
 
 # directories
 data/*
