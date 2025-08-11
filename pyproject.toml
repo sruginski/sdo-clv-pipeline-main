@@ -28,6 +28,8 @@ dependencies = [
     "numba>=0.61.2",
     "tqdm>=4.67.1",
     "ipdb>=0.13.13",
+    "certifi>=2025.8.3",
+    "pip-system-certs>=5.2",
 ]
 
 [dependency-groups]
