@@ -460,7 +460,7 @@ class SunMask(object):
         # self.lon = np.copy(other_image.lon)
         return None
 
-    def identify_regions(self, con, mag, dop, aia, plot_moat=True, classify_moat=True):
+    def identify_regions(self, con, mag, dop, aia, plot_moat=False, classify_moat=False):
         invalid_mask = np.logical_or(con.mu <= con.mu_thresh, np.isnan(con.mu))
 
         # allocate memory for mask array
