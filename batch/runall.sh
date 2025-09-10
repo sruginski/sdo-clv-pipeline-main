@@ -4,8 +4,13 @@
 #SBATCH --ntasks=64
 ##SBATCH --mem-per-cpu=8192
 ##SBATCH --time=2:00:00
+<<<<<<< HEAD
 #SBATCH --time=48:00:00
 #SBATCH --job-name=sdo_moat
+=======
+#SBATCH --time=72:00:00
+#SBATCH --job-name=sdo_all
+>>>>>>> main
 #SBATCH --chdir=/mnt/home/mpalumbo/work/savannah/sdo-clv-pipeline
 #SBATCH --output=/mnt/home/mpalumbo/work/logs/sdo_moat.%j.out
 

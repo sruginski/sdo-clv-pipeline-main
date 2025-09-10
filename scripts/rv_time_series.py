@@ -50,7 +50,7 @@ ax1.set_xlabel(r"${\rm MJD}$")
 ax1.set_ylabel(r"$ \Delta v_{\rm conv}\ {\rm [ m s}^{-1} {\rm ]}$")
 ax1.legend(ncol=2)#, fontsize=9)
 fig.savefig(os.path.join(plotdir, "full_disk_series.pdf"))
-# plt.show()
+plt.show()
 plt.clf(); plt.close()
 
 fig = plt.figure()
@@ -70,7 +70,27 @@ fig.legend(ncol=7, fontsize=14, loc='upper center',
            handletextpad=0.15, bbox_to_anchor=(0.51, 0.95),
            columnspacing=0.8)
 fig.savefig(os.path.join(plotdir, "full_disk_region_time_series.pdf"))
-# plt.show()
+plt.show()
+plt.clf(); plt.close()
+
+fig = plt.figure()
+ax1 = fig.add_subplot()
+s = 3
+ax1.scatter(df_vels.mjd[no_reg], df_vels.v_conv[no_reg], s=s, label=r"${\rm Entire\ Sun}$")
+ax1.scatter(df_vels.mjd[is_umb], df_vels.v_conv[is_umb] * df_vels.light_frac[is_umb], s=s, label=r"${\rm Umbrae}$")
+ax1.scatter(df_vels.mjd[is_pen], df_vels.v_conv[is_pen] * df_vels.light_frac[is_pen], s=s, label=r"${\rm Penumbrae}$")
+ax1.scatter(df_vels.mjd[is_quiet], df_vels.v_conv[is_quiet] * df_vels.light_frac[is_quiet], s=s, label=r"${\rm Quiet\ Sun}$")
+ax1.scatter(df_vels.mjd[is_moat], df_vels.v_conv[is_network] * df_vels.light_frac[is_network], s=s, label=r"${\rm Network}$")
+ax1.scatter(df_vels.mjd[is_plage], df_vels.v_conv[is_plage] * df_vels.light_frac[is_plage], s=s, label=r"${\rm Plage}$")
+ax1.scatter(df_vels.mjd[is_moat], df_vels.v_conv[is_moat] * df_vels.light_frac[is_moat], s=s, label=r"${\rm Moat}$")
+ax1.set_xlabel(r"${\rm MJD}$")
+ax1.set_ylabel(r"$ \Delta v_{\rm conv}\ {\rm [ m s}^{-1} {\rm ]}$")
+# ax1.legend(ncol=2)#, fontsize=9)
+fig.legend(ncol=7, fontsize=14, loc='upper center',
+           handletextpad=0.15, bbox_to_anchor=(0.51, 0.95),
+           columnspacing=0.8)
+fig.savefig(os.path.join(plotdir, "full_disk_region_time_series_weighted.pdf"))
+plt.show()
 plt.clf(); plt.close()
 
 fig = plt.figure()
