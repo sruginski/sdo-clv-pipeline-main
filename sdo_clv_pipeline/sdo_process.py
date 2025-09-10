@@ -207,6 +207,8 @@ def process_data_set(con_file, mag_file, dop_file, aia_file,
     # end the timer
     end_time = time.perf_counter()
 
+    end_time = time.perf_counter()
+
     # report success and return
     print("\t >>> Run successfully in %s seconds" % str(end_time - start_time), flush=True)
     return None

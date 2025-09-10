@@ -5,4 +5,4 @@ axes.grid                   : True
 grid.linestyle              : :
 savefig.bbox                : tight
 axes.formatter.useoffset    : False
-text.usetex                 : True
+text.usetex                 : False

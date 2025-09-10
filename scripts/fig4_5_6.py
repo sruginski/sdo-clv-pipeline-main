@@ -96,8 +96,8 @@ red_penumbrae = pd.read_csv(os.path.join(datadir, "processed", "red_penumbrae.cs
 blu_penumbrae = pd.read_csv(os.path.join(datadir, "processed", "blu_penumbrae.csv"))
 umbrae = pd.read_csv(os.path.join(datadir, "processed", "umbrae.csv"))
 moat = pd.read_csv(os.path.join(datadir, "processed", "moat.csv"))
-left_moat = pd.read_csv(os.path.join(datadir, "processed", "left_moat.csv"))
-right_moat = pd.read_csv(os.path.join(datadir, "processed", "right_moat.csv"))
+# left_moat = pd.read_csv(os.path.join(datadir, "processed", "left_moat.csv"))
+# right_moat = pd.read_csv(os.path.join(datadir, "processed", "right_moat.csv"))
 
 # get centers of mu bins
 lo_mus = np.unique(plage.lo_mu)
@@ -130,8 +130,8 @@ def clv_plot(fname=None):
     network_avg, network_std, network_err = calc_region_stats(network, colname="v_hat")
     plage_avg, plage_std, plage_err = calc_region_stats(plage, colname="v_hat")
     moat_avg, moat_std, moat_err = calc_region_stats(moat, colname="v_hat")
-    left_moat_avg, left_moat_std, left_moat_err = calc_region_stats(left_moat, colname="v_hat")
-    right_moat_avg, right_moat_std, right_moat_err = calc_region_stats(right_moat, colname="v_hat")
+    # left_moat_avg, left_moat_std, left_moat_err = calc_region_stats(left_moat, colname="v_hat")
+    # right_moat_avg, right_moat_std, right_moat_err = calc_region_stats(right_moat, colname="v_hat")
 
 
     # write out table
@@ -148,10 +148,10 @@ def clv_plot(fname=None):
     df_v_hat["v_std_um"] = np.round(umbrae_std, decimals=2)
     df_v_hat["v_avg_pu"] = np.round(penumbrae_avg, decimals=2)
     df_v_hat["v_std_pu"] = np.round(penumbrae_std, decimals=2)
-    df_v_hat["v_avg_lm"] = np.round(left_moat_avg, decimals=2)
-    df_v_hat["v_std_rm"] = np.round(left_moat_std, decimals=2)
-    df_v_hat["v_avg_lm"] = np.round(right_moat_avg, decimals=2)
-    df_v_hat["v_std_rm"] = np.round(right_moat_std, decimals=2)
+    # df_v_hat["v_avg_lm"] = np.round(left_moat_avg, decimals=2)
+    # df_v_hat["v_std_rm"] = np.round(left_moat_std, decimals=2)
+    # df_v_hat["v_avg_lm"] = np.round(right_moat_avg, decimals=2)
+    # df_v_hat["v_std_rm"] = np.round(right_moat_std, decimals=2)
     
     df_v_hat["v_avg_mt"] = np.round(moat_avg, decimals=2)
     df_v_hat["v_std_mt"] = np.round(moat_std, decimals=2)
@@ -165,7 +165,7 @@ def clv_plot(fname=None):
     # df_v_hat["v_std_rm"] = np.round(right_moat_std, decimals=2)
     #df_v_hat.to_latex(buf=tabfile1, na_rep="-", index=False, float_format="%.2f")
 
-    print(df_v_hat["v_avg_lm"].to_numpy())
+    # print(df_v_hat["v_avg_lm"].to_numpy())
 
     # polyfit each of them
     # mu_fit = np.linspace(0.15, 0.95, num=100)
@@ -460,7 +460,7 @@ for i in range(n_mu_samps):
     # pl1,ot this mu
     axs[1,i].hist(plage[colname][idx1], bins="auto", density=True, color=pl_color, histtype="step", label=r"{\rm Plage}")
     axs[1,i].hist(network[colname][idx2], bins="auto", density=True, color=nw_color, histtype="step", label=r"{\rm Network}")
-    #axs[1,i].hist(moat[colname][idx5], bins="auto", density=True, color=mt_color, histtype="step", label=r"{\rm Moat}")
+    # axs[1,i].hist(moat[colname][idx5], bins="auto", density=True, color=mt_color, histtype="step", label=r"{\rm Moat}")
     # axs[2,i].hist(left_moat[colname][idx6], bins="auto", density=True, color=lm_color, histtype="step", label=r"{\rm Left Moat}")
     # axs[2,i].hist(right_moat[colname][idx7], bins="auto", density=True, color=rm_color, histtype="step", label=r"{\rm Right Moat}")
 
@@ -511,8 +511,8 @@ ylims = np.zeros(n_mu_samps)
 for i in range(n_mu_samps):
     # do all regs
     idx5 = moat.lo_mu == mu_samps[i]
-    idx6 = left_moat.lo_mu == mu_samps[i]
-    idx7 = right_moat.lo_mu == mu_samps[i]
+    # idx6 = left_moat.lo_mu == mu_samps[i]
+    # idx7 = right_moat.lo_mu == mu_samps[i]
 
     axs[3,i].hist(moat[colname][idx5], bins="auto", density=True, color=mt_color, histtype="step", label=r"{\rm Moat}")
     # axs[3,i].hist(left_moat[colname][idx6], bins="auto", density=True, color=lm_color, histtype="step", label=r"{\rm Left Moat}")
