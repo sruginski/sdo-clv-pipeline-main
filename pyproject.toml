@@ -19,14 +19,17 @@ requires-python = "==3.12.*"
 dependencies = [
     "numpy~=2.2",
     "pandas",
-    "PyQt5",
     "matplotlib",
-    "sunpy",
+    "sunpy[all]",
     "astropy",
     "scipy",
     "scikit-image",
     "ipykernel>=6.29.5",
     "numba>=0.61.2",
+    "tqdm>=4.67.1",
+    "ipdb>=0.13.13",
+    "certifi>=2025.8.3",
+    "pip-system-certs>=5.2",
 ]
 
 [dependency-groups]
