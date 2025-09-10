@@ -12,9 +12,9 @@ authors = [
 ]
 
 description = "SDO data reduction for center-to-limb variability"
-version = "0.4.0"
+version = "0.5.2"
 readme = "README.md"
-requires-python = "==3.11.6"
+requires-python = "==3.12.*"
 
 dependencies = [
     "numpy~=2.2",
@@ -27,6 +27,9 @@ dependencies = [
     "ipykernel>=6.29.5",
     "numba>=0.61.2",
     "tqdm>=4.67.1",
+    "ipdb>=0.13.13",
+    "certifi>=2025.8.3",
+    "pip-system-certs>=5.2",
 ]
 
 [dependency-groups]

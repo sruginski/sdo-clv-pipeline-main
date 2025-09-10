@@ -7,6 +7,8 @@ import os, sys, pdb, csv, glob
 import pandas as pd
 
 from sdo_clv_pipeline.paths import root
+from sdo_clv_pipeline.sdo_image import region_codes
+from sdo_clv_pipeline.sdo_image import umbrae_code, penumbrae_code, quiet_sun_code, network_code, plage_code, moat_code
 
 
 def mask_all_zero_rows(df, return_idx=False):
@@ -74,7 +76,7 @@ df_all.drop_duplicates()
 df_all.reset_index(drop=True, inplace=True)
 
 # get full disk only
-df_full_disk = df_all[(np.isnan(df_all.lo_mu)) & np.isnan(df_all.region)]
+df_full_disk = df_all[(np.isnan(df_all.lo_mu))]
 df_full_disk.reset_index(drop=True, inplace=True)
 df_full_disk.to_csv(os.path.join(outdir, "full_disk.csv"), index=False)
 # full_disk_daily = daily_bin(df_full_disk)
@@ -91,19 +93,19 @@ idx = dist[dist > 2.0 * v_conv_rolling_std].index
 """
 
 # make dfs by mu
-right_moat = df_all[df_all.region == 9.0]
-left_moat = df_all[df_all.region == 8.0]
-moat = df_all[df_all.region == 8.5]
-plage = df_all[df_all.region == 6.0]
-network = df_all[df_all.region == 5.0]
-quiet_sun = df_all[df_all.region == 4.0]
-red_penumbrae = df_all[df_all.region == 3.0]
-all_penumbrae = df_all[df_all.region == 2.5]
-blu_penumbrae = df_all[df_all.region == 2.0]
-umbrae = df_all[df_all.region == 1.0]
+not_nan_mu_bin = np.logical_not(np.isnan(df_all.lo_mu))
+right_moat = df_all[np.logical_and(df_all.region == 9.0, not_nan_mu_bin)]
+left_moat = df_all[np.logical_and(df_all.region == 8.0, not_nan_mu_bin)]
+moat = df_all[np.logical_and(df_all.region == moat_code, not_nan_mu_bin)]
+plage = df_all[np.logical_and(df_all.region == plage_code, not_nan_mu_bin)]
+network = df_all[np.logical_and(df_all.region == network_code, not_nan_mu_bin)]
+quiet_sun = df_all[np.logical_and(df_all.region == quiet_sun_code, not_nan_mu_bin)]
+red_penumbrae = df_all[np.logical_and(df_all.region == 3.0, not_nan_mu_bin)]
+all_penumbrae = df_all[np.logical_and(df_all.region == penumbrae_code, not_nan_mu_bin)]
+blu_penumbrae = df_all[np.logical_and(df_all.region == 2.0, not_nan_mu_bin)]
+umbrae = df_all[np.logical_and(df_all.region == umbrae_code, not_nan_mu_bin)]
 
 # mask rows where all vels are 0.0 (i.e., region isn't present in that annulus)
-
 right_moat = mask_all_zero_rows(right_moat)
 right_moat.reset_index(drop=True, inplace=True)
 right_moat.to_csv(os.path.join(outdir, "right_moat.csv"), index=False)
